@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+
+  database:
+    image: postgres:alpine
+    container_name: database
+    restart: always
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: APP
+      POSTGRES_PASSWORD: APP
+      POSTGRES_DB: gymbrodb
+
+  # 10.000km
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    volumes:
+      - ./backend:/app
+      - ../common/backend/m2:/root/.m2
+    working_dir: /app
+    command: sh run.sh
+    ports:
+      - 8080:8080
+      - 35729:35729
+      - 5005:5005
+    depends_on:
+      - database
+
+
+  testing:
+    image: node:alpine
+    container_name: testing
+    profiles:
+      - test
+    working_dir: /home/node
+    volumes:
+      - ./testing:/home/node
+      - ../common/testing/node_modules:/home/node/node_modules      
+    command: npm test
+    # comentar esto
+    # depends_on:
+    #   - backend
+
+volumes:
+  postgres:
