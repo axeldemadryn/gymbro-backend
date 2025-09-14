@@ -37,7 +37,7 @@ public class ReconocimientoService {
                     } else {
                         // Caso 2: OpenAI
                         try {
-                            return openAiService.reconocerNombre(file)
+                            return openAiService.reconocerNombre(base64)
                                     .map(nombre -> "Ninguna".equalsIgnoreCase(nombre) ? "no_reconocido" : nombre)
                                     .onErrorResume(e -> Mono.just("no_reconocido"));
                         } catch (IOException e) {

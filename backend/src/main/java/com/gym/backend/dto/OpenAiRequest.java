@@ -11,15 +11,23 @@ public class OpenAiRequest {
     private String model;
 
     @JsonProperty("input")
+    private double temperature;
+
+    @JsonProperty("input")
     private List<Message> input;
 
-    public OpenAiRequest(String model, List<Message> input) {
+    public OpenAiRequest(String model, double temperature, List<Message> input) {
         this.model = model;
+        this.temperature = temperature;
         this.input = input;
     }
 
     public String getModel() {
         return model;
+    }
+
+    public double getTemperature() {
+        return temperature;
     }
 
     public List<Message> getInput() {
@@ -55,7 +63,7 @@ public class OpenAiRequest {
         private String type;
 
         @JsonProperty("text")
-        private String text;      // usado cuando type=input_text
+        private String text; // usado cuando type=input_text
 
         @JsonProperty("image_url")
         private String image_url; // usado cuando type=input_image
@@ -76,8 +84,16 @@ public class OpenAiRequest {
             return c;
         }
 
-        public String getType() { return type; }
-        public String getText() { return text; }
-        public String getImage_url() { return image_url; }
+        public String getType() {
+            return type;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public String getImage_url() {
+            return image_url;
+        }
     }
 }

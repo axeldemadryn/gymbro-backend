@@ -3,7 +3,6 @@ package com.gym.backend.business;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Base64;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +11,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,7 +33,7 @@ public class OpenAiService {
     private String model;
 
     // Lista interna única: usada solo aquí
-    private static final List<String> MAQUINAS = List.of(
+    private static final List<String> MAQUINAS_PRUEBA = List.of(
             "press banca", "remo", "sentadilla", "peso muerto",
             "curl biceps", "extensión de piernas", "dominadas",
             "press militar", "fondos", "abdominales", "press inclinado",
@@ -68,13 +66,11 @@ public class OpenAiService {
 
     /**
      * Construye un request JSON para la Responses API de OpenAI:
-     * - convierte la imagen a data URL base64 y la manda como content type
-     * input_image
      * - añade un mensaje con prompt para que responda únicamente con el nombre de
      * la máquina
      */
-    public Mono<OpenAiResponse> reconocer(MultipartFile file) throws IOException {
-        // 1️⃣ Leemos la lista desde resources/maquinas.txt
+    public Mono<OpenAiResponse> reconocer(String base64Image) throws IOException {
+        // Leemos la lista desde resources/maquinas.txt
         ClassPathResource resource = new ClassPathResource("maquinas.txt");
         List<String> maquinas = new BufferedReader(new InputStreamReader(resource.getInputStream()))
                 .lines()
@@ -84,7 +80,7 @@ public class OpenAiService {
 
         String maquinasTexto = "Lista de máquinas válidas:\n" + String.join("\n", maquinas);
 
-        // 2️⃣ Prompt de reglas
+        // Prompt de reglas
         String systemContent = "Responde solo con un nombre de la lista provista.\n" +
                 "Reglas:\n" +
                 "- Si la máquina parece una de la lista, elige la más parecida; solo usa ‘Ninguna’ si de verdad no se parece a ninguna.\n"
@@ -92,21 +88,19 @@ public class OpenAiService {
                 "- Si estás seguro, responde solo con el nombre exacto de la máquina de la lista.\n" +
                 "- Si NO estás seguro, responde únicamente con: Ninguna.\n" +
                 "- No inventes nombres que no estén en la lista.\n" +
-                "- Analiza cada máquina de la lista hasta encontrar la más parecida a la de la foto posible, entre todas las máquinas.";
+                "- Analiza cada máquina de la lista hasta encontrar la más parecida a la de la foto posible, entre todas las máquinas.\n";
 
-        // 3️⃣ Convertimos la imagen a Base64
-        String base64 = "data:" + file.getContentType() + ";base64," +
-                Base64.getEncoder().encodeToString(file.getBytes());
-        OpenAiRequest.Content imageContent = OpenAiRequest.Content.image(base64);
+  
+        OpenAiRequest.Content imageContent = OpenAiRequest.Content.image(base64Image);
         OpenAiRequest.Content textContent = OpenAiRequest.Content.text(maquinasTexto);
 
-        // 4️⃣ Armamos los mensajes
+        // Armamos los mensajes
         OpenAiRequest.Message systemMessage = new OpenAiRequest.Message("system",
                 List.of(OpenAiRequest.Content.text(systemContent)));
         OpenAiRequest.Message userMessage = new OpenAiRequest.Message("user", List.of(textContent, imageContent));
 
-        // 5️⃣ Armamos la request final
-        OpenAiRequest request = new OpenAiRequest(model, List.of(systemMessage, userMessage));
+        // Armamos la request final
+        OpenAiRequest request = new OpenAiRequest(model, 0, List.of(systemMessage, userMessage));
 
         return doPost(request);
     }
@@ -118,21 +112,21 @@ public class OpenAiService {
      */
     public Mono<OpenAiResponse> reconocerURL(String imageUrl) {
         String prompt = "Esta es una imagen de una máquina de gimnasio. Solo puede ser una de estas: "
-                + String.join(", ", MAQUINAS)
+                + String.join(", ", MAQUINAS_PRUEBA)
                 + ". Devuelve únicamente el nombre correcto.";
 
         // texto primero, luego imagen
         OpenAiRequest.Content textContent = OpenAiRequest.Content.text(prompt);
         OpenAiRequest.Content imageContent = OpenAiRequest.Content.image(imageUrl);
         OpenAiRequest.Message message = new OpenAiRequest.Message("user", List.of(textContent, imageContent));
-        OpenAiRequest request = new OpenAiRequest(model, List.of(message));
+        OpenAiRequest request = new OpenAiRequest(model, 0, List.of(message));
 
         return doPost(request);
     }
 
     // Métodos de conveniencia que devuelven directamente el nombre resuelto
-    public Mono<String> reconocerNombre(MultipartFile file) throws IOException {
-        return reconocer(file)
+    public Mono<String> reconocerNombre(String base64Image) throws IOException {
+        return reconocer(base64Image)
                 .map(OpenAiResponse::getText);
     }
 
