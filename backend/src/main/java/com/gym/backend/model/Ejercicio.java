@@ -25,6 +25,41 @@ public class Ejercicio {
     @JoinTable(name = "ejercicio_maquinas", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "maquina_id"))
     private Collection<Maquina> maquinas;
 
+    // Músculos principales y secundarios
+    @ManyToMany
+    @JoinTable(name = "ejercicio_musculos_principales", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
+    private Collection<Musculo> musculosPrincipales;
+
+    @ManyToMany
+    @JoinTable(name = "ejercicio_musculos_principales", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
+    private Collection<Musculo> musculosSecundarios;
+
+    private boolean esPersonalizado = false;
+
+    public boolean isEsPersonalizado() {
+        return esPersonalizado;
+    }
+
+    public void setEsPersonalizado(boolean esPersonalizado) {
+        this.esPersonalizado = esPersonalizado;
+    }
+
+    public Collection<Musculo> getMusculosPrincipales() {
+        return musculosPrincipales;
+    }
+
+    public void setMusculosPrincipales(Collection<Musculo> musculosPrincipales) {
+        this.musculosPrincipales = musculosPrincipales;
+    }
+
+    public Collection<Musculo> getMusculosSecundarios() {
+        return musculosSecundarios;
+    }
+
+    public void setMusculosSecundarios(Collection<Musculo> musculosSecundarios) {
+        this.musculosSecundarios = musculosSecundarios;
+    }
+
     public Collection<Maquina> getMaquinas() {
         return maquinas;
     }

@@ -20,17 +20,18 @@ public class Maquina {
 
     private String videoUrl; // URL de video o animación instructiva
 
-    @OneToMany(mappedBy = "maquina", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(mappedBy = "maquina")
     private Collection<Ejercicio> ejercicios;
 
-    // Músculos principales y secundarios
-    @ManyToMany
-    @JoinTable(name = "maquina_musculos_principales", joinColumns = @JoinColumn(name = "maquina_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
-    private Collection<Musculo> musculosPrincipales;
+    private boolean esPersonalizado = false;
 
-    @ManyToMany
-    @JoinTable(name = "maquina_musculos_secundarios", joinColumns = @JoinColumn(name = "maquina_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
-    private Collection<Musculo> musculosSecundarios;
+    public boolean isEsPersonalizado() {
+        return esPersonalizado;
+    }
+
+    public void setEsPersonalizado(boolean esPersonalizado) {
+        this.esPersonalizado = esPersonalizado;
+    }
 
     public Collection<Ejercicio> getEjercicios() {
         return ejercicios;
@@ -38,22 +39,6 @@ public class Maquina {
 
     public void setEjercicios(Collection<Ejercicio> ejercicios) {
         this.ejercicios = ejercicios;
-    }
-
-    public Collection<Musculo> getMusculosPrincipales() {
-        return musculosPrincipales;
-    }
-
-    public void setMusculosPrincipales(Collection<Musculo> musculosPrincipales) {
-        this.musculosPrincipales = musculosPrincipales;
-    }
-
-    public Collection<Musculo> getMusculosSecundarios() {
-        return musculosSecundarios;
-    }
-
-    public void setMusculosSecundarios(Collection<Musculo> musculosSecundarios) {
-        this.musculosSecundarios = musculosSecundarios;
     }
 
     public Long getId() {
