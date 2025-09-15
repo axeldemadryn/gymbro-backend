@@ -20,7 +20,7 @@ public class Maquina {
 
     private String videoUrl; // URL de video o animación instructiva
 
-    @ManyToMany(mappedBy = "maquina")
+    @ManyToMany(mappedBy = "maquinas", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     private Collection<Ejercicio> ejercicios;
 
     private boolean esPersonalizado = false;

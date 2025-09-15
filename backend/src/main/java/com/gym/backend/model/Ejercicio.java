@@ -21,17 +21,17 @@ public class Ejercicio {
 
     private String videoUrl;
 
-    @ManyToMany
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(name = "ejercicio_maquinas", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "maquina_id"))
     private Collection<Maquina> maquinas;
 
-    // Músculos principales y secundarios
-    @ManyToMany
+    // Músculos principales y secundarios (OneToMany unidireccional)
+    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(name = "ejercicio_musculos_principales", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
     private Collection<Musculo> musculosPrincipales;
 
-    @ManyToMany
-    @JoinTable(name = "ejercicio_musculos_principales", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
+    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinTable(name = "ejercicio_musculos_secundarios", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
     private Collection<Musculo> musculosSecundarios;
 
     private boolean esPersonalizado = false;
