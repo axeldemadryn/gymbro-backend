@@ -12,8 +12,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
 @Table(name = "maquinas")
 public class Maquina {
 
@@ -35,61 +41,5 @@ public class Maquina {
     private Collection<Ejercicio> ejercicios;
 
     private boolean esPersonalizado = false;
-
-    public boolean isEsPersonalizado() {
-        return esPersonalizado;
-    }
-
-    public void setEsPersonalizado(boolean esPersonalizado) {
-        this.esPersonalizado = esPersonalizado;
-    }
-
-    public Collection<Ejercicio> getEjercicios() {
-        return ejercicios;
-    }
-
-    public void setEjercicios(Collection<Ejercicio> ejercicios) {
-        this.ejercicios = ejercicios;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public TipoEquipo getTipoEquipo() {
-        return tipoEquipo;
-    }
-
-    public void setTipoEquipo(TipoEquipo tipoEquipo) {
-        this.tipoEquipo = tipoEquipo;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public String getVideoUrl() {
-        return videoUrl;
-    }
-
-    public void setVideoUrl(String videoUrl) {
-        this.videoUrl = videoUrl;
-    }
 
 }
