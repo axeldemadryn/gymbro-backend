@@ -35,7 +35,7 @@ public class Maquina {
 
     private String descripcion; // breve descripción de uso
 
-    private String videoUrl; // URL de video o animación instructiva
+    private String imagenUrl; // URL de imagen, video o animación instructiva
 
     @ManyToMany(mappedBy = "maquinas", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     private Collection<Ejercicio> ejercicios;
