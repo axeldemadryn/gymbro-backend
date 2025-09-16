@@ -10,7 +10,7 @@ public class OpenAiRequest {
     @JsonProperty("model")
     private String model;
 
-    @JsonProperty("input")
+    @JsonProperty("temperature")
     private double temperature;
 
     @JsonProperty("input")
