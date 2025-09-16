@@ -1,7 +1,17 @@
 package com.gym.backend.model;
 
-import jakarta.persistence.*;
 import java.util.Collection;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "maquinas")
@@ -11,6 +21,7 @@ public class Maquina {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
     private String nombre; // nombre que devuelve RoboFlow / OpenAI
 
     @Enumerated(EnumType.STRING)
