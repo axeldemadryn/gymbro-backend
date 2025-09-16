@@ -12,10 +12,10 @@ import reactor.core.publisher.Mono;
 @Service
 public class ReconocimientoService {
     @Autowired
-    RoboflowService roboflowService;
+    private RoboflowService roboflowService;
 
     @Autowired
-    OpenAiService openAiService;
+    private OpenAiService openAiService;
 
     public Mono<String> reconocer(MultipartFile file) {
         String base64;
