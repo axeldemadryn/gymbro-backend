@@ -12,10 +12,10 @@ import reactor.core.publisher.Mono;
 @Service
 public class ReconocimientoService {
     @Autowired
-    RoboflowService roboflowService;
+    private RoboflowService roboflowService;
 
     @Autowired
-    OpenAiService openAiService;
+    private OpenAiService openAiService;
 
     public Mono<String> reconocer(MultipartFile file) {
         String base64;
@@ -31,8 +31,7 @@ public class ReconocimientoService {
                 .flatMap(respMono -> respMono)
                 .flatMap(resp -> {
                     // Caso 1: exactamente una predicción con confidence >= 0.85
-                    if (resp.getPredictions().size() == 1 &&
-                            resp.getPredictions().get(0).getConfidence() >= 0.85) {
+                    if (resp.getPredictions().size() == 1 && resp.getPredictions().get(0).getConfidence() >= 0.85) {
                         return Mono.just(resp.getPredictions().get(0).getClassName());
                     } else {
                         // Caso 2: OpenAI
