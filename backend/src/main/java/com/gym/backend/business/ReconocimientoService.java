@@ -19,12 +19,10 @@ public class ReconocimientoService {
 
     public Mono<String> reconocer(MultipartFile file) {
         String base64;
-
         try {
-            base64 = "data:" + file.getContentType() + ";base64," +
-                    Base64.getEncoder().encodeToString(file.getBytes());
+            base64 = "data:" + file.getContentType() + ";base64," + Base64.getEncoder().encodeToString(file.getBytes());
         } catch (IOException e) {
-            return Mono.just("no_reconocido"); // si hay error leyendo el archivo
+            return Mono.just("no_reconocido");
         }
 
         return Mono.fromCallable(() -> roboflowService.reconocer(base64)) // captura IOException

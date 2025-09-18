@@ -17,6 +17,7 @@ public class EjercicioService {
     private EjercicioRepository ejercicioRepository;
 
     // Guardar un ejercicio con validación de nombre único
+    @Transactional
     public Ejercicio guardar(Ejercicio ejercicio) {
         if (ejercicioRepository.existsByNombreIgnoreCase(ejercicio.getNombre())) {
             throw new IllegalArgumentException(
@@ -46,6 +47,7 @@ public class EjercicioService {
     }
 
     // Borrar un ejercicio por ID
+    @Transactional
     public void eliminar(Long id) {
         ejercicioRepository.deleteById(id);
     }

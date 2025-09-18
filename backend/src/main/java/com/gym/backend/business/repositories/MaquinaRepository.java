@@ -10,6 +10,6 @@ import com.gym.backend.model.Maquina;
 
 @Repository
 public interface MaquinaRepository extends CrudRepository<Maquina, Integer>{
-    @Query("Select m from Maquina m where m.nombre = ?1")
+    @Query("SELECT m FROM Maquina m WHERE LOWER(m.nombre) = LOWER(?1)")
     Optional<Maquina> findByNombre(String nombre);
 }

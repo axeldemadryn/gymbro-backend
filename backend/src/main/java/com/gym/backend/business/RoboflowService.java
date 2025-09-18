@@ -33,13 +33,14 @@ public class RoboflowService {
         this.objectMapper = objectMapper;
     }
 
-    public Mono<RoboflowResponse> reconocer(String base64Image) throws IOException {
+    public Mono<RoboflowResponse> reconocer(String base64) throws IOException {
+
         String url = baseUrl + "/" + model + "?api_key=" + apiKey;
 
         return webClient.post()
                 .uri(url)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .bodyValue(base64Image)
+                .bodyValue(base64)
                 .retrieve()
                 .bodyToMono(String.class)
                 .map(responseBody -> {
