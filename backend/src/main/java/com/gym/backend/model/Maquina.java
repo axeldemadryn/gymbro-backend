@@ -40,6 +40,4 @@ public class Maquina {
     @ManyToMany(mappedBy = "maquinas", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     private Collection<Ejercicio> ejercicios;
 
-    private boolean esPersonalizado = false;
-
 }
