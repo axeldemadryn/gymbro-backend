@@ -29,18 +29,17 @@ public class ReconocimientoService {
                 .flatMap(respMono -> respMono)
                 .flatMap(resp -> {
                     // Caso 1: exactamente una predicción con confidence >= 0.85
-                    if (resp.getPredictions().size() == 1 && resp.getPredictions().get(0).getConfidence() >= 0.85) {
+                    if (resp.getPredictions().size() == 1 && resp.getPredictions().get(0).getConfidence() >= 0.85)
                         return Mono.just(resp.getPredictions().get(0).getClassName());
-                    } else {
-                        // Caso 2: OpenAI
-                        try {
-                            return openAiService.reconocerNombre(base64)
-                                    .map(nombre -> "Ninguna".equalsIgnoreCase(nombre) ? "no_reconocido" : nombre)
-                                    .onErrorResume(e -> Mono.just("no_reconocido"));
-                        } catch (IOException e) {
-                            return Mono.just("no_reconocido");
-                        }
+                    // Caso 2: OpenAI
+                    try {
+                        return openAiService.reconocerNombre(base64)
+                                .map(nombre -> "Ninguna".equalsIgnoreCase(nombre) ? "no_reconocido" : nombre)
+                                .onErrorResume(e -> Mono.just("no_reconocido"));
+                    } catch (IOException e) {
+                        return Mono.just("no_reconocido");
                     }
+
                 })
                 .onErrorResume(e -> Mono.just("no_reconocido")); // errores de Roboflow
     }
