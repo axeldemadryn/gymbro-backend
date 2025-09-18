@@ -67,7 +67,7 @@ public class ReconocimientoPresenter {
                             .map(maquinaDTO -> Response.ok(maquinaDTO))
                             .defaultIfEmpty(Response.notFound("No se encontró la máquina en la base de datos."));
                 })
-                .onErrorResume(e -> Mono.just(Response.ok("no_reconocidoja"))); // errores
+                .onErrorResume(e -> Mono.just(Response.ok("no_reconocido"))); // errores
     }
 
     @GetMapping(value = "/api/reconocimiento-url")
