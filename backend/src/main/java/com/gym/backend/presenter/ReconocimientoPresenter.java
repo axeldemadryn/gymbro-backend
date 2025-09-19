@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.gym.backend.Response;
-import com.gym.backend.business.OpenAiService;
-import com.gym.backend.business.ReconocimientoService;
-import com.gym.backend.business.RoboflowService;
 import com.gym.backend.business.services.MaquinaService;
+import com.gym.backend.business.services.OpenAiService;
+import com.gym.backend.business.services.ReconocimientoService;
+import com.gym.backend.business.services.RoboflowService;
 import com.gym.backend.dto.OpenAiResponse;
 import com.gym.backend.dto.ReconocimientoViewModel;
 import com.gym.backend.dto.RoboflowResponse;

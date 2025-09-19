@@ -1,4 +1,4 @@
-package com.gym.backend.business;
+package com.gym.backend.business.services;
 
 import java.io.IOException;
 
