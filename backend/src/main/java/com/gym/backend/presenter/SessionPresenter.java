@@ -16,7 +16,7 @@ import com.gym.backend.business.services.SessionService;
 import com.gym.backend.model.Session;
 
 @RestController
-@RequestMapping("sessions")
+@RequestMapping("api/sessions")
 public class SessionPresenter {
     @Autowired
     private SessionService service;
@@ -49,17 +49,18 @@ public class SessionPresenter {
     }
 
     @PostMapping
-    public ResponseEntity<Object> crear(@RequestBody Session aSession){
-        if (aSession.getId() != 0){
-            return Response.dbError("La sesión tiene un ID no nulo (autogenerado).");
-        }
-        if (aSession.getName() == null || aSession.getName().isEmpty()){
+    public ResponseEntity<Object> crear(@RequestBody Session aSession) {
+        // No verificamos el ID, se autogenera
+        if (aSession.getName() == null || aSession.getName().isEmpty()) {
             return Response.dbError("La sesión no puede tener un nombre vacío.");
         }
+
+        // Guardamos la sesión, aquí se genera el ID automáticamente
         Session created = service.save(aSession);
+
         return (created != null)
-            ? Response.ok(created)
-            : Response.dbError("No se pudo crear la sesión con nombre " + aSession.getName() + ".");
+                ? Response.ok(created)
+                : Response.dbError("No se pudo crear la sesión con nombre " + aSession.getName() + ".");
     }
 
     @DeleteMapping("/{id}")

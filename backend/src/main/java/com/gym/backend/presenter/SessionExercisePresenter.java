@@ -16,7 +16,7 @@ import com.gym.backend.business.services.SessionExerciseService;
 import com.gym.backend.model.SessionExercise;
 
 @RestController
-@RequestMapping("sessions_exercises")
+@RequestMapping("api/sessions-exercises")
 public class SessionExercisePresenter {
     @Autowired
     private SessionExerciseService service;
@@ -49,18 +49,16 @@ public class SessionExercisePresenter {
     }
 
     @PostMapping
-    public ResponseEntity<Object> crear(@RequestBody SessionExercise sessionExercise){
-        if (sessionExercise.getId() != 0){
-            return Response.dbError("La SessionExercise tiene un ID no nulo (autogenerado).");
+    public ResponseEntity<Object> crear(@RequestBody SessionExercise sessionExercise) {
+        if (sessionExercise.getSession() == null || sessionExercise.getExercise() == null) {
+            return Response.dbError("La SessionExercise debe tener sesión y ejercicio asignados.");
         }
-        if (sessionExercise.getSession() == null || sessionExercise.getExercise() == null){
-            return Response.dbError("La SessionExercise no puede tener un nombre vacío.");
-        }
+
         SessionExercise created = service.save(sessionExercise);
+
         return (created != null)
-            ? Response.ok(created)
-            : Response.dbError("No se pudo crear la SessionExercise que vincula a " + sessionExercise.getSession().getName()
-                + " con " + sessionExercise.getExercise().getNombre() + ".");
+                ? Response.ok(created)
+                : Response.dbError("No se pudo crear la SessionExercise.");
     }
 
     @DeleteMapping("/{id}")
