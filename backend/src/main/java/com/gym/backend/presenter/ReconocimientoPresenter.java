@@ -1,6 +1,7 @@
 package com.gym.backend.presenter;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +38,15 @@ public class ReconocimientoPresenter {
 
     // ------------------Endpoints para Roboflow
     // -----------------------------------------
-/* 
+
     @PostMapping(value = "/api/roboflow", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<ReconocimientoViewModel> reconocerRoboflow(@RequestParam MultipartFile file) throws IOException {
-        return roboflowService.reconocer(file)
+        String base64 = "data:" + file.getContentType() + ";base64," + Base64.getEncoder().encodeToString(file.getBytes());
+        return roboflowService.reconocer(base64)
                 .map(ReconocimientoPresenter::present); // Transformar a ViewModel cuando llegue la respuesta
 
-    }*/
+    }
+
     @GetMapping(value = "/api/roboflow-url")
     public Mono<ReconocimientoViewModel> reconocerRoboflowURL(@RequestParam String urlImagen) {
         return roboflowService.reconocerURL(urlImagen)
@@ -53,7 +56,7 @@ public class ReconocimientoPresenter {
     // ------------------ Endpoints para el flujo completo (Roboflow + OpenAI)
     // ------------------
     @PostMapping(value = "/api/reconocimiento", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Mono<ResponseEntity<Object>> reconocer(@RequestParam MultipartFile file) throws IOException {
+    public Mono<ResponseEntity<Object>> reconocer(@RequestParam MultipartFile file) {
         return reconocimientoService.reconocer(file) // devuelve el nombre de la máquina
                 .flatMap(nombre -> {
                     if ("no_reconocido".equalsIgnoreCase(nombre)) {
@@ -64,7 +67,7 @@ public class ReconocimientoPresenter {
                             .map(maquinaDTO -> Response.ok(maquinaDTO))
                             .defaultIfEmpty(Response.notFound("No se encontró la máquina en la base de datos."));
                 })
-                .onErrorResume(e -> Mono.just(Response.ok("no_reconocidoja"))); // errores
+                .onErrorResume(e -> Mono.just(Response.ok("no_reconocido"))); // errores
     }
 
     @GetMapping(value = "/api/reconocimiento-url")

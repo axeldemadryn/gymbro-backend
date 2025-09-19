@@ -16,12 +16,13 @@ import jakarta.transaction.Transactional;
 import reactor.core.publisher.Mono;
 
 @Service
+@Transactional
 public class MaquinaService {
     @Autowired
     private MaquinaRepository repository;
 
     public Maquina findById(long id) {
-        return repository.findById((int) id).orElse(null);
+        return repository.findById(id).orElse(null);
     }
 
     public List<Maquina> findAll() {
@@ -31,7 +32,7 @@ public class MaquinaService {
     }
 
     public Maquina findByNombre(String nombre) {
-        return repository.findByNombre(nombre).orElse(null);
+        return repository.findByNombreIgnoreCase(nombre).orElse(null);
     }
 
     @Transactional
@@ -41,7 +42,7 @@ public class MaquinaService {
 
     @Transactional
     public void delete(long id) {
-        repository.deleteById((int) id);
+        repository.deleteById(id);
     }
 
     public Mono<MaquinaDTO> obtenerMaquinaConEjercicios(String nombre) {
@@ -51,37 +52,31 @@ public class MaquinaService {
 
         MaquinaDTO dto = new MaquinaDTO();
         dto.setNombre(maquina.getNombre());
-  //      dto.setTipoEquipo(maquina.getTipoEquipo().name());
+        //dto.setTipoEquipo(maquina.getTipoEquipo().name());
         dto.setDescripcion(maquina.getDescripcion());
-/* 
-        List<EjercicioDTO> ejerciciosDTO = maquina.getEjercicios().stream()
-                .map(ej -> {
-                    EjercicioDTO ejDTO = new EjercicioDTO();
-                    ejDTO.setNombre(ej.getNombre());
-                    ejDTO.setTipo(ej.getTipo().name());
-                    ejDTO.setDescripcion(ej.getDescripcion());
-                    ejDTO.setVideoUrl(ej.getVideoUrl());
 
-                    ejDTO.setMusculosPrincipales(
-                            ej.getMusculosPrincipales().stream()
-                                    .map(m -> {
-                                        MusculoDTO mDto = new MusculoDTO();
-                                        mDto.setNombre(m.getNombre());
-                                        return mDto;
-                                    }).toList());
-
-                    ejDTO.setMusculosSecundarios(
-                            ej.getMusculosSecundarios().stream()
-                                    .map(m -> {
-                                        MusculoDTO mDto = new MusculoDTO();
-                                        mDto.setNombre(m.getNombre());
-                                        return mDto;
-                                    }).toList());
-
-                    return ejDTO;
-                }).toList();
-
-        dto.setEjercicios(ejerciciosDTO);*/
+        dto.setEjercicios(
+                maquina.getEjercicios() == null ? List.of()
+                        : maquina.getEjercicios().stream()
+                                .map(ej -> {
+                                    EjercicioDTO ejDTO = new EjercicioDTO();
+                                    ejDTO.setNombre(ej.getNombre());
+                                    ejDTO.setTipo(ej.getTipo() != null ? ej.getTipo().name() : null);
+                                    ejDTO.setDescripcion(ej.getDescripcion());
+                                    ejDTO.setVideoUrl(ej.getVideoUrl());
+                                    ejDTO.setMusculosPrincipales(
+                                            ej.getMusculosPrincipales() == null ? List.of()
+                                                    : ej.getMusculosPrincipales().stream()
+                                                            .map(m -> new MusculoDTO(m.getNombre()))
+                                                            .toList());
+                                    ejDTO.setMusculosSecundarios(
+                                            ej.getMusculosSecundarios() == null ? List.of()
+                                                    : ej.getMusculosSecundarios().stream()
+                                                            .map(m -> new MusculoDTO(m.getNombre()))
+                                                            .toList());
+                                    return ejDTO;
+                                })
+                                .toList());
         return Mono.just(dto);
     }
 

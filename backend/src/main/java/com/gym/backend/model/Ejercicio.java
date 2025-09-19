@@ -40,6 +40,7 @@ public class Ejercicio {
 
     @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(name = "ejercicio_maquinas", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "maquina_id"))
+    @JsonIgnore
     private Collection<Maquina> maquinas;
 
     // Músculos principales y secundarios (OneToMany unidireccional)
@@ -52,4 +53,5 @@ public class Ejercicio {
     private Collection<Musculo> musculosSecundarios;
 
     private boolean esPersonalizado = false;
+
 }
