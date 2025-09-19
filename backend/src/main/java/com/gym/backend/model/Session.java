@@ -6,12 +6,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 public class Session {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

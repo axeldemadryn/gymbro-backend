@@ -55,7 +55,7 @@ public class MaquinaPresenter {
             Maquina maquinaActualizada = service.save(unaMaquina);
             return (maquinaActualizada != null)
                     ? Response.ok(maquinaActualizada)
-                    : Response.notFound("No se encontró a la máquina con ID " + unaMaquina.getId() + ".");
+                    : Response.dbError("No se pudo actualizar a la máquina con ID " + unaMaquina.getId() + ".");
         } catch (DataIntegrityViolationException d) { // Nombre duplicado
             return Response.dbError("Error. Ya existe una máquina con nombre " + unaMaquina.getNombre() + ".");
         }

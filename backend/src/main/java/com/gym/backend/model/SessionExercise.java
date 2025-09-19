@@ -8,12 +8,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 public class SessionExercise {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
