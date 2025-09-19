@@ -1,10 +1,11 @@
 package com.gym.backend.model;
 
-import java.util.Collection;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -31,6 +32,7 @@ public class Ejercicio {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
     private String nombre;
 
     @Enumerated(EnumType.STRING)
@@ -43,16 +45,16 @@ public class Ejercicio {
     @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(name = "ejercicio_maquinas", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "maquina_id"))
     @JsonIgnore
-    private Collection<Maquina> maquinas;
+    private Set<Maquina> maquinas;
 
     // Músculos principales y secundarios (OneToMany unidireccional)
     @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinColumn(name = "id_ejercicio_musculo_principal_de")
-    private Collection<Musculo> musculosPrincipales;
+    private Set<Musculo> musculosPrincipales;
 
     @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinColumn(name = "id_ejercicio_musculo_secundario_de")
-    private Collection<Musculo> musculosSecundarios;
+    private Set<Musculo> musculosSecundarios;
 
     private boolean esPersonalizado = false;
 

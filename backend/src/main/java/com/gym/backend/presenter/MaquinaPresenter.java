@@ -17,7 +17,7 @@ import com.gym.backend.business.services.MaquinaService;
 import com.gym.backend.model.Maquina;
 
 @RestController
-@RequestMapping("maquinas")
+@RequestMapping("api/maquinas")
 public class MaquinaPresenter {
     @Autowired
     private MaquinaService service;
