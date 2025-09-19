@@ -19,7 +19,7 @@ import com.gym.backend.model.Session;
 @RequestMapping("sessions")
 public class SessionPresenter {
     @Autowired
-    SessionService service;
+    private SessionService service;
 
     @GetMapping
     public ResponseEntity<Object> encontrarTodas() {

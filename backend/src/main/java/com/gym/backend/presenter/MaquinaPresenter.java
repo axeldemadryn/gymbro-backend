@@ -20,7 +20,7 @@ import com.gym.backend.model.Maquina;
 @RequestMapping("maquinas")
 public class MaquinaPresenter {
     @Autowired
-    MaquinaService service;
+    private MaquinaService service;
 
     @GetMapping
     public ResponseEntity<Object> encontrarTodas() {
