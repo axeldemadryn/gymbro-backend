@@ -6,6 +6,7 @@ import com.gym.backend.model.Ejercicio;
 import com.gym.backend.model.TipoEjercicio;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
@@ -22,13 +23,16 @@ public class EjercicioPresenter {
     // Crear un nuevo ejercicio
     @PostMapping
     public ResponseEntity<Object> crearEjercicio(@RequestBody Ejercicio ejercicio) {
+        if (ejercicio.getNombre() == null || ejercicio.getNombre().isEmpty()) {
+            return Response.dbError("El nombre del ejercicio no puede estar vacío.");
+        }
         try {
             Ejercicio guardado = ejercicioService.guardar(ejercicio);
-            return Response.ok(guardado, "Ejercicio creado correctamente");
-        } catch (IllegalArgumentException e) {
-            return Response.error(null, e.getMessage());
-        } catch (Exception e) {
-            return Response.dbError("Error al guardar el ejercicio");
+            return (guardado != null)
+                    ? Response.ok(guardado)
+                    : Response.dbError("No se pudo crear el ejercicio.");
+        } catch (DataIntegrityViolationException d) { // Nombre duplicado
+            return Response.dbError("Error. Ya existe un ejercicio con nombre " + ejercicio.getNombre() + ".");
         }
     }
 
@@ -47,7 +51,7 @@ public class EjercicioPresenter {
     public ResponseEntity<Object> obtenerPorId(@PathVariable Long id) {
         Optional<Ejercicio> ejercicio = ejercicioService.obtenerPorId(id);
         return ejercicio.map(Response::ok)
-                        .orElseGet(() -> Response.notFound("Ejercicio no encontrado"));
+                .orElseGet(() -> Response.notFound("Ejercicio no encontrado"));
     }
 
     // Buscar ejercicios por nombre
@@ -91,4 +95,3 @@ public class EjercicioPresenter {
         }
     }
 }
-
