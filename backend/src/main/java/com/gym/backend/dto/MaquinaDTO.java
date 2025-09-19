@@ -6,10 +6,19 @@ public class MaquinaDTO {
     private String nombre;
     private String tipoEquipo; // Enum como String
     private String descripcion;
+    private String imagen;
     private List<EjercicioDTO> ejercicios;
 
     public MaquinaDTO() {
 
+    }
+
+    public String getImagen() {
+        return imagen;
+    }
+
+    public void setImagen(String imagen) {
+        this.imagen = imagen;
     }
 
     public String getNombre() {

@@ -52,8 +52,12 @@ public class MaquinaService {
 
         MaquinaDTO dto = new MaquinaDTO();
         dto.setNombre(maquina.getNombre());
-        //dto.setTipoEquipo(maquina.getTipoEquipo().name());
+
+        if (maquina.getTipoEquipo() != null)
+            dto.setTipoEquipo(maquina.getTipoEquipo().name());
+
         dto.setDescripcion(maquina.getDescripcion());
+        dto.setImagen(maquina.getImagenUrl());
 
         dto.setEjercicios(
                 maquina.getEjercicios() == null ? List.of()
