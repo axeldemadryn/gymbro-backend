@@ -1,6 +1,7 @@
 package com.gym.backend.presenter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,25 +28,32 @@ public class SessionExercisePresenter {
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<Object> encontrarById(@PathVariable("id") long id){
+    public ResponseEntity<Object> encontrarById(@PathVariable("id") long id) {
         SessionExercise sessionExercise = service.findById(id);
         return (sessionExercise != null)
-            ? Response.ok(sessionExercise)
-            : Response.notFound("No se encontró a la SessionExercise con ID " + id + ".");
+                ? Response.ok(sessionExercise)
+                : Response.notFound("No se encontró a la SessionExercise con ID " + id + ".");
     }
 
     @PutMapping
-    public ResponseEntity<Object> actualizar(@RequestBody SessionExercise sessionExercise){
-        if (sessionExercise.getId() <= 0){
+    public ResponseEntity<Object> actualizar(@RequestBody SessionExercise sessionExercise) {
+        if (sessionExercise.getId() <= 0) {
             return Response.dbError("La SessionExercise tiene un ID no positivo, y no debe.");
         }
-        if (sessionExercise.getSession() == null || sessionExercise.getExercise() == null){
+        if (sessionExercise.getSession() == null || sessionExercise.getExercise() == null) {
             return Response.dbError("La SessionExercise no puede tener un nombre vacío.");
         }
-        SessionExercise updated = service.save(sessionExercise);
-        return (updated != null)
-            ? Response.ok(updated)
-            : Response.dbError("No se pudo actualizar a la SessionExercise con ID " + sessionExercise.getId() + ".");
+
+        try {
+            SessionExercise updated = service.save(sessionExercise);
+            return (updated != null)
+                    ? Response.ok(updated)
+                    : Response.dbError(
+                            "No se pudo actualizar a la SessionExercise con ID " + sessionExercise.getId() + ".");
+        } catch (DataIntegrityViolationException e) {
+            return Response.dbError("Este ejercicio ya está asignado a la sesión.");
+
+        }
     }
 
     @PostMapping
@@ -56,9 +64,13 @@ public class SessionExercisePresenter {
 
         SessionExercise created = service.save(sessionExercise);
 
-        return (created != null)
-                ? Response.ok(created)
-                : Response.dbError("No se pudo crear la SessionExercise.");
+        try {
+            return (created != null)
+                    ? Response.ok(created)
+                    : Response.dbError("No se pudo crear la SessionExercise.");
+        } catch (DataIntegrityViolationException e) {
+            return Response.dbError("Este ejercicio ya está asignado a la sesión.");
+        }
     }
 
     @DeleteMapping("/{id}")

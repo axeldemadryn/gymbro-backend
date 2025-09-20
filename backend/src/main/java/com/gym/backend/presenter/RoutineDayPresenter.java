@@ -1,6 +1,7 @@
 package com.gym.backend.presenter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,8 +31,8 @@ public class RoutineDayPresenter {
     public ResponseEntity<Object> encontrarById(@PathVariable("id") long id) {
         RoutineDay day = service.findById(id);
         return (day != null)
-            ? Response.ok(day)
-            : Response.notFound("No se encontró el día de rutina con ID " + id + ".");
+                ? Response.ok(day)
+                : Response.notFound("No se encontró el día de rutina con ID " + id + ".");
     }
 
     @PutMapping
@@ -39,28 +40,38 @@ public class RoutineDayPresenter {
         if (routineDay.getId() <= 0) {
             return Response.dbError("El día de rutina tiene un ID no positivo, y no debe.");
         }
-        if (routineDay.getDayOfWeek() == null || routineDay.getDayOfWeek().isEmpty()) {
+        if (routineDay.getDayOfWeek() == null || routineDay.getDayOfWeek().name().isEmpty()) {
             return Response.dbError("El día de rutina no puede tener un día vacío.");
         }
-        RoutineDay updated = service.save(routineDay);
-        return (updated != null)
-            ? Response.ok(updated)
-            : Response.dbError("No se pudo actualizar el día de rutina con ID " + routineDay.getId() + ".");
+
+        try {
+            RoutineDay updated = service.save(routineDay);
+            return (updated != null)
+                    ? Response.ok(updated)
+                    : Response.dbError("No se pudo actualizar el día de rutina con ID " + routineDay.getId() + ".");
+        } catch (DataIntegrityViolationException e) {
+            return Response.dbError("Ya existe un día de rutina con esa combinación de rutina y día (y/o sesión).");
+        }
     }
 
     @PostMapping
-    public ResponseEntity<Object> crear(@RequestBody RoutineDay day){
-        // if (day.getDayOfWeek() == null || day.getDayOfWeek().isEmpty()){
-        //     return Response.dbError("El día de la semana es obligatorio.");
-        // }
-        if (day.getRoutine() == null || day.getRoutine().getId() == null){
+    public ResponseEntity<Object> crear(@RequestBody RoutineDay day) {
+        if (day.getDayOfWeek() == null || day.getDayOfWeek().name().isEmpty()){
+         return Response.dbError("El día de la semana es obligatorio.");
+        }
+        
+        if (day.getRoutine() == null || day.getRoutine().getId() == null) {
             return Response.dbError("Debe asignar una rutina válida.");
         }
-        if (day.getSession() == null || day.getSession().getId() == null){
+        if (day.getSession() == null || day.getSession().getId() == null) {
             return Response.dbError("Debe asignar una sesión válida.");
         }
-        RoutineDay created = service.save(day);
-        return Response.ok(created);
+        try {
+            RoutineDay created = service.save(day);
+            return Response.ok(created);
+        } catch (DataIntegrityViolationException e) {
+            return Response.dbError("Ya existe un día de rutina con esa combinación de rutina y día (y/o sesión).");
+        }
     }
 
     @DeleteMapping("/{id}")

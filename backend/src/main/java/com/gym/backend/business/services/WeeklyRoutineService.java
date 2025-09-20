@@ -12,6 +12,7 @@ import com.gym.backend.model.WeeklyRoutine;
 import jakarta.transaction.Transactional;
 
 @Service
+@Transactional
 public class WeeklyRoutineService {
 
     @Autowired

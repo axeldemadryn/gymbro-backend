@@ -12,6 +12,7 @@ import com.gym.backend.model.RoutineDay;
 import jakarta.transaction.Transactional;
 
 @Service
+@Transactional
 public class RoutineDayService {
     @Autowired
     private RoutineDayRepository repository;
