@@ -40,7 +40,7 @@ public class RoutineDayPresenter {
         if (routineDay.getId() <= 0) {
             return Response.dbError("El día de rutina tiene un ID no positivo, y no debe.");
         }
-        if (routineDay.getDayOfWeek() == null || routineDay.getDayOfWeek().name().isEmpty()) {
+        if (routineDay.getDay() == null || routineDay.getDay().name().isEmpty()) {
             return Response.dbError("El día de rutina no puede tener un día vacío.");
         }
 
@@ -54,9 +54,28 @@ public class RoutineDayPresenter {
         }
     }
 
+    @PutMapping("completada")
+    public ResponseEntity<Object> marcarCompletada(@RequestBody RoutineDay routineDay){
+        if (routineDay.getId() <= 0) {
+            return Response.dbError("El día de rutina tiene un ID no positivo, y no debe.");
+        }
+        if (routineDay.getDay() == null || routineDay.getDay().name().isEmpty()) {
+            return Response.dbError("El día de rutina no puede tener un día vacío.");
+        }
+
+        try {
+            RoutineDay updated = service.marcarCompletada(routineDay);
+            return (updated != null)
+                    ? Response.ok(updated)
+                    : Response.dbError("No se pudo actualizar el día de rutina con ID " + routineDay.getId() + ".");
+        } catch (DataIntegrityViolationException e) {
+            return Response.dbError("Ya existe un día de rutina con esa combinación de rutina y día (y/o sesión).");
+        }
+    }
+
     @PostMapping
     public ResponseEntity<Object> crear(@RequestBody RoutineDay day) {
-        if (day.getDayOfWeek() == null || day.getDayOfWeek().name().isEmpty()){
+        if (day.getDay() == null || day.getDay().name().isEmpty()){
          return Response.dbError("El día de la semana es obligatorio.");
         }
         

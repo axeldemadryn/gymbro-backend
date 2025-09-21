@@ -12,20 +12,24 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Table(name = "routine_days", uniqueConstraints = @UniqueConstraint(columnNames = { "routine_id", "dayOfWeek", "session_id" }))
+@Table(name = "routine_days", uniqueConstraints = @UniqueConstraint(columnNames = { "routine_id", "day", "session_id" }))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class RoutineDay {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private DayOfWeek dayOfWeek; // Lunes, Martes, ...
+    private DiaDeSemana day; // Lunes, Martes, ...
 
     @ManyToOne
     @JoinColumn(name = "routine_id")
