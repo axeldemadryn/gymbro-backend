@@ -52,7 +52,7 @@ public class RoutineDayService {
 
     @Transactional
     public RoutineDay save(RoutineDay routineDay) {
-        if (routineDay.getDay().getDia().getValue() > LocalDate.now().getDayOfWeek().getValue())
+        if (routineDay.getDay().getDia().getValue() >= LocalDate.now().getDayOfWeek().getValue())
             routineDay.setStatus(SessionStatus.PENDIENTE);
         else routineDay.setStatus(SessionStatus.NO_COMPLETADA);
         return repository.save(routineDay);
