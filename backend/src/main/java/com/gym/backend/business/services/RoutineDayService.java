@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.gym.backend.business.repositories.RoutineDayRepository;
+import com.gym.backend.business.repositories.WeeklyRoutineRepository;
 import com.gym.backend.model.RoutineDay;
 import com.gym.backend.model.SessionStatus;
+import com.gym.backend.model.WeeklyRoutine;
 
 import jakarta.transaction.Transactional;
 
@@ -17,7 +19,10 @@ import jakarta.transaction.Transactional;
 @Transactional
 public class RoutineDayService {
     @Autowired
-    private RoutineDayRepository repository;
+    private RoutineDayRepository repository; // Repositorio de esta entidad
+
+    @Autowired
+    private WeeklyRoutineRepository weeklyRoutineRepository;
 
     private void evaluarRutina(RoutineDay rd){
         if (rd.getStatus() == SessionStatus.PENDIENTE // Si la rutina estaba pendiente (sin completar todavía)...
@@ -56,6 +61,11 @@ public class RoutineDayService {
     @Transactional
     public RoutineDay save(RoutineDay routineDay) {
         routineDay.setStatus(SessionStatus.PENDIENTE); // Pasa el estado a pendiente
+        if(routineDay.getRoutine().getName() == null){
+            WeeklyRoutine routine = weeklyRoutineRepository.findById(routineDay.getRoutine().getId())
+            .orElseThrow(() -> new RuntimeException("Se intentó conseguir la rutina a partir del ID, pero no se pudo."));
+            routineDay.setRoutine(routine);
+        }
         evaluarRutina(routineDay); // Setea el estado a no completada, si corresponde
         return repository.save(routineDay);
     }

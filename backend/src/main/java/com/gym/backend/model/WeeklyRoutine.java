@@ -10,12 +10,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "weekly_routines")
 @Data
 @NoArgsConstructor
+@Getter
+@Setter
 @AllArgsConstructor
 public class WeeklyRoutine {
     @Id
@@ -25,6 +29,7 @@ public class WeeklyRoutine {
     @Column(unique = true, nullable = false)
     private String name;
 
+    @Column(nullable = false)
     private LocalDate startDate; // cuándo empieza la rutina
 
     private LocalDate endDate; // cuándo termina la rutina
