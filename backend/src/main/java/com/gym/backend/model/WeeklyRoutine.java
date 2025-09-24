@@ -1,5 +1,7 @@
 package com.gym.backend.model;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,5 +22,10 @@ public class WeeklyRoutine {
     private Long id;
 
     private String name;
+
+    private LocalDate startDate; // cuándo empieza la rutina
+
+    private LocalDate endDate; // cuándo termina la rutina
+
     private Long userId; // Usuario dueño de la rutina
 }
