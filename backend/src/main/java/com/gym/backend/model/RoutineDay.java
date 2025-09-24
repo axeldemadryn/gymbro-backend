@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "routine_days", uniqueConstraints = @UniqueConstraint(columnNames = { "routine_id", "day", "session_id" }))
+@Table(name = "routine_days", uniqueConstraints = @UniqueConstraint(columnNames = { "routine_id", "day" }))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
