@@ -62,9 +62,8 @@ public class SessionExercisePresenter {
             return Response.dbError("La SessionExercise debe tener sesión y ejercicio asignados.");
         }
 
-        SessionExercise created = service.save(sessionExercise);
-
         try {
+            SessionExercise created = service.save(sessionExercise);
             return (created != null)
                     ? Response.ok(created)
                     : Response.dbError("No se pudo crear la SessionExercise.");
