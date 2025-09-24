@@ -1,6 +1,5 @@
 package com.gym.backend.business.services;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,16 +19,20 @@ public class RoutineDayService {
     @Autowired
     private RoutineDayRepository repository;
 
+    private void evaluarRutina(RoutineDay rd){
+        if (rd.getStatus() == SessionStatus.PENDIENTE // Si la rutina estaba pendiente (sin completar todavía)...
+            && LocalDate.now().isAfter(rd.getRoutine().getStartDate()) // ...y el día de hoy es posterior al día de inicio de la rutina semanal...
+            && LocalDate.now().getDayOfWeek().getValue() > rd.getDay().getDia().getValue()) { // ...y además (el día de hoy) es posterior al de la rutina diaria misma...
+                        rd.setStatus(SessionStatus.NO_COMPLETADA); // ...entonces no está completa.
+        }
+    }
+
     @Transactional
     public void actualizarEstadosSegunHoy() {
-        DayOfWeek hoy = LocalDate.now().getDayOfWeek();
-
         List<RoutineDay> routineDays = logicaObtencionDeTodas();
 
         for (RoutineDay rd : routineDays) {
-            if (rd.getStatus() == SessionStatus.PENDIENTE && hoy.getValue() > rd.getDay().getDia().getValue()) {
-                rd.setStatus(SessionStatus.NO_COMPLETADA);
-            }
+            evaluarRutina(rd);
         }
         repository.saveAll(routineDays);
     }
@@ -52,9 +55,8 @@ public class RoutineDayService {
 
     @Transactional
     public RoutineDay save(RoutineDay routineDay) {
-        if (routineDay.getDay().getDia().getValue() >= LocalDate.now().getDayOfWeek().getValue())
-            routineDay.setStatus(SessionStatus.PENDIENTE);
-        else routineDay.setStatus(SessionStatus.NO_COMPLETADA);
+        routineDay.setStatus(SessionStatus.PENDIENTE); // Pasa el estado a pendiente
+        evaluarRutina(routineDay); // Setea el estado a no completada, si corresponde
         return repository.save(routineDay);
     }
 
