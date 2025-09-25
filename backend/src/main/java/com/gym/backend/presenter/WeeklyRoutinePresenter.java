@@ -1,6 +1,7 @@
 package com.gym.backend.presenter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,8 +32,8 @@ public class WeeklyRoutinePresenter {
     public ResponseEntity<Object> encontrarById(@PathVariable("id") long id) {
         WeeklyRoutine routine = service.findById(id);
         return (routine != null)
-            ? Response.ok(routine)
-            : Response.notFound("No se encontró la rutina semanal con ID " + id + ".");
+                ? Response.ok(routine)
+                : Response.notFound("No se encontró la rutina semanal con ID " + id + ".");
     }
 
     @GetMapping("/user/{userId}")
@@ -48,19 +49,29 @@ public class WeeklyRoutinePresenter {
         if (routine.getName() == null || routine.getName().isEmpty()) {
             return Response.dbError("La rutina semanal no puede tener un nombre vacío.");
         }
-        WeeklyRoutine updated = service.save(routine);
-        return (updated != null)
-            ? Response.ok(updated)
-            : Response.dbError("No se pudo actualizar la rutina semanal con ID " + routine.getId() + ".");
+
+        try {
+            WeeklyRoutine updated = service.save(routine);
+            return (updated != null)
+                    ? Response.ok(updated)
+                    : Response.dbError("No se pudo actualizar la rutina semanal con ID " + routine.getId() + ".");
+        } catch (DataIntegrityViolationException e) {
+            return Response.dbError("Ya existe una rutina semanal con ese nombre.");
+        }
     }
 
     @PostMapping
-    public ResponseEntity<Object> crear(@RequestBody WeeklyRoutine routine){
-        if (routine.getName() == null || routine.getName().isEmpty()){
+    public ResponseEntity<Object> crear(@RequestBody WeeklyRoutine routine) {
+        if (routine.getName() == null || routine.getName().isEmpty()) {
             return Response.dbError("La rutina no puede tener un nombre vacío.");
         }
-        WeeklyRoutine created = service.save(routine);
-        return Response.ok(created);
+
+        try {
+            WeeklyRoutine created = service.save(routine);
+            return Response.ok(created);
+        } catch (DataIntegrityViolationException e) {
+            return Response.dbError("Ya existe una rutina semanal con ese nombre.");
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -68,5 +79,5 @@ public class WeeklyRoutinePresenter {
         service.delete(id);
         return Response.ok("La rutina semanal con ID " + id + " fue eliminada.");
     }
-    
+
 }

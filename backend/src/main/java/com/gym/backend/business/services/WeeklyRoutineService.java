@@ -37,6 +37,9 @@ public class WeeklyRoutineService {
 
     @Transactional
     public WeeklyRoutine save(WeeklyRoutine weeklyRoutine) {
+        if (weeklyRoutine.getStartDate().isAfter(weeklyRoutine.getEndDate()))
+            throw new IllegalArgumentException("La fecha de inicio no puede ser posterior a la fecha de fin");
+
         return repository.save(weeklyRoutine);
     }
 
