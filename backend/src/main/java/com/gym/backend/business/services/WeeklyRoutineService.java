@@ -42,6 +42,9 @@ public class WeeklyRoutineService {
         LocalDate start = weeklyRoutine.getStartDate();
         LocalDate end = weeklyRoutine.getEndDate();
 
+        if ((start == null && end != null) || (start != null && end == null))
+            throw new IllegalStateException("Ambas fechas deben estar definidas o ninguna.");
+
         if (start != null && end != null) {
 
             if (start.isAfter(end))
