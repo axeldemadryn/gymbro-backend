@@ -18,31 +18,49 @@ public class ReconocimientoService {
     private OpenAiService openAiService;
 
     public Mono<String> reconocer(MultipartFile file) {
-        String base64;
-        try {
-            base64 = "data:" + file.getContentType() + ";base64," + Base64.getEncoder().encodeToString(file.getBytes());
-        } catch (IOException e) {
-            return Mono.just("no_reconocido");
-        }
+    String base64;
+    try {
+        base64 = "data:" + file.getContentType() + ";base64," + Base64.getEncoder().encodeToString(file.getBytes());
+    } catch (IOException e) {
+        return Mono.just("no_reconocido");
+    }
 
-        return Mono.fromCallable(() -> roboflowService.reconocer(base64)) // captura IOException
-                .flatMap(respMono -> respMono)
-                .flatMap(resp -> {
-                    // Caso 1: exactamente una predicción con confidence >= 0.85
-                    if (resp.getPredictions().size() == 1 && resp.getPredictions().get(0).getConfidence() >= 0.85)
-                        return Mono.just(resp.getPredictions().get(0).getClassName());
-                    // Caso 2: OpenAI
-                    try {
-                        return openAiService.reconocerNombre(base64)
-                                .map(nombre -> "Ninguna".equalsIgnoreCase(nombre) ? "no_reconocido" : nombre)
-                                .onErrorResume(e -> Mono.just("no_reconocido"));
-                    } catch (IOException e) {
-                        return Mono.just("no_reconocido");
+    return Mono.fromCallable(() -> roboflowService.reconocer(base64))
+            .flatMap(respMono -> respMono)
+            .flatMap(resp -> {
+                if (resp.getPredictions().size() == 1 && resp.getPredictions().get(0).getConfidence() >= 0.88) {
+                    String clase = resp.getPredictions().get(0).getClassName();
+
+                    // Si Roboflow detecta "leg press", pasamos por OpenAI para verificar
+                    if ("Leg Press".equalsIgnoreCase(clase)) {
+                        try {
+                            return openAiService.reconocerNombre(base64)
+                                    .map(nombre -> {
+                                        if ("Hack Squat Machine".equalsIgnoreCase(nombre)) {
+                                            return "Hack Squat Machine";
+                                        }
+                                        return clase; // mantiene leg press
+                                    })
+                                    .onErrorResume(e -> Mono.just(clase));
+                        } catch (IOException e) {
+                            return Mono.just(clase);
+                        }
                     }
 
-                })
-                .onErrorResume(e -> Mono.just("no_reconocido")); // errores de Roboflow
-    }
+                    return Mono.just(clase);
+                }
+
+                // Caso general: usar OpenAI como fallback
+                try {
+                    return openAiService.reconocerNombre(base64)
+                            .map(nombre -> "Ninguna".equalsIgnoreCase(nombre) ? "no_reconocido" : nombre)
+                            .onErrorResume(e -> Mono.just("no_reconocido"));
+                } catch (IOException e) {
+                    return Mono.just("no_reconocido");
+                }
+            })
+            .onErrorResume(e -> Mono.just("no_reconocido"));
+}
 
     /**
      * Version por URL: primero consultamos Roboflow con la URL (GET), si queda
