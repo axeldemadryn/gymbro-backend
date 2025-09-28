@@ -85,7 +85,8 @@ public class RoutineDayService {
                             "Se intentó conseguir la rutina a partir del ID, pero no se pudo."));
             routineDay.setRoutine(routine);
         }
-        evaluarRutina(routineDay); // Setea el estado a no completada, si corresponde
+        evaluarRutina(routineDay); // Setea el estado a no completada, si corresponde; y controla si el día está
+                                   // dentro del rango de fechas
         return repository.save(routineDay);
     }
 
