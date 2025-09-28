@@ -24,11 +24,29 @@ public class RoutineDayService {
     @Autowired
     private WeeklyRoutineRepository weeklyRoutineRepository;
 
-    private void evaluarRutina(RoutineDay rd){
-        if (rd.getStatus() == SessionStatus.PENDIENTE // Si la rutina estaba pendiente (sin completar todavía)...
-            && LocalDate.now().isAfter(rd.getRoutine().getStartDate()) // ...y el día de hoy es posterior al día de inicio de la rutina semanal...
-            && LocalDate.now().getDayOfWeek().getValue() > rd.getDay().getDia().getValue()) { // ...y además (el día de hoy) es posterior al de la rutina diaria misma...
-                        rd.setStatus(SessionStatus.NO_COMPLETADA); // ...entonces no está completa.
+    private void evaluarRutina(RoutineDay rd) {
+        WeeklyRoutine rutina = rd.getRoutine();
+        LocalDate start = rutina.getStartDate();
+        LocalDate end = rutina.getEndDate();
+
+        if (start == null && end == null)
+            throw new IllegalStateException(
+                    "No se puede crear la rutina diaria: la rutina semanal aún no tiene fechas definidas.");
+
+        // Validación: el día de la semana debe caer dentro del rango de fechas
+        boolean diaValido = start.datesUntil(end.plusDays(1)) // genera un Stream de LocalDate
+                .anyMatch(fecha -> fecha.getDayOfWeek().getValue() == rd.getDay().getDia().getValue());
+
+        if (!diaValido) {
+            throw new IllegalArgumentException(
+                    "El día seleccionado no cae dentro del rango de fechas de la rutina semanal");
+        }
+
+        // Evaluar si la sesión pendiente ya pasó
+        if (rd.getStatus() == SessionStatus.PENDIENTE
+                && LocalDate.now().isAfter(start)
+                && LocalDate.now().getDayOfWeek().getValue() > rd.getDay().getDia().getValue()) {
+            rd.setStatus(SessionStatus.NO_COMPLETADA);
         }
     }
 
@@ -47,7 +65,7 @@ public class RoutineDayService {
         return repository.findById(id).orElse(null);
     }
 
-    private List<RoutineDay> logicaObtencionDeTodas(){
+    private List<RoutineDay> logicaObtencionDeTodas() {
         List<RoutineDay> result = new ArrayList<>();
         repository.findAll().forEach(result::add);
         return result;
@@ -61,9 +79,10 @@ public class RoutineDayService {
     @Transactional
     public RoutineDay save(RoutineDay routineDay) {
         routineDay.setStatus(SessionStatus.PENDIENTE); // Pasa el estado a pendiente
-        if(routineDay.getRoutine().getName() == null){
+        if (routineDay.getRoutine().getName() == null) {
             WeeklyRoutine routine = weeklyRoutineRepository.findById(routineDay.getRoutine().getId())
-            .orElseThrow(() -> new RuntimeException("Se intentó conseguir la rutina a partir del ID, pero no se pudo."));
+                    .orElseThrow(() -> new RuntimeException(
+                            "Se intentó conseguir la rutina a partir del ID, pero no se pudo."));
             routineDay.setRoutine(routine);
         }
         evaluarRutina(routineDay); // Setea el estado a no completada, si corresponde
@@ -71,13 +90,14 @@ public class RoutineDayService {
     }
 
     @Transactional
-    public RoutineDay marcarCompletada(RoutineDay routine){
-        if(routine.getStatus().equals(SessionStatus.PENDIENTE)){
+    public RoutineDay marcarCompletada(RoutineDay routine) {
+        if (routine.getStatus().equals(SessionStatus.PENDIENTE)) {
             routine.setStatus(SessionStatus.COMPLETADA);
         } else {
             throw new RuntimeException(routine.getStatus().equals(SessionStatus.COMPLETADA)
-                ? "La rutina ya está completada." // no se puede marcar como completada una rutina ya completada y marcada
-                : "Error. La rutina ya ha expirado."); // rutina incompleta
+                    ? "La rutina ya está completada." // no se puede marcar como completada una rutina ya completada y
+                                                      // marcada
+                    : "Error. La rutina ya ha expirado."); // rutina incompleta
         }
         return repository.save(routine);
     }

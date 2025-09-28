@@ -1,5 +1,7 @@
 package com.gym.backend.business.services;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,9 +39,18 @@ public class WeeklyRoutineService {
 
     @Transactional
     public WeeklyRoutine save(WeeklyRoutine weeklyRoutine) {
-        if (weeklyRoutine.getStartDate().isAfter(weeklyRoutine.getEndDate()))
-            throw new IllegalArgumentException("La fecha de inicio no puede ser posterior a la fecha de fin");
+        LocalDate start = weeklyRoutine.getStartDate();
+        LocalDate end = weeklyRoutine.getEndDate();
 
+        if (start != null && end != null) {
+
+            if (start.isAfter(end))
+                throw new IllegalArgumentException("La fecha de inicio no puede ser posterior a la fecha de fin");
+
+            long dias = ChronoUnit.DAYS.between(start, end) + 1; // +1 para incluir ambos extremos
+            if (dias < 5 || dias > 7)
+                throw new IllegalArgumentException("La rutina semanal debe tener entre 5 y 7 días.");
+        }
         return repository.save(weeklyRoutine);
     }
 

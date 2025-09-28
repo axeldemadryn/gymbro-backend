@@ -26,12 +26,15 @@ public class WeeklyRoutine {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    private String description;
+
+    @Column(nullable = true)
     private LocalDate startDate; // cuándo empieza la rutina
 
+    @Column(nullable = true)
     private LocalDate endDate; // cuándo termina la rutina
 
     private Long userId; // Usuario dueño de la rutina
