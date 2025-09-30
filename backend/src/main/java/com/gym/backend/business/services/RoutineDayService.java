@@ -92,6 +92,8 @@ public class RoutineDayService {
 
     @Transactional
     public RoutineDay marcarCompletada(RoutineDay routine) {
+        // Agregar control de que si hoy no es el dia de la rutina diaria, aunque
+        // esté Pendiente, no se pueda marcar como Completada
         if (routine.getStatus().equals(SessionStatus.PENDIENTE)) {
             routine.setStatus(SessionStatus.COMPLETADA);
         } else {
