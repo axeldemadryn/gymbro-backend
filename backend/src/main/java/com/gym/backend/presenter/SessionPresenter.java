@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gym.backend.Response;
@@ -33,6 +34,15 @@ public class SessionPresenter {
         return (aSession != null)
                 ? Response.ok(aSession)
                 : Response.notFound("No se encontró a la sesión con ID " + id + ".");
+    }
+
+    @GetMapping("/by-name")
+    public ResponseEntity<Object> encontrarByName(@RequestParam String name) {
+        Session aSession = service.findByName(name);
+        return (aSession != null)
+                ? Response.ok(aSession)
+                : Response.notFound("No se encontró a la sesión con nombre " + name + ".");
+
     }
 
     @PutMapping

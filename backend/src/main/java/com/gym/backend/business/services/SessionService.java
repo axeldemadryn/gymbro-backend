@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.gym.backend.business.repositories.SessionRepository;
 import com.gym.backend.model.Session;
+import com.gym.backend.model.SessionExercise;
 
 import jakarta.transaction.Transactional;
 
@@ -17,23 +18,33 @@ public class SessionService {
     @Autowired
     private SessionRepository repository;
 
-    public Session findById(long id){
+    public Session findById(long id) {
         return repository.findById(id).orElse(null);
     }
 
-    public List<Session> findAll(){
+    public Session findByName(String name) {
+        return repository.findByName(name).orElse(null);
+    }
+
+    public List<Session> findAll() {
         List<Session> result = new ArrayList<>();
         repository.findAll().forEach(aSession -> result.add(aSession));
         return result;
     }
 
     @Transactional
-    public Session save(Session aSession){
+    public Session save(Session aSession) {
+
+        if (aSession.getSessionExercises() != null) {
+            for (SessionExercise se : aSession.getSessionExercises()) {
+                se.setSession(aSession);
+            }
+        }
         return repository.save(aSession);
     }
 
     @Transactional
-    public void delete(long sessionId){
+    public void delete(long sessionId) {
         repository.deleteById(sessionId);
     }
 }
