@@ -4,8 +4,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+@RestController
 @SpringBootApplication
 public class BackendApplication {
 
@@ -13,7 +16,7 @@ public class BackendApplication {
 		SpringApplication.run(BackendApplication.class, args);
 	}
 
-	@PostMapping(value = "/")
+	@GetMapping(value = "/")
     public ResponseEntity home() {
         return Response.response(
             HttpStatus.OK,

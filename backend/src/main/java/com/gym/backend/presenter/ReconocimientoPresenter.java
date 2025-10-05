@@ -14,9 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.gym.backend.Response;
-import com.gym.backend.business.OpenAiService;
-import com.gym.backend.business.ReconocimientoService;
-import com.gym.backend.business.RoboflowService;
+import com.gym.backend.business.services.MaquinaService;
+import com.gym.backend.business.services.OpenAiService;
+import com.gym.backend.business.services.ReconocimientoService;
+import com.gym.backend.business.services.RoboflowService;
 import com.gym.backend.dto.OpenAiResponse;
 import com.gym.backend.dto.ReconocimientoViewModel;
 import com.gym.backend.dto.RoboflowResponse;
@@ -32,17 +33,15 @@ public class ReconocimientoPresenter {
     private ReconocimientoService reconocimientoService;
     @Autowired
     private OpenAiService openAiService;
+    @Autowired
+    private MaquinaService maquinaService;
 
     // ------------------Endpoints para Roboflow
     // -----------------------------------------
 
     @PostMapping(value = "/api/roboflow", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<ReconocimientoViewModel> reconocerRoboflow(@RequestParam MultipartFile file) throws IOException {
-        // Convertir MultipartFile a Base64 (si querés seguir usando RoboflowService con
-        // Base64)
-        String base64 = "data:" + file.getContentType() + ";base64," +
-                Base64.getEncoder().encodeToString(file.getBytes());
-
+        String base64 = "data:" + file.getContentType() + ";base64," + Base64.getEncoder().encodeToString(file.getBytes());
         return roboflowService.reconocer(base64)
                 .map(ReconocimientoPresenter::present); // Transformar a ViewModel cuando llegue la respuesta
 
@@ -58,10 +57,17 @@ public class ReconocimientoPresenter {
     // ------------------
     @PostMapping(value = "/api/reconocimiento", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<ResponseEntity<Object>> reconocer(@RequestParam MultipartFile file) {
-        return reconocimientoService.reconocer(file)
-                .map(nombre -> Response.ok(nombre))
-                // en caso de cualquier error
-                .onErrorResume(e -> Mono.just(Response.ok("no_reconocido")));
+        return reconocimientoService.reconocer(file) // devuelve el nombre de la máquina
+                .flatMap(nombre -> {
+                    if ("no_reconocido".equalsIgnoreCase(nombre)) {
+                        return Mono.just(Response.ok("no_reconocido"));
+                    }
+                    // Consultar el servicio de máquinas para traer MaquinaDTO con ejercicios
+                    return maquinaService.obtenerMaquinaConEjercicios(nombre)
+                            .map(maquinaDTO -> Response.ok(maquinaDTO))
+                            .defaultIfEmpty(Response.notFound("No se encontró la máquina en la base de datos."));
+                })
+                .onErrorResume(e -> Mono.just(Response.ok("no_reconocido"))); // errores
     }
 
     @GetMapping(value = "/api/reconocimiento-url")
@@ -71,10 +77,11 @@ public class ReconocimientoPresenter {
     // ----------------------------------------------------------------------------------------
 
     // Endpoints para testear directamente OpenAI
-    /* 
+/* 
     @PostMapping(value = "/api/openai", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Mono<OpenAiResponse> openAiReconocer(@RequestParam MultipartFile file) throws IOException {
-        return openAiService.reconocer(file);
+    public Mono<String> openAiReconocer(@RequestParam MultipartFile file)
+            throws IOException {
+        return openAiService.reconocerNombre(file);
     }*/
 
     @GetMapping(value = "/api/openai-url")

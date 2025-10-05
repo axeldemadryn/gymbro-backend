@@ -5,11 +5,13 @@ import java.util.Collection;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,18 +20,24 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "maquinas")
 public class Maquina {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String nombre;
+    @Column(unique = true, nullable = false)
+    private String nombre; // nombre que devuelve RoboFlow / OpenAI
 
-    @Column(nullable = false)
-    private String descripcion;
+    @Enumerated(EnumType.STRING)
+    private TipoEquipo tipoEquipo;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "maquina_id", nullable = true)
+    private String descripcion; // breve descripción de uso
+
+    private String imagenUrl; // URL de imagen, video o animación instructiva
+
+    @ManyToMany(mappedBy = "maquinas", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     private Collection<Ejercicio> ejercicios;
+
 }
