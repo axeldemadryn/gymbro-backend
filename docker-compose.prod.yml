@@ -37,5 +37,8 @@ services:
       OPENAI_BASE_URL: ${OPENAI_BASE_URL}
       OPENAI_MODEL: ${OPENAI_MODEL}
 
+      volumes:
+      - /var/www/api-gymbroMachine/static/imagenes:/app/static/imagenes
+
 volumes:
   postgres_data:
