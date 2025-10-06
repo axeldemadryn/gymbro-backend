@@ -39,7 +39,7 @@ public class RoutineDayService {
 
         if (!diaValido) {
             throw new IllegalArgumentException(
-                    "El día seleccionado no cae dentro del rango de fechas de la rutina semanal");
+                    "El día seleccionado no cae dentro del rango de fechas de la rutina semanal.");
         }
 
         // Evaluar si la sesión pendiente ya pasó

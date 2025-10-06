@@ -1,5 +1,7 @@
 package com.gym.backend.presenter;
 
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gym.backend.Response;
@@ -34,6 +37,19 @@ public class WeeklyRoutinePresenter {
         return (routine != null)
                 ? Response.ok(routine)
                 : Response.notFound("No se encontró la rutina semanal con ID " + id + ".");
+    }
+
+    @GetMapping("/by-dates")
+    public ResponseEntity<Object> findByDates(
+            @RequestParam("startDate") LocalDate startDate,
+            @RequestParam("endDate") LocalDate endDate) {
+
+        WeeklyRoutine routine = service.findByDates(startDate, endDate);
+
+        return (routine != null)
+                ? Response.ok(routine)
+                : Response.notFound("No se encontró una rutina semanal con esas fechas");
+
     }
 
     @GetMapping("/user/{userId}")
