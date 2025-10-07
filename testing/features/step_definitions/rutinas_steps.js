@@ -121,10 +121,6 @@ Then('se obtiene un error con mensaje {string}', function (expectedMessage) {
     );
 });
 
-Then('la rutina se crea correctamente y los días quedan asignados con sus sesiones', function () {
-    assert(true);
-});
-
 AfterAll(function () {
     // Primero eliminar todos los RoutineDays creados
     createdRoutineDayIds.forEach(id => {
