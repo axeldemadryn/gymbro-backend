@@ -108,7 +108,7 @@ When('se intenta crear la rutina diaria para {string} con la sesión con ejercic
 Then('se debería obtener el mensaje {string}', function (expectedMessage) {
     assert(
         response.message?.includes(expectedMessage),
-        `Se esperaba error "${expectedMessage}", pero se obtuvo: ${JSON.stringify(response)}`
+        `Se esperaba "${expectedMessage}", pero se obtuvo: ${JSON.stringify(response)}`
     );
 });
 
