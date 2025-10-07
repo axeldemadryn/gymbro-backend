@@ -2,6 +2,9 @@ package com.gym.backend.model;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -40,11 +43,13 @@ public class Maquina {
 
     // Relación con ejercicios (para MULTIFUNCION, PESO_LIBRE, ACCESORIO)
     @ManyToMany(mappedBy = "maquinas")
+    @JsonBackReference
     private Set<Ejercicio> ejercicios;
 
     // Relación con músculos (para equipos AISLADOS)
     @ManyToMany
     @JoinTable(name = "maquina_musculos", joinColumns = @JoinColumn(name = "maquina_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
+     @JsonManagedReference
     private Set<Musculo> musculos;
 
 }

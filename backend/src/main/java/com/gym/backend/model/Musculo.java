@@ -2,17 +2,17 @@ package com.gym.backend.model;
 
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity                
-@Getter                 
-@Setter                
-@NoArgsConstructor  
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
 @Table(name = "musculos")
 public class Musculo {
 
@@ -25,12 +25,12 @@ public class Musculo {
 
     // Relación inversa con Ejercicio
     @ManyToMany(mappedBy = "musculos")
-    @JsonIgnore
+    @JsonBackReference
     private Set<Ejercicio> ejercicios;
 
     // Relación inversa con Maquina
     @ManyToMany(mappedBy = "musculos")
-    @JsonIgnore
+    @JsonBackReference
     private Set<Maquina> maquinas;
-    
+
 }
