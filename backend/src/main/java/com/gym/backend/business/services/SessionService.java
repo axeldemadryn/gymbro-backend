@@ -43,14 +43,14 @@ public class SessionService {
 
         // Caso actualización: verificar si la sesión está asociada a alguna rutina
         // diaria
-        if (esActualizacion && (aSession.getSessionExercises() == null || aSession.getSessionExercises().isEmpty())) {
-            // Hacer un select para ver si esta sesión está asociada a algún RoutineDay
+        if (esActualizacion) {
             long count = routineDayRepository.countBySessionId(aSession.getId());
             if (count > 0) {
                 throw new IllegalArgumentException(
-                        "No se puede dejar esta sesión sin ejercicios, porque está asociada a una rutina diaria.");
+                        "No se puede modificar esta sesión, porque está asociada a una rutina diaria.");
             }
         }
+        
         // Setear la relación bidireccional
         if (aSession.getSessionExercises() != null) {
             for (SessionExercise se : aSession.getSessionExercises()) {

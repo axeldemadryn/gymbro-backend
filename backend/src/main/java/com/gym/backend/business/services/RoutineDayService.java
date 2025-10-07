@@ -52,7 +52,12 @@ public class RoutineDayService {
             throw new IllegalArgumentException("La sesión debe tener al menos un ejercicio.");
         }
 
-        // Evaluar si la sesión pendiente ya pasó
+        // Si la fecha de la rutina semanal ya pasó, marcar como NO_COMPLETADA
+        if (rd.getStatus() == SessionStatus.PENDIENTE &&
+                LocalDate.now().isAfter(end)) {
+            rd.setStatus(SessionStatus.NO_COMPLETADA);
+        } else
+        // Evaluar si la sesión pendiente ya pasó para la semana actual
         if (rd.getStatus() == SessionStatus.PENDIENTE
                 && LocalDate.now().isAfter(start)
                 && LocalDate.now().getDayOfWeek().getValue() > rd.getDay().getDia().getValue()) {
@@ -95,16 +100,28 @@ public class RoutineDayService {
                             "Se intentó conseguir la rutina a partir del ID, pero no se pudo."));
             routineDay.setRoutine(routine);
         }
-        evaluarRutina(routineDay); // Setea el estado a no completada, si corresponde; y controla si el día está
-                                   // dentro del rango de fechas
+        evaluarRutina(routineDay);
+
         return repository.save(routineDay);
     }
 
     @Transactional
     public RoutineDay marcarCompletada(RoutineDay routine) {
-        // Agregar control de que si hoy no es el dia de la rutina diaria, aunque
-        // esté Pendiente, no se pueda marcar como Completada
+
         if (routine.getStatus().equals(SessionStatus.PENDIENTE)) {
+
+            WeeklyRoutine weeklyRoutine = routine.getRoutine();
+            LocalDate start = weeklyRoutine.getStartDate();
+            LocalDate today = LocalDate.now();
+
+            // Calcular la fecha real del RoutineDay según el día de la semana
+            int dayValue = routine.getDay().getDia().getValue(); // LUNES=1 ... DOMINGO=7
+            LocalDate routineDate = start.plusDays(dayValue - 1);
+
+            // Validar si hoy es el día correspondiente
+            if (!today.isEqual(routineDate))
+                throw new RuntimeException("Solo se puede marcar como completada el día correspondiente a la rutina.");
+
             routine.setStatus(SessionStatus.COMPLETADA);
         } else {
             throw new RuntimeException(routine.getStatus().equals(SessionStatus.COMPLETADA)
