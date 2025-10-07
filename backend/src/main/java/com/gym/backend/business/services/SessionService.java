@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.gym.backend.business.repositories.RoutineDayRepository;
 import com.gym.backend.business.repositories.SessionRepository;
 import com.gym.backend.model.Session;
 import com.gym.backend.model.SessionExercise;
@@ -17,6 +18,9 @@ import jakarta.transaction.Transactional;
 public class SessionService {
     @Autowired
     private SessionRepository repository;
+
+    @Autowired
+    private RoutineDayRepository routineDayRepository;
 
     public Session findById(long id) {
         return repository.findById(id).orElse(null);
@@ -35,6 +39,19 @@ public class SessionService {
     @Transactional
     public Session save(Session aSession) {
 
+        boolean esActualizacion = aSession.getId() != null;
+
+        // Caso actualización: verificar si la sesión está asociada a alguna rutina
+        // diaria
+        if (esActualizacion && (aSession.getSessionExercises() == null || aSession.getSessionExercises().isEmpty())) {
+            // Hacer un select para ver si esta sesión está asociada a algún RoutineDay
+            long count = routineDayRepository.countBySessionId(aSession.getId());
+            if (count > 0) {
+                throw new IllegalArgumentException(
+                        "No se puede dejar esta sesión sin ejercicios, porque está asociada a una rutina diaria.");
+            }
+        }
+        // Setear la relación bidireccional
         if (aSession.getSessionExercises() != null) {
             for (SessionExercise se : aSession.getSessionExercises()) {
                 se.setSession(aSession);

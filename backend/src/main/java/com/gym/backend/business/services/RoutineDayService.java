@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.gym.backend.business.repositories.RoutineDayRepository;
+import com.gym.backend.business.repositories.SessionExerciseRepository;
 import com.gym.backend.business.repositories.WeeklyRoutineRepository;
 import com.gym.backend.model.RoutineDay;
 import com.gym.backend.model.SessionStatus;
@@ -23,6 +24,9 @@ public class RoutineDayService {
 
     @Autowired
     private WeeklyRoutineRepository weeklyRoutineRepository;
+
+    @Autowired
+    private SessionExerciseRepository sessionExerciseRepository;
 
     private void evaluarRutina(RoutineDay rd) {
         WeeklyRoutine rutina = rd.getRoutine();
@@ -40,6 +44,12 @@ public class RoutineDayService {
         if (!diaValido) {
             throw new IllegalArgumentException(
                     "El día seleccionado no cae dentro del rango de fechas de la rutina semanal.");
+        }
+
+        // Validar que la sesión tenga al menos un ejercicio
+        long cantidadEjercicios = sessionExerciseRepository.countBySessionId(rd.getSession().getId());
+        if (cantidadEjercicios == 0) {
+            throw new IllegalArgumentException("La sesión debe tener al menos un ejercicio.");
         }
 
         // Evaluar si la sesión pendiente ya pasó
