@@ -49,7 +49,7 @@ public class Maquina {
     // Relación con músculos (para equipos AISLADOS)
     @ManyToMany
     @JoinTable(name = "maquina_musculos", joinColumns = @JoinColumn(name = "maquina_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
-     @JsonManagedReference
+    @JsonManagedReference
     private Set<Musculo> musculos;
 
 }
