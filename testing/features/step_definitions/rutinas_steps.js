@@ -51,17 +51,6 @@ Given('se intenta crear la rutina diaria para {string} con la sesión {string}',
     routineDay = { day, weeklyId, sessionId };
 });
 
-// Crear varios RoutineDays desde tabla
-Given('se crean las siguientes rutinas diarias:', function (dataTable) {
-    dataTable.hashes().forEach(row => {
-        const sessionId = getSessionIdByName(row.Sesión || row.Sesion);
-        routineDays.push({
-            day: row.Día || row.Dia,
-            sessionId
-        });
-    });
-});
-
 // ---------------- When ----------------
 
 // Guardar rutina semanal
@@ -92,32 +81,37 @@ When('se guarda la rutina diaria', function () {
     }
 });
 
-// Guardar rutina semanal y sus días juntos
-When('se guarda la rutina semanal y los días', function () {
+// Guardar rutina diaria de esquema de escenario
+When('se intenta crear la rutina diaria para {string} con la sesión con ejercicios {string}', function (day, sessionName) {
     try {
-        const resRoutine = request('POST', `${BASE_URL}/weekly-routines`, { json: weeklyRoutine });
-        const bodyRoutine = JSON.parse(resRoutine.getBody('utf8'));
-        assert.equal(bodyRoutine.status, 200);
-        createdWeeklyRoutineIds.push(bodyRoutine.data.id);
+        const sessionId = getSessionIdByName(sessionName);
+        const weeklyId = getWeeklyRoutineIdByDates(weeklyRoutine.startDate, weeklyRoutine.endDate);
 
-        routineDays.forEach(routineDay => {
-            const resDay = request('POST', `${BASE_URL}/routine-days`, {
-                json: {
-                    day: routineDay.day,
-                    routine: { id: bodyRoutine.data.id },
-                    session: { id: routineDay.sessionId }
-                }
-            });
-            response = JSON.parse(resDay.getBody('utf8'));
-            if (response.status === 200) createdRoutineDayIds.push(response.data.id);
-            assert.equal(response.status, 200);
+        // POST de RoutineDay
+        const resDay = request('POST', `${BASE_URL}/routine-days`, {
+            json: {
+                day,
+                routine: { id: weeklyId },
+                session: { id: sessionId }
+            }
         });
+
+        response = JSON.parse(resDay.getBody('utf8'));
+
+        // Guardar id si fue creado correctamente
+        if (response.status === 200) createdRoutineDayIds.push(response.data.id);
     } catch (error) {
         response = { error: error.message };
     }
 });
 
 // ---------------- Then ----------------
+Then('se debería obtener el mensaje {string}', function (expectedMessage) {
+    assert(
+        response.message?.includes(expectedMessage),
+        `Se esperaba error "${expectedMessage}", pero se obtuvo: ${JSON.stringify(response)}`
+    );
+});
 
 // Validar mensaje de error
 Then('se obtiene un error con mensaje {string}', function (expectedMessage) {
