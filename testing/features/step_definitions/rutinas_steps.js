@@ -6,7 +6,6 @@ const BASE_URL = 'http://backend:8080/api';
 
 let weeklyRoutine = {};
 let routineDay = {};
-let routineDays = [];
 let response;
 let createdRoutineDayIds = [];
 let createdWeeklyRoutineIds = [];
