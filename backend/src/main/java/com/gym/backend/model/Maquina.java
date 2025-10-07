@@ -41,12 +41,10 @@ public class Maquina {
 
     private String imagenUrl; // URL de imagen, video o animación instructiva
 
-    // Relación con ejercicios (para MULTIFUNCION, PESO_LIBRE, ACCESORIO)
     @ManyToMany(mappedBy = "maquinas")
     @JsonBackReference
     private Set<Ejercicio> ejercicios;
 
-    // Relación con músculos (para equipos AISLADOS)
     @ManyToMany
     @JoinTable(name = "maquina_musculos", joinColumns = @JoinColumn(name = "maquina_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
     @JsonManagedReference
