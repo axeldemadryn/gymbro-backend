@@ -4,7 +4,6 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,7 +14,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,19 +40,14 @@ public class Ejercicio {
 
     private String videoUrl;
 
-    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @ManyToMany
     @JoinTable(name = "ejercicio_maquinas", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "maquina_id"))
     @JsonIgnore
     private Set<Maquina> maquinas;
 
-    // Músculos principales y secundarios (OneToMany unidireccional)
-    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-    @JoinColumn(name = "id_ejercicio_musculo_principal_de")
-    private Set<Musculo> musculosPrincipales;
-
-    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-    @JoinColumn(name = "id_ejercicio_musculo_secundario_de")
-    private Set<Musculo> musculosSecundarios;
+    @ManyToMany
+    @JoinTable(name = "ejercicio_musculos", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
+    private Set<Musculo> musculos;
 
     private boolean esPersonalizado = false;
 

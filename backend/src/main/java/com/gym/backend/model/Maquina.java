@@ -1,8 +1,7 @@
 package com.gym.backend.model;
 
-import java.util.Collection;
+import java.util.Set;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,6 +9,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -37,7 +38,13 @@ public class Maquina {
 
     private String imagenUrl; // URL de imagen, video o animación instructiva
 
-    @ManyToMany(mappedBy = "maquinas", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-    private Collection<Ejercicio> ejercicios;
+    // Relación con ejercicios (para MULTIFUNCION, PESO_LIBRE, ACCESORIO)
+    @ManyToMany(mappedBy = "maquinas")
+    private Set<Ejercicio> ejercicios;
+
+    // Relación con músculos (para equipos AISLADOS)
+    @ManyToMany
+    @JoinTable(name = "maquina_musculos", joinColumns = @JoinColumn(name = "maquina_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
+    private Set<Musculo> musculos;
 
 }

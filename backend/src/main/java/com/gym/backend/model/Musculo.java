@@ -1,5 +1,9 @@
 package com.gym.backend.model;
 
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,5 +22,15 @@ public class Musculo {
 
     @Column(unique = true, nullable = false)
     private String nombre;
+
+    // Relación inversa con Ejercicio
+    @ManyToMany(mappedBy = "musculos")
+    @JsonIgnore
+    private Set<Ejercicio> ejercicios;
+
+    // Relación inversa con Maquina
+    @ManyToMany(mappedBy = "musculos")
+    @JsonIgnore
+    private Set<Maquina> maquinas;
     
 }

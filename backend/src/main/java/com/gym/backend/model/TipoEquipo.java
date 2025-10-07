@@ -1,9 +1,8 @@
 package com.gym.backend.model;
 
 public enum TipoEquipo {
-    MAQUINA_PECHO,
-    MAQUINA_HOMBRO,
-    POLEAS,
-    PESO_LIBRE,
-    MULTIFUNCIONAL
+    AISLADO,         // Máquina específica (trabaja músculos)
+    MULTIFUNCION,    // Tiene ejercicios asociados
+    PESO_LIBRE,      // Mancuernas, barra, discos
+    ACCESORIO        // Colchoneta, banda elástica, TRX, etc.
 }
