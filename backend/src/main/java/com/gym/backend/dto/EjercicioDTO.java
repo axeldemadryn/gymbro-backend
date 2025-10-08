@@ -8,7 +8,6 @@ public class EjercicioDTO {
     private String descripcion;
     private String videoUrl;
     private List<MusculoDTO> musculosPrincipales;
-    private List<MusculoDTO> musculosSecundarios;
 
     public EjercicioDTO() {}
 
@@ -27,6 +26,4 @@ public class EjercicioDTO {
     public List<MusculoDTO> getMusculosPrincipales() { return musculosPrincipales; }
     public void setMusculosPrincipales(List<MusculoDTO> musculosPrincipales) { this.musculosPrincipales = musculosPrincipales; }
 
-    public List<MusculoDTO> getMusculosSecundarios() { return musculosSecundarios; }
-    public void setMusculosSecundarios(List<MusculoDTO> musculosSecundarios) { this.musculosSecundarios = musculosSecundarios; }
 }

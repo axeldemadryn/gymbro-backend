@@ -8,4 +8,6 @@ import com.gym.backend.model.SessionExercise;
 @Repository
 public interface SessionExerciseRepository extends CrudRepository<SessionExercise, Long>{
 
+    long countBySessionId(Long id);
+
 }

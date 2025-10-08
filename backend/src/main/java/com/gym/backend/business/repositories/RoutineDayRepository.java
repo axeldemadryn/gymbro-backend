@@ -7,5 +7,7 @@ import com.gym.backend.model.RoutineDay;
 
 @Repository
 public interface RoutineDayRepository extends CrudRepository<RoutineDay, Long> {
-    
+
+    long countBySessionId(Long sessionId);
+
 }

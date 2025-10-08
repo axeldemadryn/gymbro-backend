@@ -69,13 +69,8 @@ public class MaquinaService {
                                     ejDTO.setDescripcion(ej.getDescripcion());
                                     ejDTO.setVideoUrl(ej.getVideoUrl());
                                     ejDTO.setMusculosPrincipales(
-                                            ej.getMusculosPrincipales() == null ? List.of()
-                                                    : ej.getMusculosPrincipales().stream()
-                                                            .map(m -> new MusculoDTO(m.getNombre()))
-                                                            .toList());
-                                    ejDTO.setMusculosSecundarios(
-                                            ej.getMusculosSecundarios() == null ? List.of()
-                                                    : ej.getMusculosSecundarios().stream()
+                                            ej.getMusculos() == null ? List.of()
+                                                    : ej.getMusculos().stream()
                                                             .map(m -> new MusculoDTO(m.getNombre()))
                                                             .toList());
                                     return ejDTO;

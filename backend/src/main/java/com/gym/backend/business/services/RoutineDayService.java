@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.gym.backend.business.repositories.RoutineDayRepository;
+import com.gym.backend.business.repositories.SessionExerciseRepository;
 import com.gym.backend.business.repositories.WeeklyRoutineRepository;
 import com.gym.backend.model.RoutineDay;
 import com.gym.backend.model.SessionStatus;
@@ -24,6 +25,9 @@ public class RoutineDayService {
     @Autowired
     private WeeklyRoutineRepository weeklyRoutineRepository;
 
+    @Autowired
+    private SessionExerciseRepository sessionExerciseRepository;
+
     private void evaluarRutina(RoutineDay rd) {
         WeeklyRoutine rutina = rd.getRoutine();
         LocalDate start = rutina.getStartDate();
@@ -39,10 +43,21 @@ public class RoutineDayService {
 
         if (!diaValido) {
             throw new IllegalArgumentException(
-                    "El día seleccionado no cae dentro del rango de fechas de la rutina semanal");
+                    "El día seleccionado no cae dentro del rango de fechas de la rutina semanal.");
         }
 
-        // Evaluar si la sesión pendiente ya pasó
+        // Validar que la sesión tenga al menos un ejercicio
+        long cantidadEjercicios = sessionExerciseRepository.countBySessionId(rd.getSession().getId());
+        if (cantidadEjercicios == 0) {
+            throw new IllegalArgumentException("La sesión debe tener al menos un ejercicio.");
+        }
+
+        // Si la fecha de la rutina semanal ya pasó, marcar como NO_COMPLETADA
+        if (rd.getStatus() == SessionStatus.PENDIENTE &&
+                LocalDate.now().isAfter(end)) {
+            rd.setStatus(SessionStatus.NO_COMPLETADA);
+        } else
+        // Evaluar si la sesión pendiente ya pasó para la semana actual
         if (rd.getStatus() == SessionStatus.PENDIENTE
                 && LocalDate.now().isAfter(start)
                 && LocalDate.now().getDayOfWeek().getValue() > rd.getDay().getDia().getValue()) {
@@ -85,16 +100,28 @@ public class RoutineDayService {
                             "Se intentó conseguir la rutina a partir del ID, pero no se pudo."));
             routineDay.setRoutine(routine);
         }
-        evaluarRutina(routineDay); // Setea el estado a no completada, si corresponde; y controla si el día está
-                                   // dentro del rango de fechas
+        evaluarRutina(routineDay);
+
         return repository.save(routineDay);
     }
 
     @Transactional
     public RoutineDay marcarCompletada(RoutineDay routine) {
-        // Agregar control de que si hoy no es el dia de la rutina diaria, aunque
-        // esté Pendiente, no se pueda marcar como Completada
+
         if (routine.getStatus().equals(SessionStatus.PENDIENTE)) {
+
+            WeeklyRoutine weeklyRoutine = routine.getRoutine();
+            LocalDate start = weeklyRoutine.getStartDate();
+            LocalDate today = LocalDate.now();
+
+            // Calcular la fecha real del RoutineDay según el día de la semana
+            int dayValue = routine.getDay().getDia().getValue(); // LUNES=1 ... DOMINGO=7
+            LocalDate routineDate = start.plusDays(dayValue - 1);
+
+            // Validar si hoy es el día correspondiente
+            if (!today.isEqual(routineDate))
+                throw new RuntimeException("Solo se puede marcar como completada el día correspondiente a la rutina.");
+
             routine.setStatus(SessionStatus.COMPLETADA);
         } else {
             throw new RuntimeException(routine.getStatus().equals(SessionStatus.COMPLETADA)

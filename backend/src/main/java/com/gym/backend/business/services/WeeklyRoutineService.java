@@ -1,5 +1,6 @@
 package com.gym.backend.business.services;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -30,6 +31,11 @@ public class WeeklyRoutineService {
         return result;
     }
 
+    public WeeklyRoutine findByDates(LocalDate start, LocalDate end) {
+        return repository.findByStartDateAndEndDate(start, end)
+                .orElseThrow(() -> new RuntimeException("No se encontró la rutina semanal con esas fechas"));
+    }
+
     public List<WeeklyRoutine> findByUserId(Long userId) {
         if (userId == null) {
             return findAll(); // Si no hay usuarios, devuelve todas
@@ -48,11 +54,18 @@ public class WeeklyRoutineService {
         if (start != null && end != null) {
 
             if (start.isAfter(end))
-                throw new IllegalArgumentException("La fecha de inicio no puede ser posterior a la fecha de fin");
+                throw new IllegalArgumentException("La fecha de inicio no puede ser posterior a la fecha de fin.");
+
+            if (start.getDayOfWeek() != DayOfWeek.MONDAY)
+                throw new IllegalArgumentException("La rutina semanal debe comenzar un lunes.");
 
             long dias = ChronoUnit.DAYS.between(start, end) + 1; // +1 para incluir ambos extremos
             if (dias < 5 || dias > 7)
                 throw new IllegalArgumentException("La rutina semanal debe tener entre 5 y 7 días.");
+
+            List<WeeklyRoutine> solap = repository.findOverlapping(start, end);
+            if (!solap.isEmpty())
+                throw new IllegalArgumentException("La rutina semanal se solapa con otra existente.");
         }
         return repository.save(weeklyRoutine);
     }
