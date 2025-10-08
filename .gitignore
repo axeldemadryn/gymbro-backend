@@ -10,3 +10,5 @@ backend/src/main/resources/application.properties
 !.env.example
 
 dsprod
+# Backups
+backups/*.sql
