@@ -2,7 +2,8 @@ package com.gym.backend.model;
 
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,6 +25,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "ejercicios")
+@JsonIdentityInfo(
+    generator = ObjectIdGenerators.PropertyGenerator.class, 
+    property = "id")
 public class Ejercicio {
 
     @Id
@@ -42,12 +46,10 @@ public class Ejercicio {
 
     @ManyToMany
     @JoinTable(name = "ejercicio_maquinas", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "maquina_id"))
-    @JsonManagedReference
     private Set<Maquina> maquinas;
 
     @ManyToMany
     @JoinTable(name = "ejercicio_musculos", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
-    @JsonManagedReference
     private Set<Musculo> musculos;
 
     private boolean esPersonalizado = false;

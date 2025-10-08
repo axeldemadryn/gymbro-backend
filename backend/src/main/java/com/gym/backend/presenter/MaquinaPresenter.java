@@ -63,10 +63,6 @@ public class MaquinaPresenter {
 
     @PostMapping
     public ResponseEntity<Object> crear(@RequestBody Maquina unaMaquina) {
-        if (unaMaquina.getId() != 0) {
-            return Response
-                    .dbError("Error. Al parecer, se introdujo una máquina con ID no nulo (que es autogenerado).");
-        }
         if (unaMaquina.getNombre() == null || unaMaquina.getNombre().isEmpty()) {
             return Response.dbError("El nombre de la máquina no puede estar vacío.");
         }
