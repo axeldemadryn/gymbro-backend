@@ -1,1 +1,14 @@
 .vscode/
+
+backend/src/main/resources/application-dev.properties
+backend/src/main/resources/application.properties
+
+/static/
+
+.env
+.env.*
+!.env.example
+
+dsprod
+# Backups
+backups/*.sql
