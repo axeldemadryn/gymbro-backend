@@ -20,7 +20,7 @@ function getSessionIdByName(sessionName) {
 
 // Helper para obtener ID de WeeklyRoutine por fechas
 function getWeeklyRoutineIdByDates(startDate, endDate) {
-    const res = request('GET', `${BASE_URL}/weekly-routines/by-dates?startDate=${startDate}&endDate=${endDate}`);
+    let res = request('GET', `${BASE_URL}/weekly-routines/by-dates?startDate=${startDate}&endDate=${endDate}`);
     response = JSON.parse(res.getBody('utf8'));
     if (!response || !response.data?.id) throw new Error(`No se encontró la rutina semanal desde ${startDate} hasta ${endDate}`);
     return response.data.id;
@@ -45,8 +45,8 @@ Given('que existe la rutina semanal {string} con fechas desde {string} hasta {st
 
 // Crear un RoutineDay para test
 Given('se intenta crear la rutina diaria para {string} con la sesión {string}', function (day, sessionName) {
-    const sessionId = getSessionIdByName(sessionName);
-    const weeklyId = getWeeklyRoutineIdByDates(weeklyRoutine.startDate, weeklyRoutine.endDate);
+    let sessionId = getSessionIdByName(sessionName);
+    let weeklyId = getWeeklyRoutineIdByDates(weeklyRoutine.startDate, weeklyRoutine.endDate);
     routineDay = { day, weeklyId, sessionId };
 });
 
@@ -55,7 +55,13 @@ Given('se intenta crear la rutina diaria para {string} con la sesión {string}',
 // Guardar rutina semanal
 When('se guarda la rutina semanal', function () {
     try {
-        const res = request('POST', `${BASE_URL}/weekly-routines`, { json: weeklyRoutine });
+        let res = request('POST', `${BASE_URL}/weekly-routines`, {
+            json: {
+                name: weeklyRoutine.name,
+                startDate: weeklyRoutine.startDate,
+                endDate: weeklyRoutine.endDate
+            }
+        });
         response = JSON.parse(res.getBody('utf8'));
         if (response.status === 200) createdWeeklyRoutineIds.push(response.data.id);
     } catch (error) {
@@ -66,7 +72,7 @@ When('se guarda la rutina semanal', function () {
 // Guardar rutina diaria
 When('se guarda la rutina diaria', function () {
     try {
-        const res = request('POST', `${BASE_URL}/routine-days`, {
+        let res = request('POST', `${BASE_URL}/routine-days`, {
             json: {
                 day: routineDay.day,
                 routine: { id: routineDay.weeklyId },
@@ -83,17 +89,18 @@ When('se guarda la rutina diaria', function () {
 // Guardar rutina diaria de esquema de escenario
 When('se intenta crear la rutina diaria para {string} con la sesión con ejercicios {string}', function (day, sessionName) {
     try {
-        const sessionId = getSessionIdByName(sessionName);
-        const weeklyId = getWeeklyRoutineIdByDates(weeklyRoutine.startDate, weeklyRoutine.endDate);
+        let sessionId = getSessionIdByName(sessionName);
+        let weeklyId = getWeeklyRoutineIdByDates(weeklyRoutine.startDate, weeklyRoutine.endDate);
 
         // POST de RoutineDay
-        const resDay = request('POST', `${BASE_URL}/routine-days`, {
-            json: {
-                day,
-                routine: { id: weeklyId },
-                session: { id: sessionId }
-            }
-        });
+        let resDay = request('POST', `${BASE_URL}/routine-days`,
+            {
+                json: {
+                    day: day,
+                    routine: { id: weeklyId },
+                    session: { id: sessionId }
+                }
+            });
 
         response = JSON.parse(resDay.getBody('utf8'));
 
