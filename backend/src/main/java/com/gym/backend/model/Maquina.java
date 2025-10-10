@@ -37,6 +37,7 @@ public class Maquina {
     private TipoEquipo tipoEquipo;
 
     private String descripcion;
+    
     private String imagenUrl;
 
     @ManyToMany(mappedBy = "maquinas")

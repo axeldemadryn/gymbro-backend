@@ -2,8 +2,6 @@ package com.gym.backend.model;
 
 import java.util.Set;
 
-
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -37,6 +35,7 @@ public class Ejercicio {
     private TipoEjercicio tipo;
 
     private String descripcion;
+    
     private String videoUrl;
 
     @ManyToMany
