@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.gym.backend.Response;
 import com.gym.backend.business.services.SessionExerciseService;
+import com.gym.backend.dto.SessionExerciseCreateDTO;
+import com.gym.backend.model.Ejercicio;
+import com.gym.backend.model.Session;
 import com.gym.backend.model.SessionExercise;
 
 @RestController
@@ -57,16 +60,28 @@ public class SessionExercisePresenter {
     }
 
     @PostMapping
-    public ResponseEntity<Object> crear(@RequestBody SessionExercise sessionExercise) {
-        if (sessionExercise.getSession() == null || sessionExercise.getExercise() == null) {
+    public ResponseEntity<Object> crear(@RequestBody SessionExerciseCreateDTO dto) {
+        // Validación
+        if (dto.getSessionId() == null || dto.getExerciseId() == null) {
             return Response.dbError("La SessionExercise debe tener sesión y ejercicio asignados.");
         }
 
+        // Crear SessionExercise a partir del DTO
+        SessionExercise se = new SessionExercise();
+        se.setSets(dto.getSets());
+        se.setReps(dto.getReps());
+
+        Session session = new Session();
+        session.setId(dto.getSessionId());
+        se.setSession(session);
+
+        Ejercicio exercise = new Ejercicio();
+        exercise.setId(dto.getExerciseId());
+        se.setExercise(exercise);
+
         try {
-            SessionExercise created = service.save(sessionExercise);
-            return (created != null)
-                    ? Response.ok(created)
-                    : Response.dbError("No se pudo crear la SessionExercise.");
+            SessionExercise created = service.save(se);
+            return Response.ok(created);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Este ejercicio ya está asignado a la sesión.");
         }

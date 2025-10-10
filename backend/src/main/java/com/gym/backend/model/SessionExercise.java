@@ -1,7 +1,5 @@
 package com.gym.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,7 +27,6 @@ public class SessionExercise {
 
     @ManyToOne
     @JoinColumn(name = "session_id", nullable = false)
-    @JsonIgnore
     private Session session;
 
     @ManyToOne

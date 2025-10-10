@@ -2,8 +2,7 @@ package com.gym.backend.model;
 
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,9 +24,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "ejercicios")
-@JsonIdentityInfo(
-    generator = ObjectIdGenerators.PropertyGenerator.class, 
-    property = "id")
 public class Ejercicio {
 
     @Id
@@ -38,20 +34,26 @@ public class Ejercicio {
     private String nombre;
 
     @Enumerated(EnumType.STRING)
-    private TipoEjercicio tipo; // FUERZA, CARDIO, MOVILIDAD, ESTIRAMIENTO
+    private TipoEjercicio tipo;
 
     private String descripcion;
-
     private String videoUrl;
 
     @ManyToMany
-    @JoinTable(name = "ejercicio_maquinas", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "maquina_id"))
+    @JoinTable(
+        name = "ejercicio_maquinas",
+        joinColumns = @JoinColumn(name = "ejercicio_id"),
+        inverseJoinColumns = @JoinColumn(name = "maquina_id")
+    )
     private Set<Maquina> maquinas;
 
     @ManyToMany
-    @JoinTable(name = "ejercicio_musculos", joinColumns = @JoinColumn(name = "ejercicio_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
+    @JoinTable(
+        name = "ejercicio_musculos",
+        joinColumns = @JoinColumn(name = "ejercicio_id"),
+        inverseJoinColumns = @JoinColumn(name = "musculo_id")
+    )
     private Set<Musculo> musculos;
 
     private boolean esPersonalizado = false;
-
 }

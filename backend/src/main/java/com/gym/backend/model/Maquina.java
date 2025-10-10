@@ -2,9 +2,7 @@ package com.gym.backend.model;
 
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,9 +24,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "maquinas")
-@JsonIdentityInfo(
-    generator = ObjectIdGenerators.PropertyGenerator.class, 
-    property = "id")
 public class Maquina {
 
     @Id
@@ -36,20 +31,23 @@ public class Maquina {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String nombre; // nombre que devuelve RoboFlow / OpenAI
+    private String nombre;
 
     @Enumerated(EnumType.STRING)
     private TipoEquipo tipoEquipo;
 
-    private String descripcion; // breve descripción de uso
-
-    private String imagenUrl; // URL de imagen, video o animación instructiva
+    private String descripcion;
+    private String imagenUrl;
 
     @ManyToMany(mappedBy = "maquinas")
+    @JsonIgnore // evita recursión Ejercicio -> Maquina -> Ejercicio
     private Set<Ejercicio> ejercicios;
 
     @ManyToMany
-    @JoinTable(name = "maquina_musculos", joinColumns = @JoinColumn(name = "maquina_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
+    @JoinTable(
+        name = "maquina_musculos",
+        joinColumns = @JoinColumn(name = "maquina_id"),
+        inverseJoinColumns = @JoinColumn(name = "musculo_id")
+    )
     private Set<Musculo> musculos;
-
 }
