@@ -10,4 +10,6 @@ public interface RoutineDayRepository extends CrudRepository<RoutineDay, Long> {
 
     long countBySessionId(Long sessionId);
 
+    long countByRoutineId(Long routineid);
+
 }

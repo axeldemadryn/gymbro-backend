@@ -4,14 +4,13 @@ import java.util.List;
 
 public class MaquinaDTO {
     private String nombre;
-    private String tipoEquipo; // Enum como String
+    private String tipoEquipo;
     private String descripcion;
     private String imagen;
     private List<EjercicioDTO> ejercicios;
+    private List<MusculoDTO> musculos; 
 
-    public MaquinaDTO() {
-
-    }
+    public MaquinaDTO() {}
 
     public String getImagen() {
         return imagen;
@@ -51,5 +50,13 @@ public class MaquinaDTO {
 
     public void setEjercicios(List<EjercicioDTO> ejercicios) {
         this.ejercicios = ejercicios;
+    }
+
+    public List<MusculoDTO> getMusculos() {
+        return musculos;
+    }
+
+    public void setMusculos(List<MusculoDTO> musculos) {
+        this.musculos = musculos;
     }
 }
