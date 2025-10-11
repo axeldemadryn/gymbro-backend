@@ -73,6 +73,8 @@ public class WeeklyRoutinePresenter {
                     : Response.dbError("No se pudo actualizar la rutina semanal con ID " + routine.getId() + ".");
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe una rutina semanal con ese nombre.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.dbError(e.getMessage());
         }
     }
 
@@ -87,6 +89,8 @@ public class WeeklyRoutinePresenter {
             return Response.ok(created);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe una rutina semanal con ese nombre.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.dbError(e.getMessage());
         }
     }
 

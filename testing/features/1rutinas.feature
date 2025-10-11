@@ -44,7 +44,8 @@ Característica: Gestionar rutinas semanales y diarias
   # Escenario 7: Crear días de rutina para una rutina semanal existente
   Esquema del escenario: Crear RoutineDays correctamente
     Dado que existe la rutina semanal "Semana G" con fechas desde "2023-10-30" hasta "2023-11-05"
-    Cuando se intenta crear la rutina diaria para "<Día>" con la sesión con ejercicios "<Sesión>"
+    Y se intenta crear la rutina diaria para "<Día>" con la sesión "<Sesión>"
+    Cuando se guarda la rutina diaria
     Entonces se debería obtener el mensaje "<Mensaje esperado>"
 
   Ejemplos:
