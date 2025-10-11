@@ -19,12 +19,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-/*
- 
-
-    @Table(
-
-name = "sessions",uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "name" }))*/@Table(name = "sessions")
+@Table(name = "sessions")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

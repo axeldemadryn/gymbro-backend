@@ -63,10 +63,19 @@ public class WeeklyRoutineService {
             if (dias < 5 || dias > 7)
                 throw new IllegalArgumentException("La rutina semanal debe tener entre 5 y 7 días.");
 
-            List<WeeklyRoutine> solap = repository.findOverlapping(start, end);
+            List<WeeklyRoutine> solap;
+            if (weeklyRoutine.getId() != null) {
+                // Si es actualización, excluir la rutina actual
+                solap = repository.findOverlappingExcludingId(start, end, weeklyRoutine.getId());
+            } else {
+                // Si es creación, revisar solapamientos normales
+                solap = repository.findOverlapping(start, end);
+            }
+
             if (!solap.isEmpty())
                 throw new IllegalArgumentException("La rutina semanal se solapa con otra existente.");
         }
+
         return repository.save(weeklyRoutine);
     }
 
