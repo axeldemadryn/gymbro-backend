@@ -14,13 +14,21 @@ import com.gym.backend.model.WeeklyRoutine;
 @Repository
 public interface WeeklyRoutineRepository extends CrudRepository<WeeklyRoutine, Long> {
 
-    List<WeeklyRoutine> findByUserId(Long userId);
+        List<WeeklyRoutine> findByUserId(Long userId);
 
-    Optional<WeeklyRoutine> findByStartDateAndEndDate(LocalDate startDate, LocalDate endDate);
+        Optional<WeeklyRoutine> findByStartDateAndEndDate(LocalDate startDate, LocalDate endDate);
 
-    // Validar solapamiento de fechas
-    @Query("SELECT w FROM WeeklyRoutine w " +
-            "WHERE (:startDate <= w.endDate) AND (:endDate >= w.startDate)")
-    List<WeeklyRoutine> findOverlapping(@Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate);
+        // Validar solapamiento de fechas
+        @Query("SELECT w FROM WeeklyRoutine w " +
+                        "WHERE (:startDate <= w.endDate) AND (:endDate >= w.startDate)")
+        List<WeeklyRoutine> findOverlapping(@Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate);
+
+        @Query("SELECT w FROM WeeklyRoutine w " +
+                        "WHERE (:startDate <= w.endDate) AND (:endDate >= w.startDate) " +
+                        "AND (:id IS NULL OR w.id <> :id)")
+        List<WeeklyRoutine> findOverlappingExcludingId(
+                        @Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate,
+                        @Param("id") Long id);
 }
