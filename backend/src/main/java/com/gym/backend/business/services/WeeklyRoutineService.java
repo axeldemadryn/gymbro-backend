@@ -61,7 +61,7 @@ public class WeeklyRoutineService {
             long count = routineDayRepository.countByRoutineId(weeklyRoutine.getId());
             if (count > 0) {
                 throw new IllegalArgumentException(
-                        "No se puede modificar esta rutiuna semanal, porque está asociada a una rutina diaria.");
+                        "No se puede modificar esta rutina semanal, porque está asociada a una rutina diaria.");
             }
         }
 
