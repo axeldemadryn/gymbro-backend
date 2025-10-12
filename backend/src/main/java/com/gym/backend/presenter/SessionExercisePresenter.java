@@ -56,6 +56,8 @@ public class SessionExercisePresenter {
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Este ejercicio ya está asignado a la sesión.");
 
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
         }
     }
 
@@ -84,6 +86,8 @@ public class SessionExercisePresenter {
             return Response.ok(created);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Este ejercicio ya está asignado a la sesión.");
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
         }
     }
 
