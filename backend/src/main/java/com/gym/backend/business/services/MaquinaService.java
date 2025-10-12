@@ -75,7 +75,7 @@ public class MaquinaService {
                             })
                             .toList());
             dto.setMusculos(null); // no mostramos músculos directos
-        } else {
+        } else if (maquina.getMusculos() != null && !maquina.getMusculos().isEmpty()) {
             // Si no tiene ejercicios, mostramos los músculos que trabaja
             dto.setMusculos(
                     maquina.getMusculos() == null ? List.of()
