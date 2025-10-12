@@ -26,3 +26,28 @@ Característica: estados de sesiones
       | MARTES    | 2024-07-15          | 2024-07-20       | Sesion Espalda | NO_COMPLETADA |
       | MIERCOLES | 2024-07-22          | 2024-07-28       | Sesion Piernas | NO_COMPLETADA |
       | JUEVES    | 9999-02-01          | 9999-02-06       | Sesion Brazos  | PENDIENTE     |
+
+   Esquema del escenario: Manejar cambios de estados inválidos de rutina diaria a completada
+      Dado que se tiene la rutina diaria para "<diaSemana>" con la rutina semanal que dura desde "<inicioRutinaSemanal>" hasta "<finRutinaSemanal>"
+      Cuando se cambia el estado de la rutina diaria a COMPLETADA
+      Entonces se obtiene un error con mensaje "<mensaje>"
+
+      Ejemplos:
+      | diaSemana | inicioRutinaSemanal | finRutinaSemanal | mensaje                                                                                   |
+      | LUNES     | 2024-07-01          | 2024-07-05       | Error. La rutina ya ha expirado.                                                          |
+      | MARTES    | 2024-07-15          | 2024-07-20       | Error. La rutina ya ha expirado.                                                          |
+      | MIERCOLES | 2024-07-22          | 2024-07-28       | Error. La rutina ya ha expirado.                                                          |
+      | JUEVES    | 9999-02-01          | 9999-02-06       | Error. Sólo se puede marcar como completada si el día de hoy corresponde al de la rutina. |
+   
+   # Acá también se calculan, en el Dado, el día de hoy, y los días lunes y domingo de la semana actual, y se crea la rutina semanal correspondiente a esta semana
+   Esquema del escenario: Crear y validar estado de rutina para el día de hoy
+      Dado que se quiere crear una rutina diaria para el día de hoy asociada a la sesión ya existente "Sesion Espalda"
+      Cuando se crea la rutina diaria
+      Entonces se debería obtener el mensaje "OK"
+      Y el estado de la rutina debería ser "PENDIENTE"
+   
+   Esquema del escenario: Marcar como completada rutina de hoy
+      Dado que ya existe una rutina para el día de hoy
+      Cuando se cambia el estado de la rutina diaria a COMPLETADA
+      Entonces se debería obtener el mensaje "OK"
+      Y el estado de la rutina debería ser "COMPLETADA"

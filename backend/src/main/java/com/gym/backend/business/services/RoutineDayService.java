@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.gym.backend.business.repositories.RoutineDayRepository;
 import com.gym.backend.business.repositories.SessionExerciseRepository;
 import com.gym.backend.business.repositories.WeeklyRoutineRepository;
+import com.gym.backend.model.DiaDeSemana;
 import com.gym.backend.model.RoutineDay;
 import com.gym.backend.model.SessionStatus;
 import com.gym.backend.model.WeeklyRoutine;
@@ -80,6 +81,11 @@ public class RoutineDayService {
         return repository.findById(id).orElse(null);
     }
 
+    public RoutineDay findByDayAndWeeklyRoutineDates(DiaDeSemana day, LocalDate start, LocalDate end){
+        WeeklyRoutine routine = weeklyRoutineRepository.findByStartDateAndEndDate(start, end).orElseThrow(() -> new RuntimeException("No se encontró una rutina semanal con esas fechas"));
+        return repository.findByDayAndWeeklyRoutine(day, routine).orElse(null);
+    }
+
     private List<RoutineDay> logicaObtencionDeTodas() {
         List<RoutineDay> result = new ArrayList<>();
         repository.findAll().forEach(result::add);
@@ -120,7 +126,7 @@ public class RoutineDayService {
 
             // Validar si hoy es el día correspondiente
             if (!today.isEqual(routineDate))
-                throw new RuntimeException("Solo se puede marcar como completada el día correspondiente a la rutina.");
+                throw new RuntimeException("Error. Sólo se puede marcar como completada si el día de hoy corresponde al de la rutina.");
 
             routine.setStatus(SessionStatus.COMPLETADA);
         } else {

@@ -1,5 +1,7 @@
 package com.gym.backend.presenter;
 
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
@@ -10,10 +12,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gym.backend.Response;
 import com.gym.backend.business.services.RoutineDayService;
+import com.gym.backend.model.DiaDeSemana;
 import com.gym.backend.model.RoutineDay;
 
 @RestController
@@ -35,6 +39,22 @@ public class RoutineDayPresenter {
                 : Response.notFound("No se encontró el día de rutina con ID " + id + ".");
     }
 
+    @GetMapping("/by-day-and-weekly-routine-dates")
+    public ResponseEntity<Object> findByDayAndWeeklyRoutineDates(
+        @RequestParam("day") DiaDeSemana day,
+        @RequestParam("startDate") LocalDate startDate,
+        @RequestParam("endDate") LocalDate endDate
+    ){
+        try {
+            RoutineDay routineDay = service.findByDayAndWeeklyRoutineDates(day, startDate, endDate);
+            return routineDay != null
+                ? Response.ok(routineDay)
+                : Response.notFound("No se encontró el día de rutina en el día " + day + " en la rutina semanal que dura de " + startDate + " a " + endDate + ".");
+        } catch (Exception e) {
+            return Response.error(e, e.getMessage());
+        }
+    }
+
     @PutMapping
     public ResponseEntity<Object> actualizar(@RequestBody RoutineDay routineDay) {
         if (routineDay.getId() <= 0) {
@@ -54,7 +74,7 @@ public class RoutineDayPresenter {
         }
     }
 
-    @PutMapping("completada")
+    @PutMapping("/completada")
     public ResponseEntity<Object> marcarCompletada(@RequestBody RoutineDay routineDay){
         if (routineDay.getId() <= 0) {
             return Response.dbError("El día de rutina tiene un ID no positivo, y no debe.");
