@@ -45,37 +45,46 @@ public class MaquinaService {
         repository.deleteById(id);
     }
 
-    public Mono<MaquinaDTO> obtenerMaquinaConEjercicios(String nombre) {
+    public Mono<MaquinaDTO> obtenerMaquinaConInfo(String nombre) {
         Maquina maquina = findByNombre(nombre);
         if (maquina == null)
             return Mono.empty();
 
         MaquinaDTO dto = new MaquinaDTO();
         dto.setNombre(maquina.getNombre());
-
-        if (maquina.getTipoEquipo() != null)
-            dto.setTipoEquipo(maquina.getTipoEquipo().name());
-
+        dto.setTipoEquipo(maquina.getTipoEquipo() != null ? maquina.getTipoEquipo().name() : null);
         dto.setDescripcion(maquina.getDescripcion());
         dto.setImagen(maquina.getImagenUrl());
 
-        dto.setEjercicios(
-                maquina.getEjercicios() == null ? List.of()
-                        : maquina.getEjercicios().stream()
-                                .map(ej -> {
-                                    EjercicioDTO ejDTO = new EjercicioDTO();
-                                    ejDTO.setNombre(ej.getNombre());
-                                    ejDTO.setTipo(ej.getTipo() != null ? ej.getTipo().name() : null);
-                                    ejDTO.setDescripcion(ej.getDescripcion());
-                                    ejDTO.setVideoUrl(ej.getVideoUrl());
-                                    ejDTO.setMusculosPrincipales(
-                                            ej.getMusculos() == null ? List.of()
-                                                    : ej.getMusculos().stream()
-                                                            .map(m -> new MusculoDTO(m.getNombre()))
-                                                            .toList());
-                                    return ejDTO;
-                                })
-                                .toList());
+        // Verificamos si la máquina tiene ejercicios asociados
+        if (maquina.getEjercicios() != null && !maquina.getEjercicios().isEmpty()) {
+            dto.setEjercicios(
+                    maquina.getEjercicios().stream()
+                            .map(ej -> {
+                                EjercicioDTO ejDTO = new EjercicioDTO();
+                                ejDTO.setNombre(ej.getNombre());
+                                ejDTO.setTipo(ej.getTipo() != null ? ej.getTipo().name() : null);
+                                ejDTO.setDescripcion(ej.getDescripcion());
+                                ejDTO.setVideoUrl(ej.getVideoUrl());
+                                ejDTO.setMusculosPrincipales(
+                                        ej.getMusculos() == null ? List.of()
+                                                : ej.getMusculos().stream()
+                                                        .map(m -> new MusculoDTO(m.getNombre()))
+                                                        .toList());
+                                return ejDTO;
+                            })
+                            .toList());
+            dto.setMusculos(null); // no mostramos músculos directos
+        } else if (maquina.getMusculos() != null && !maquina.getMusculos().isEmpty()) {
+            // Si no tiene ejercicios, mostramos los músculos que trabaja
+            dto.setMusculos(
+                    maquina.getMusculos() == null ? List.of()
+                            : maquina.getMusculos().stream()
+                                    .map(m -> new MusculoDTO(m.getNombre()))
+                                    .toList());
+            dto.setEjercicios(null); // no mostramos ejercicios
+        }
+
         return Mono.just(dto);
     }
 

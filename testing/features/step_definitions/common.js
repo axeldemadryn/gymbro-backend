@@ -7,6 +7,9 @@ const URL = 'http://backend:8080/api/';
 
 let lastResponse = null;
 
+let weeklyRoutines = [];
+let routineDays = [];
+
 function doRequest(method, path, body = null) {
     try {
         const opts = body ? { body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } } : undefined;
@@ -61,33 +64,39 @@ Then('se obtiene un error con mensaje {string}', function (expected) {
     );
 });
 
-/* AfterAll: eliminar todas las weekly-routines y routine-days */
+/* AfterAll: eliminar todas las weekly-routines y routine-days usadas para el testing */
 AfterAll(() => {
+    // Primero eliminar los routineDays, porque dependen de weeklyRoutines
     try {
-        const days = get('routine-days') || [];
-        if (Array.isArray(days)) {
-            days.forEach(d => { if (d.id) deleteReq(`routine-days/${d.id}`); });
-        } else if (days && days.id) {
-            deleteReq(`routine-days/${days.id}`);
-        }
+        routineDays.forEach(day => {
+            if (day && day.id) {
+                deleteReq(`routine-days/${day.id}`);
+            }
+        });
     } catch (e) {
-        console.warn('AfterAll: error limpiando routine-days:', e.message);
+        console.warn('AfterAll: error eliminando routineDays:', e.message);
     }
 
+    // Luego eliminar las weeklyRoutines
     try {
-        const weekly = get('weekly-routines') || [];
-        if (Array.isArray(weekly)) {
-            weekly.forEach(w => {
-                if (w.id) deleteReq(`weekly-routines/${w.id}`);
-            });
-        } else if (weekly && weekly.id) {
-            deleteReq(`weekly-routines/${weekly.id}`);
-        }
+        weeklyRoutines.forEach(weekly => {
+            if (weekly && weekly.id) {
+                deleteReq(`weekly-routines/${weekly.id}`);
+            }
+        });
     } catch (e) {
-        console.warn('AfterAll: error limpiando weekly-routines:', e.message);
+        console.warn('AfterAll: error eliminando weeklyRoutines:', e.message);
     }
 
     console.log('Limpieza completada.');
 });
 
-module.exports = { get, post, put, deleteReq };
+function addWeeklyRoutine(r){
+    weeklyRoutines.push(r);
+}
+
+function addRoutineDay(r){
+    routineDays.push(r);
+}
+
+module.exports = { get, post, put, deleteReq, addWeeklyRoutine, addRoutineDay };

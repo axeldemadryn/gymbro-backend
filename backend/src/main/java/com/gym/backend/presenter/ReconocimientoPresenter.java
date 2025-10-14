@@ -63,7 +63,7 @@ public class ReconocimientoPresenter {
                         return Mono.just(Response.ok("no_reconocido"));
                     }
                     // Consultar el servicio de máquinas para traer MaquinaDTO con ejercicios
-                    return maquinaService.obtenerMaquinaConEjercicios(nombre)
+                    return maquinaService.obtenerMaquinaConInfo(nombre)
                             .map(maquinaDTO -> Response.ok(maquinaDTO))
                             .defaultIfEmpty(Response.notFound("No se encontró la máquina en la base de datos."));
                 })

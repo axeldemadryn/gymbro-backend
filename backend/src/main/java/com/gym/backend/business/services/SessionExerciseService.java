@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.gym.backend.business.repositories.RoutineDayRepository;
 import com.gym.backend.business.repositories.SessionExerciseRepository;
 import com.gym.backend.model.SessionExercise;
 
@@ -17,23 +18,34 @@ public class SessionExerciseService {
     @Autowired
     private SessionExerciseRepository repository;
 
-    public SessionExercise findById(long id){
+    @Autowired
+    private RoutineDayRepository routineDayRepository;
+
+    public SessionExercise findById(long id) {
         return repository.findById(id).orElse(null);
     }
 
-    public List<SessionExercise> findAll(){
+    public List<SessionExercise> findAll() {
         List<SessionExercise> result = new ArrayList<>();
         repository.findAll().forEach(sessionExercise -> result.add(sessionExercise));
         return result;
     }
 
     @Transactional
-    public SessionExercise save(SessionExercise e){
+    public SessionExercise save(SessionExercise e) {
+        if (e.getSession() != null && e.getSession().getId() != null) {
+            long cantidad = routineDayRepository.countBySessionId(e.getSession().getId());
+            if (cantidad > 0) {
+                throw new IllegalStateException(
+                        "No se pueden modificar los ejercicios de una sesión ya asignada a una rutina diaria.");
+            }
+        }
+
         return repository.save(e);
     }
 
     @Transactional
-    public void delete(long anId){
+    public void delete(long anId) {
         repository.deleteById(anId);
     }
 }
