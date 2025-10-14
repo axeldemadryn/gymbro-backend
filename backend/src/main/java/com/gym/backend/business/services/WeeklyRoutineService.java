@@ -9,7 +9,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.gym.backend.business.repositories.RoutineDayRepository;
+// import com.gym.backend.business.repositories.RoutineDayRepository;
 import com.gym.backend.business.repositories.WeeklyRoutineRepository;
 import com.gym.backend.model.WeeklyRoutine;
 
@@ -22,8 +22,8 @@ public class WeeklyRoutineService {
     @Autowired
     private WeeklyRoutineRepository repository;
 
-    @Autowired
-    private RoutineDayRepository routineDayRepository;
+   // @Autowired
+  // private RoutineDayRepository routineDayRepository;
 
     public WeeklyRoutine findById(long id) {
         return repository.findById(id).orElse(null);
@@ -52,6 +52,8 @@ public class WeeklyRoutineService {
         LocalDate start = weeklyRoutine.getStartDate();
         LocalDate end = weeklyRoutine.getEndDate();
 
+        /* 
+
         boolean esActualizacion = weeklyRoutine.getId() != null;
 
         // Caso actualización: verificar si la rutina semanal está asociada a alguna
@@ -63,7 +65,7 @@ public class WeeklyRoutineService {
                 throw new IllegalArgumentException(
                         "No se puede modificar esta rutina semanal, porque está asociada a una rutina diaria.");
             }
-        }
+        } */
 
         if ((start == null && end != null) || (start != null && end == null))
             throw new IllegalStateException("Ambas fechas deben estar definidas o ninguna.");
