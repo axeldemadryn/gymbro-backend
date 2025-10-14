@@ -33,6 +33,16 @@ public class SessionExerciseService {
 
     @Transactional
     public SessionExercise save(SessionExercise e) {
+
+        // Validación de sets y reps mínimos
+        if (e.getSets() < 1) {
+            throw new IllegalStateException("El número de series debe ser al menos 1.");
+        }
+
+        if (e.getReps() < 3) {
+            throw new IllegalStateException("El número de repeticiones debe ser al menos 3.");
+        }
+
         if (e.getSession() != null && e.getSession().getId() != null) {
             long cantidad = routineDayRepository.countBySessionId(e.getSession().getId());
             if (cantidad > 0) {
