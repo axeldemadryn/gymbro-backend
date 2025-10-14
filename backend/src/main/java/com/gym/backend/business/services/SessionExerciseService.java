@@ -33,6 +33,16 @@ public class SessionExerciseService {
 
     @Transactional
     public SessionExercise save(SessionExercise e) {
+
+        // Validación de sets y reps mínimos
+        if (e.getSets() < 1) {
+            throw new IllegalStateException("El número de series debe ser al menos 1.");
+        }
+
+        if (e.getReps() < 3) {
+            throw new IllegalStateException("El número de repeticiones debe ser al menos 3.");
+        }
+
         if (e.getSession() != null && e.getSession().getId() != null) {
             long cantidad = routineDayRepository.countBySessionId(e.getSession().getId());
             if (cantidad > 0) {
@@ -46,6 +56,16 @@ public class SessionExerciseService {
 
     @Transactional
     public void delete(long anId) {
+        SessionExercise e = findById(anId);
+
+        if (e.getSession() != null && e.getSession().getId() != null) {
+            long cantidad = routineDayRepository.countBySessionId(e.getSession().getId());
+            if (cantidad > 0) {
+                throw new IllegalStateException(
+                        "No se puede eliminar el ejercicio de una sesión ya asignada a una rutina diaria.");
+            }
+        }
+
         repository.deleteById(anId);
     }
 }

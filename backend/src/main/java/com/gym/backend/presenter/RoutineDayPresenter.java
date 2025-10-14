@@ -41,15 +41,15 @@ public class RoutineDayPresenter {
 
     @GetMapping("/by-day-and-weekly-routine-dates")
     public ResponseEntity<Object> findByDayAndWeeklyRoutineDates(
-        @RequestParam("day") DiaDeSemana day,
-        @RequestParam("startDate") LocalDate startDate,
-        @RequestParam("endDate") LocalDate endDate
-    ){
+            @RequestParam("day") DiaDeSemana day,
+            @RequestParam("startDate") LocalDate startDate,
+            @RequestParam("endDate") LocalDate endDate) {
         try {
             RoutineDay routineDay = service.findByDayAndWeeklyRoutineDates(day, startDate, endDate);
             return routineDay != null
-                ? Response.ok(routineDay)
-                : Response.notFound("No se encontró el día de rutina en el día " + day + " en la rutina semanal que dura de " + startDate + " a " + endDate + ".");
+                    ? Response.ok(routineDay)
+                    : Response.notFound("No se encontró el día de rutina en el día " + day
+                            + " en la rutina semanal que dura de " + startDate + " a " + endDate + ".");
         } catch (Exception e) {
             return Response.error(e, e.getMessage());
         }
@@ -75,7 +75,7 @@ public class RoutineDayPresenter {
     }
 
     @PutMapping("/completada")
-    public ResponseEntity<Object> marcarCompletada(@RequestBody RoutineDay routineDay){
+    public ResponseEntity<Object> marcarCompletada(@RequestBody RoutineDay routineDay) {
         if (routineDay.getId() <= 0) {
             return Response.dbError("El día de rutina tiene un ID no positivo, y no debe.");
         }
@@ -95,10 +95,10 @@ public class RoutineDayPresenter {
 
     @PostMapping
     public ResponseEntity<Object> crear(@RequestBody RoutineDay day) {
-        if (day.getDay() == null || day.getDay().name().isEmpty()){
-         return Response.dbError("El día de la semana es obligatorio.");
+        if (day.getDay() == null || day.getDay().name().isEmpty()) {
+            return Response.dbError("El día de la semana es obligatorio.");
         }
-        
+
         if (day.getRoutine() == null || day.getRoutine().getId() == null) {
             return Response.dbError("Debe asignar una rutina válida.");
         }
