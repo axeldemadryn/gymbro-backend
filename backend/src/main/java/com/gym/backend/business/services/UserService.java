@@ -25,6 +25,9 @@ public class UserService {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private EmailService emailService;
+
     // Encriptador de contraseñas
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
@@ -36,13 +39,31 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setFechaRegistro(LocalDateTime.now());
-        user.setActivo(true);
+        user.setActivo(false);
 
         User created = userRepository.save(user);
 
+        // Generar token JWT para verificación
+        String token = jwtUtil.generarToken(created.getEmail());
+
+        enviarCorreoVerificacion(created.getEmail(), token);
+
         return Map.of(
                 "usuario", created,
-                "token", jwtUtil.generarToken(created.getEmail()));
+                "token", token);
+
+    }
+
+    private void enviarCorreoVerificacion(String email, String token) {
+        String link = "http://localhost:8080/api/users/verify?token=" + token;
+
+        // Enviar correo con Mailpit
+        emailService.enviarCorreo(
+                email,
+                "Verificación de cuenta",
+                "¡Hola!\n\n" +
+                        "Por favor, verifica tu cuenta haciendo clic en el siguiente enlace:\n" +
+                        link + "\n\nGracias por registrarte");
     }
 
     public Map<String, Object> loginConToken(String email, String password) {
@@ -52,6 +73,11 @@ public class UserService {
         }
 
         User user = usuarioOpt.get();
+
+        if (!user.isActivo()) {
+            throw new IllegalArgumentException("Tu cuenta aún no fue verificada. Revisa tu correo.");
+        }
+
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("Contraseña incorrecta.");
         }

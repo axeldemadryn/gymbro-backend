@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import com.gym.backend.Response;
 import com.gym.backend.business.services.UserService;
 import com.gym.backend.model.User;
+import com.gym.backend.security.JwtUtil;
 
 import java.util.Map;
 
@@ -17,6 +18,9 @@ public class UserPresenter {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     // 🧩 Registro de usuario
     @PostMapping("/register")
@@ -35,15 +39,30 @@ public class UserPresenter {
 
     // 🔐 Login
     @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestParam String email, @RequestParam String password) {
+    public ResponseEntity<Object> login(@RequestBody User user) {
         try {
-            Map<String, Object> result = userService.loginConToken(email, password);
+            Map<String, Object> result = userService.loginConToken(user.getEmail(), user.getPassword());
             return Response.ok(result);
         } catch (IllegalArgumentException e) {
             return Response.dbError(e.getMessage());
         } catch (Exception e) {
             return Response.dbError("Error al iniciar sesión: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<String> verificarCuenta(@RequestParam("token") String token) {
+        String email = jwtUtil.extraerUsername(token);
+
+        User user = userService.findByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("Token inválido o usuario no encontrado");
+        }
+
+        user.setActivo(true);
+        userService.save(user);
+
+        return ResponseEntity.ok("Cuenta verificada con éxito. Ya puedes iniciar sesión");
     }
 
     // 📋 Listar todos los usuarios (solo temporal para pruebas)
