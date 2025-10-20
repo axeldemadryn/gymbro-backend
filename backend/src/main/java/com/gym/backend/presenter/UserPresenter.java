@@ -9,6 +9,8 @@ import com.gym.backend.Response;
 import com.gym.backend.business.services.UserService;
 import com.gym.backend.model.User;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserPresenter {
@@ -20,8 +22,8 @@ public class UserPresenter {
     @PostMapping("/register")
     public ResponseEntity<Object> register(@RequestBody User user) {
         try {
-            User created = userService.registrarUsuario(user);
-            return Response.ok(created);
+            Map<String, Object> result = userService.registrarUsuarioConToken(user);
+            return Response.ok(result);
         } catch (IllegalStateException e) {
             return Response.dbError(e.getMessage());
         } catch (DataIntegrityViolationException e) {
@@ -35,8 +37,8 @@ public class UserPresenter {
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestParam String email, @RequestParam String password) {
         try {
-            User user = userService.login(email, password);
-            return Response.ok(user);
+            Map<String, Object> result = userService.loginConToken(email, password);
+            return Response.ok(result);
         } catch (IllegalArgumentException e) {
             return Response.dbError(e.getMessage());
         } catch (Exception e) {
@@ -55,7 +57,6 @@ public class UserPresenter {
     public ResponseEntity<Object> actualizar(@PathVariable Long id, @RequestBody User user) {
         try {
             User actualizado = userService.actualizarUsuario(id, user);
-
             return Response.ok(actualizado);
         } catch (IllegalArgumentException e) {
             return Response.notFound(e.getMessage());
@@ -69,7 +70,6 @@ public class UserPresenter {
     public ResponseEntity<Object> desactivar(@PathVariable Long id) {
         try {
             userService.desactivarUsuario(id);
-
             return Response.ok("Usuario desactivado correctamente.");
         } catch (IllegalArgumentException e) {
             return Response.dbError(e.getMessage());
@@ -77,5 +77,4 @@ public class UserPresenter {
             return Response.dbError("Error al desactivar el usuario: " + e.getMessage());
         }
     }
-
 }

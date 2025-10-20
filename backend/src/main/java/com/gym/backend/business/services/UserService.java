@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 
 import com.gym.backend.business.repositories.UserRepository;
 import com.gym.backend.model.User;
+import com.gym.backend.security.JwtUtil;
+
+import java.util.Map;
 
 import jakarta.transaction.Transactional;
 
@@ -19,8 +22,44 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     // Encriptador de contraseñas
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
+    public Map<String, Object> registrarUsuarioConToken(User user) {
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new IllegalStateException("El e-mail ya está registrado.");
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setFechaRegistro(LocalDateTime.now());
+        user.setActivo(true);
+
+        User created = userRepository.save(user);
+
+        return Map.of(
+                "usuario", created,
+                "token", jwtUtil.generarToken(created.getEmail()));
+    }
+
+    public Map<String, Object> loginConToken(String email, String password) {
+        Optional<User> usuarioOpt = userRepository.findByEmail(email);
+        if (usuarioOpt.isEmpty()) {
+            throw new IllegalArgumentException("Usuario no encontrado con ese e-mail.");
+        }
+
+        User user = usuarioOpt.get();
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("Contraseña incorrecta.");
+        }
+
+        return Map.of(
+                "usuario", user,
+                "token", jwtUtil.generarToken(user.getEmail()));
+    }
 
     public User registrarUsuario(User user) {
         // Validar si el email ya existe

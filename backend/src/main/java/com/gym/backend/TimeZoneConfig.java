@@ -10,7 +10,7 @@ public class TimeZoneConfig {
 
     @Bean
     public ZoneId zoneId() {
-        // Acá se setea el huso horario del sistema
+        // Acá se setea el uso horario del sistema
         return ZoneId.of("America/Argentina/Buenos_Aires");
     }
 }
