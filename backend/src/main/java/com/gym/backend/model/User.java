@@ -36,5 +36,7 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime fechaRegistro = LocalDateTime.now();
 
-    private boolean activo = true;
+    private LocalDateTime lastLogout;
+
+    private boolean activo;
 }

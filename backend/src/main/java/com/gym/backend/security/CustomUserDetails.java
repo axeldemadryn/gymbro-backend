@@ -1,5 +1,6 @@
 package com.gym.backend.security;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -35,23 +36,12 @@ public class CustomUserDetails implements UserDetails {
         return user.getEmail();
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
+    public LocalDateTime getLastLogout() {
+        return user.getLastLogout();
     }
 
     @Override
     public boolean isEnabled() {
-        return user.isActivo(); // ✅ acá usás tu campo activo
+        return user.isActivo();
     }
 }

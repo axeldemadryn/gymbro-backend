@@ -1,6 +1,9 @@
 package com.gym.backend.security;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -62,6 +65,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             if (jwtUtil.validarToken(jwt)) {
+                CustomUserDetails customUser = (CustomUserDetails) userDetails;
+                LocalDateTime lastLogout = customUser.getLastLogout();
+
+                Date tokenIssueDate = jwtUtil.extraerClaims(jwt).getIssuedAt();
+
+                // Si el token fue emitido antes del último logout → invalido
+                if (lastLogout != null
+                        && tokenIssueDate.toInstant().isBefore(lastLogout.atZone(ZoneId.systemDefault()).toInstant())) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("{\"error\":\"Token inválido: usuario ya hizo logout\"}");
+                    return;
+                }
+
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,

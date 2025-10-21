@@ -51,25 +51,25 @@ public class UserPresenter {
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<String> verificarCuenta(@RequestParam("token") String token) {
+    public ResponseEntity<Object> verificarCuenta(@RequestParam("token") String token) {
         String email;
         try {
             email = jwtUtil.extraerUsername(token);
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            return ResponseEntity.badRequest().body("El token de verificación expiró. Solicita uno nuevo.");
+            return Response.error(null, "El token de verificación expiró. Solicita uno nuevo.");
         } catch (io.jsonwebtoken.JwtException e) {
-            return ResponseEntity.badRequest().body("Token inválido.");
+            return Response.error(null, "Token inválido.");
         }
 
         User user = userService.findByEmail(email);
         if (user == null) {
-            return ResponseEntity.badRequest().body("Token inválido o usuario no encontrado");
+            return Response.notFound("Token inválido o usuario no encontrado");
         }
 
         user.setActivo(true);
         userService.save(user);
 
-        return ResponseEntity.ok("Cuenta verificada con éxito. Ya puedes iniciar sesión");
+        return Response.ok("Cuenta verificada con éxito. Ya puedes iniciar sesión");
     }
 
     // 📋 Listar todos los usuarios (solo temporal para pruebas)
@@ -105,14 +105,24 @@ public class UserPresenter {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<Object> logout(@RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.badRequest().body("Token no proporcionado");
+            return Response.error(null, "Token no proporcionado");
         }
 
         String token = authHeader.substring(7);
+        try {
+            String email = jwtUtil.extraerUsername(token);
+            userService.logout(email);
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return Response.error(null, "Token expirado");
+        } catch (io.jsonwebtoken.JwtException e) {
+            return Response.error(null, "Token inválido");
+        } catch (Exception e) {
+            return Response.dbError("Error durante logout: " + e.getMessage());
+        }
 
-        // El logout real es que el frontend borre el token
-        return ResponseEntity.ok("Logout exitoso");
+        return Response.ok("Logout exitoso");
     }
+
 }

@@ -164,4 +164,12 @@ public class UserService {
     public Iterable<User> listarUsuarios() {
         return userRepository.findAll();
     }
+
+    public void logout(String email) {
+        User user = findByEmail(email);
+        if (user != null) {
+            user.setLastLogout(LocalDateTime.now());
+            userRepository.save(user);
+        }
+    }
 }

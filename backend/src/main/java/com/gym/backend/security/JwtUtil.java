@@ -53,7 +53,7 @@ public class JwtUtil {
         return (String) extraerClaims(token).get("tipo");
     }
 
-    private Claims extraerClaims(String token) {
+    public Claims extraerClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
