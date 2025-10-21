@@ -33,16 +33,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String username;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        jwt = authHeader.substring(7);
-        username = jwtUtil.extraerUsername(jwt);
+        String jwt = authHeader.substring(7);
+        String username = jwtUtil.extraerUsername(jwt);
+        String tipoToken = jwtUtil.extraerTipo(jwt);
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
@@ -51,6 +50,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("application/json");
                 response.getWriter().write("{\"error\":\"Tu cuenta aún no fue verificada. Revisa tu correo.\"}");
+                return;
+            }
+
+            // Bloquear tokens que no sean de sesión
+            if (!"sesion".equals(tipoToken)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Token no válido para endpoints protegidos.\"}");
                 return;
             }
 

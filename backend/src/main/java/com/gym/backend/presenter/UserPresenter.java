@@ -52,7 +52,14 @@ public class UserPresenter {
 
     @GetMapping("/verify")
     public ResponseEntity<String> verificarCuenta(@RequestParam("token") String token) {
-        String email = jwtUtil.extraerUsername(token);
+        String email;
+        try {
+            email = jwtUtil.extraerUsername(token);
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return ResponseEntity.badRequest().body("El token de verificación expiró. Solicita uno nuevo.");
+        } catch (io.jsonwebtoken.JwtException e) {
+            return ResponseEntity.badRequest().body("Token inválido.");
+        }
 
         User user = userService.findByEmail(email);
         if (user == null) {
@@ -95,5 +102,17 @@ public class UserPresenter {
         } catch (Exception e) {
             return Response.dbError("Error al desactivar el usuario: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body("Token no proporcionado");
+        }
+
+        String token = authHeader.substring(7);
+
+        // El logout real es que el frontend borre el token
+        return ResponseEntity.ok("Logout exitoso");
     }
 }

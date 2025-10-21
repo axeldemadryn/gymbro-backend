@@ -44,13 +44,13 @@ public class UserService {
         User created = userRepository.save(user);
 
         // Generar token JWT para verificación
-        String token = jwtUtil.generarToken(created.getEmail());
+        String tokenVerificacion = jwtUtil.generarTokenVerificacion(created.getEmail());
 
-        enviarCorreoVerificacion(created.getEmail(), token);
+        enviarCorreoVerificacion(created.getEmail(), tokenVerificacion);
 
         return Map.of(
                 "usuario", created,
-                "token", token);
+                "token", tokenVerificacion);
 
     }
 
@@ -82,9 +82,12 @@ public class UserService {
             throw new IllegalArgumentException("Contraseña incorrecta.");
         }
 
+        // Generar token de sesión
+        String tokenSesion = jwtUtil.generarTokenSesion(user.getEmail());
+
         return Map.of(
                 "usuario", user,
-                "token", jwtUtil.generarToken(user.getEmail()));
+                "token", tokenSesion);
     }
 
     public User registrarUsuario(User user) {
