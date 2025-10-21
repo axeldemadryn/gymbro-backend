@@ -18,7 +18,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "historiales-reconocimiento")
+@Table(name = "historial_reconocimientos")
 public class HistorialReconocimiento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

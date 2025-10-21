@@ -17,7 +17,7 @@ import com.gym.backend.business.services.HistorialReconocimientoService;
 import com.gym.backend.model.HistorialReconocimiento;
 
 @RestController
-@RequestMapping("api/historiales-reconocimiento")
+@RequestMapping("api/historial-reconocimientos")
 public class HistorialReconocimientoPresenter {
     @Autowired
     private HistorialReconocimientoService service;
