@@ -98,6 +98,12 @@ public class WeeklyRoutineService {
 
     @Transactional
     public void delete(long weeklyRoutineId) {
+        long count = routineDayRepository.countByRoutineId(weeklyRoutineId);
+        if (count > 0) {
+            throw new IllegalArgumentException(
+                    "No se puede eliminar esta rutina semanal, porque tiene asociadas rutinas diarias.");
+        }
+
         repository.deleteById(weeklyRoutineId);
     }
 }

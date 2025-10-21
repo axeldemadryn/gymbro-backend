@@ -62,6 +62,12 @@ public class SessionService {
 
     @Transactional
     public void delete(long sessionId) {
+        long count = routineDayRepository.countBySessionId(sessionId);
+        if (count > 0) {
+            throw new IllegalArgumentException(
+                    "No se puede eliminar esta sesión, porque está asociada a rutinas diarias.");
+        }
+
         repository.deleteById(sessionId);
     }
 }
