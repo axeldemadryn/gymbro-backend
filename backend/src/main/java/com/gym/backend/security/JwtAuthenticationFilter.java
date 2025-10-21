@@ -78,6 +78,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
 
+                LocalDateTime fechaRegistro = customUser.getfechaRegistro();
+
+                // Token emitido antes del registro → inválido
+                if (fechaRegistro != null && tokenIssueDate.toInstant()
+                        .isBefore(fechaRegistro.atZone(ZoneId.systemDefault()).toInstant())) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter()
+                            .write("{\"error\":\"Token inválido: generado antes del registro del usuario\"}");
+                    return;
+                }
+
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,

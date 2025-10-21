@@ -40,6 +40,10 @@ public class CustomUserDetails implements UserDetails {
         return user.getLastLogout();
     }
 
+    public LocalDateTime getfechaRegistro() {
+        return user.getFechaRegistro();
+    }
+
     @Override
     public boolean isEnabled() {
         return user.isActivo();
