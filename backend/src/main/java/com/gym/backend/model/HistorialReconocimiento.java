@@ -25,8 +25,8 @@ public class HistorialReconocimiento {
     private long id;
 
     @ManyToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private User usuario;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "maquina_id")
