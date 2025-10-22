@@ -15,76 +15,100 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.gym.backend.Response;
 import com.gym.backend.business.services.SessionService;
+import com.gym.backend.business.services.UserService;
 import com.gym.backend.model.Session;
+import com.gym.backend.model.User;
 
 @RestController
 @RequestMapping("api/sessions")
 public class SessionPresenter {
     @Autowired
-    private SessionService service;
+    private SessionService sessionService;
 
+    @Autowired
+    private UserService userService;
+
+    // 🔹 GET: todas las sesiones (opcional: filtrar por usuario)
     @GetMapping
-    public ResponseEntity<Object> encontrarTodas() {
-        return Response.ok(service.findAll());
+    public ResponseEntity<Object> encontrarTodas(
+            @RequestParam(value = "userId", required = false) Long userId) {
+
+        if (userId != null) {
+            return Response.ok(sessionService.findByUserId(userId));
+        }
+        return Response.ok(sessionService.findAll());
     }
 
+    // 🔹 GET: por ID
     @GetMapping("/id/{id}")
     public ResponseEntity<Object> encontrarById(@PathVariable("id") long id) {
-        Session aSession = service.findById(id);
-        return (aSession != null)
-                ? Response.ok(aSession)
-                : Response.notFound("No se encontró a la sesión con ID " + id + ".");
+        Session session = sessionService.findById(id);
+        return (session != null)
+                ? Response.ok(session)
+                : Response.notFound("No se encontró la sesión con ID " + id + ".");
     }
 
+    // 🔹 GET: por nombre (solo si no repetís nombres globalmente)
     @GetMapping("/by-name")
-    public ResponseEntity<Object> encontrarByName(@RequestParam String name) {
-        Session aSession = service.findByName(name);
-        return (aSession != null)
-                ? Response.ok(aSession)
-                : Response.notFound("No se encontró a la sesión con nombre " + name + ".");
+    public ResponseEntity<Object> encontrarByName(@RequestParam String name,
+            @RequestParam(required = false) Long userId) {
+        Session session = (userId != null)
+                ? sessionService.findByNameAndUserId(name, userId)
+                : sessionService.findByName(name);
 
+        return (session != null)
+                ? Response.ok(session)
+                : Response.notFound("No se encontró la sesión con nombre " + name + ".");
     }
 
-    @PutMapping
-    public ResponseEntity<Object> actualizar(@RequestBody Session aSession) {
-        if (aSession.getId() <= 0) {
-            return Response.dbError("La sesión tiene un ID no positivo, y no debe.");
-        }
-        if (aSession.getName() == null || aSession.getName().isEmpty()) {
-            return Response.dbError("La sesión no puede tener un nombre vacío.");
-        }
-
-        try {
-            Session updated = service.save(aSession);
-            return (updated != null)
-                    ? Response.ok(updated)
-                    : Response.dbError("No se pudo actualizar a la sesión con ID " + aSession.getId() + ".");
-        } catch (DataIntegrityViolationException d) { // Nombre duplicado
-            return Response.dbError("Error. Ya existe una sesión con nombre " + aSession.getName() + ".");
-        }
-    }
-
+    // 🔹 POST: crear sesión (requiere ID de usuario)
     @PostMapping
-    public ResponseEntity<Object> crear(@RequestBody Session aSession) {
-        // No verificamos el ID, se autogenera
-        if (aSession.getName() == null || aSession.getName().isEmpty()) {
+    public ResponseEntity<Object> crear(@RequestBody Session session) {
+        if (session.getName() == null || session.getName().isEmpty()) {
             return Response.dbError("La sesión no puede tener un nombre vacío.");
         }
-        try {
-            // Guardamos la sesión, aquí se genera el ID automáticamente
-            Session created = service.save(aSession);
 
-            return (created != null)
-                    ? Response.ok(created)
-                    : Response.dbError("No se pudo crear la sesión con nombre " + aSession.getName() + ".");
-        } catch (DataIntegrityViolationException d) { // Nombre duplicado
-            return Response.dbError("Error. Ya existe una sesión con nombre " + aSession.getName() + ".");
+        if (session.getUser() == null || session.getUser().getId() == null) {
+            return Response.dbError("Debe especificarse el usuario dueño de la sesión.");
+        }
+
+        User user = userService.findById(session.getUser().getId());
+        if (user == null) {
+            return Response.notFound("Usuario no encontrado con ID " + session.getUser().getId() + ".");
+        }
+
+        session.setUser(user);
+
+        try {
+            Session created = sessionService.save(session);
+            return Response.ok(created);
+        } catch (DataIntegrityViolationException e) {
+            return Response.dbError("Ya existe una sesión con el mismo nombre para este usuario.");
         }
     }
 
+    // 🔹 PUT: actualizar sesión
+    @PutMapping
+    public ResponseEntity<Object> actualizar(@RequestBody Session session) {
+        if (session.getId() == null || session.getId() <= 0) {
+            return Response.dbError("La sesión tiene un ID no válido.");
+        }
+        if (session.getName() == null || session.getName().isEmpty()) {
+            return Response.dbError("La sesión no puede tener un nombre vacío.");
+        }
+
+        try {
+            Session updated = sessionService.save(session);
+            return Response.ok(updated);
+        } catch (DataIntegrityViolationException e) {
+            return Response.dbError("Ya existe otra sesión con ese nombre para el mismo usuario.");
+        }
+    }
+
+    // 🔹 DELETE: eliminar sesión
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> eliminar(@PathVariable("id") long id) {
-        service.delete(id);
+        sessionService.delete(id);
         return Response.ok("La sesión con ID " + id + " fue eliminada.");
     }
 }
