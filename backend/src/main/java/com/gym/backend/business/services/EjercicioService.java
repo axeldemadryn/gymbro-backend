@@ -42,11 +42,6 @@ public class EjercicioService {
         return ejercicioRepository.findByTipo(tipo);
     }
 
-    // Obtener ejercicios personalizados o globales
-    public List<Ejercicio> buscarPorPersonalizado(boolean esPersonalizado) {
-        return ejercicioRepository.findByEsPersonalizado(esPersonalizado);
-    }
-
     // Borrar un ejercicio por ID
     @Transactional
     public void eliminar(Long id) {

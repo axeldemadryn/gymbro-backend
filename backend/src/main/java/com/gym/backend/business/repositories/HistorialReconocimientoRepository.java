@@ -10,9 +10,9 @@ import com.gym.backend.model.HistorialReconocimiento;
 
 @Repository
 public interface HistorialReconocimientoRepository extends CrudRepository<HistorialReconocimiento, Long>{
-    @Query("SELECT h FROM HistorialReconocimiento h WHERE h.usuario.id = ?1")
+    @Query("SELECT h FROM HistorialReconocimiento h WHERE h.user.id = ?1")
     List<HistorialReconocimiento> findAllByUserId(long id);
 
-    @Query("DELETE FROM HistorialReconocimiento h WHERE h.usuario.id = ?1")
+    @Query("DELETE FROM HistorialReconocimiento h WHERE h.user.id = ?1")
     void deleteAllByUserId(long id);
 }

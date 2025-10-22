@@ -19,9 +19,6 @@ public interface EjercicioRepository extends CrudRepository<Ejercicio, Long> {
        // Buscar ejercicios por tipo (FUERZA, CARDIO, MOVILIDAD, ESTIRAMIENTO)
        List<Ejercicio> findByTipo(TipoEjercicio tipo);
 
-       // Buscar ejercicios solo personalizados o globales
-       List<Ejercicio> findByEsPersonalizado(boolean esPersonalizado);
-
        // Ejemplo de query personalizada para traer ejercicio con músculos y máquinas
        // (JOIN FETCH)
        @Query("SELECT e FROM Ejercicio e " +

@@ -81,16 +81,6 @@ public class EjercicioPresenter {
         return Response.ok(resultados);
     }
 
-    // Filtrar por personalizados
-    @GetMapping("/personalizado/{esPersonalizado}")
-    public ResponseEntity<Object> buscarPorPersonalizado(@PathVariable boolean esPersonalizado) {
-        List<Ejercicio> resultados = ejercicioService.buscarPorPersonalizado(esPersonalizado);
-        if (resultados.isEmpty()) {
-            return Response.notFound("No se encontraron ejercicios con ese filtro");
-        }
-        return Response.ok(resultados);
-    }
-
     // Eliminar ejercicio por ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> eliminar(@PathVariable Long id) {
