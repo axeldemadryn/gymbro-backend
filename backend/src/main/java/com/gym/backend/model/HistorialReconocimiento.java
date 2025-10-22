@@ -32,6 +32,9 @@ public class HistorialReconocimiento {
     @JoinColumn(name = "maquina_id")
     private Maquina maquina;
 
+    @Column(columnDefinition = "TEXT")
+    private String detalleReconocimiento; // el JSON del DTO completo
+
     private LocalDate fechaReconocimiento;
 
     @Column(nullable = true)

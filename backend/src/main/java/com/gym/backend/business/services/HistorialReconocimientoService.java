@@ -23,9 +23,7 @@ public class HistorialReconocimientoService {
     }
 
     public List<HistorialReconocimiento> findAllByUserId(long id){
-        List<HistorialReconocimiento> retorno = new ArrayList<>();
-        repository.findAllByUserId(id).forEach(retorno::add);
-        return retorno;
+        return repository.findAllByUserId(id);
     }
 
     public HistorialReconocimiento findById(long id){

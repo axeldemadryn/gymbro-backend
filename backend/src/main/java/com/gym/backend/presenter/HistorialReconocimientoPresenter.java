@@ -56,8 +56,6 @@ public class HistorialReconocimientoPresenter {
 
     @PostMapping
     public ResponseEntity<Object> crear(@RequestBody HistorialReconocimiento historial) {
-        if (historial.getId() != 0)
-            return Response.dbError("El historial tiene ID no nulo: " + historial.getId() + ". Ya existe.");
         if (historial.getUser() == null)
             return Response.dbError("El usuario no puede ser nulo.");
         try {
