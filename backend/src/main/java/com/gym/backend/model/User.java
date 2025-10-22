@@ -1,13 +1,19 @@
 package com.gym.backend.model;
 
-import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -34,7 +40,7 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private LocalDateTime fechaRegistro = LocalDateTime.now();
+    private LocalDate fechaRegistro = LocalDate.now();
 
     private LocalDateTime lastLogout;
 

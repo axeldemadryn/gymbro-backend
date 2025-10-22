@@ -15,7 +15,7 @@ public class BackendApplication {
 		SpringApplication.run(BackendApplication.class, args);
 	}
 
-	@GetMapping(value = "/")
+	@GetMapping("/")
     public ResponseEntity home() {
         return Response.response(
             HttpStatus.OK,

@@ -1,6 +1,7 @@
 package com.gym.backend.security;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -78,11 +79,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                LocalDateTime fechaRegistro = customUser.getfechaRegistro();
+                LocalDate fechaRegistro = customUser.getfechaRegistro();
 
                 // Token emitido antes del registro → inválido
                 if (fechaRegistro != null && tokenIssueDate.toInstant()
-                        .isBefore(fechaRegistro.atZone(ZoneId.systemDefault()).toInstant())) {
+                        .isBefore(fechaRegistro.atStartOfDay(ZoneId.systemDefault()).toInstant())) {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.getWriter()
                             .write("{\"error\":\"Token inválido: generado antes del registro del usuario\"}");

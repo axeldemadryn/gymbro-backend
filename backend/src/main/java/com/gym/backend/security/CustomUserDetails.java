@@ -1,5 +1,6 @@
 package com.gym.backend.security;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,7 +41,7 @@ public class CustomUserDetails implements UserDetails {
         return user.getLastLogout();
     }
 
-    public LocalDateTime getfechaRegistro() {
+    public LocalDate getfechaRegistro() {
         return user.getFechaRegistro();
     }
 

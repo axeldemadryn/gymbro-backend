@@ -1,6 +1,8 @@
 package com.gym.backend.business.services;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +12,6 @@ import org.springframework.stereotype.Service;
 import com.gym.backend.business.repositories.UserRepository;
 import com.gym.backend.model.User;
 import com.gym.backend.security.JwtUtil;
-
-import java.util.Map;
 
 import jakarta.transaction.Transactional;
 
@@ -38,7 +38,7 @@ public class UserService {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setFechaRegistro(LocalDateTime.now());
+        user.setFechaRegistro(LocalDate.now());
         user.setActivo(false);
 
         User created = userRepository.save(user);
@@ -96,12 +96,15 @@ public class UserService {
             throw new IllegalStateException("El e-mail ya está registrado.");
         }
 
+        if(user.getPassword() == null || user.getPassword().trim().isEmpty())
+            throw new IllegalArgumentException("La contraseña no puede estar vacía.");
+        
         // Encriptar la contraseña
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
 
         // Fecha de registro
-        user.setFechaRegistro(LocalDateTime.now());
+        user.setFechaRegistro(LocalDate.now());
         user.setActivo(true);
 
         return userRepository.save(user);
