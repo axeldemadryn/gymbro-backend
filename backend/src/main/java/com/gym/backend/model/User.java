@@ -1,6 +1,5 @@
 package com.gym.backend.model;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -40,7 +39,7 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private LocalDate fechaRegistro = LocalDate.now();
+    private LocalDateTime fechaRegistro = LocalDateTime.now();
 
     private LocalDateTime lastLogout;
 

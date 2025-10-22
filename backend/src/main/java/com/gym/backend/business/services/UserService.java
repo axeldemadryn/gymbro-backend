@@ -1,6 +1,5 @@
 package com.gym.backend.business.services;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -38,7 +37,7 @@ public class UserService {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setFechaRegistro(LocalDate.now());
+        user.setFechaRegistro(LocalDateTime.now());
         user.setActivo(false);
 
         User created = userRepository.save(user);
@@ -104,7 +103,7 @@ public class UserService {
         user.setPassword(encodedPassword);
 
         // Fecha de registro
-        user.setFechaRegistro(LocalDate.now());
+        user.setFechaRegistro(LocalDateTime.now());
         user.setActivo(true);
 
         return userRepository.save(user);
