@@ -1,5 +1,5 @@
 -- Vacíos porque no están asociados a ningún músculo, ni máquina (en principio)
-INSERT INTO ejercicios (id, nombre, tipo, descripcion, video_url, id_user)
+INSERT INTO ejercicios (id, nombre, tipo, descripcion, video_url, user_id)
 VALUES
 -- Pecho
 (1, 'Press de Pecho en Máquina', 'FUERZA', 'Ejercicio para pectorales en máquina de press sentado.', null, null),
