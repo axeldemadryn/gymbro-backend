@@ -38,7 +38,6 @@ public class HistorialReconocimientoPresenter {
         ObjectMapper mapper = new ObjectMapper();
         HistorialReconocimientoDTO dto = new HistorialReconocimientoDTO();
         dto.setFechaReconocimiento(hist.getFechaReconocimiento());
-        dto.setImagenUrl(hist.getImagenUrl());
 
         try {
             MaquinaDTO detalle = hist.getDetalleReconocimiento() != null

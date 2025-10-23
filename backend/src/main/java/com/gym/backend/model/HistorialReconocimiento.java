@@ -36,7 +36,5 @@ public class HistorialReconocimiento {
     private String detalleReconocimiento; // el JSON del DTO completo
 
     private LocalDate fechaReconocimiento;
-
-    @Column(nullable = true)
-    private String imagenUrl;
+    
 }

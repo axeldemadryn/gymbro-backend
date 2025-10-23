@@ -109,72 +109,21 @@ public class ReconocimientoPresenter {
         return Response.ok(maquinaDTO);
     }
 
-    /*
-     * // ------------------ Endpoints para el flujo completo (Roboflow + OpenAI)
-     * // ------------------
-     * 
-     * @PostMapping(value = "/api/reconocimiento", consumes =
-     * MediaType.MULTIPART_FORM_DATA_VALUE)
-     * public Mono<ResponseEntity<?>> reconocer2(@RequestParam MultipartFile file) {
-     * return ReactiveSecurityContextHolder.getContext()
-     * .map(securityContext -> {
-     * return (CustomUserDetails)
-     * securityContext.getAuthentication().getPrincipal();
-     * })
-     * .flatMap(customUser -> {
-     * // acá tenés el usuario autenticado
-     * User user = userService.findById(customUser.getUser().getId());
-     * if (user == null) {
-     * return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-     * .body("Usuario no autenticado"));
-     * }
-     * 
-     * return reconocimientoService.reconocer(file)
-     * .flatMap(nombre -> {
-     * if ("no_reconocido".equalsIgnoreCase(nombre)) {
-     * return Mono.just(Response.ok("no_reconocido"));
-     * }
-     * 
-     * return maquinaService.obtenerMaquinaConInfo(nombre)
-     * .flatMap(maquinaDTO -> {
-     * // Guardar historial
-     * HistorialReconocimiento historial = new HistorialReconocimiento();
-     * historial.setUser(user);
-     * historial.setMaquina(maquinaService.findByNombre(nombre));
-     * historial.setFechaReconocimiento(LocalDate.now());
-     * try {
-     * historial.setDetalleReconocimiento(
-     * new ObjectMapper().writeValueAsString(maquinaDTO));
-     * } catch (JsonProcessingException e) {
-     * historial.setDetalleReconocimiento(null);
-     * }
-     * historialService.save(historial);
-     * 
-     * return Mono.just(Response.ok(maquinaDTO));
-     * })
-     * .defaultIfEmpty(Response.notFound("No se encontró la máquina."));
-     * });
-     * })
-     * .defaultIfEmpty(ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-     * .body("Usuario no autenticado"));
-     * }
-     */
-
     @GetMapping(value = "/api/reconocimiento-url")
     public Mono<String> reconocerURL(@RequestParam String urlImagen) {
         return reconocimientoService.reconocerURL(urlImagen);
     }
+
     // ----------------------------------------------------------------------------------------
 
     // Endpoints para testear directamente OpenAI
-    /*
-     * @PostMapping(value = "/api/openai", consumes =
-     * MediaType.MULTIPART_FORM_DATA_VALUE)
-     * public Mono<String> openAiReconocer(@RequestParam MultipartFile file)
-     * throws IOException {
-     * return openAiService.reconocerNombre(file);
-     * }
-     */
+    @PostMapping(value = "/api/openai", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<String> openAiReconocer(@RequestParam MultipartFile file)
+            throws IOException {
+        String base64 = "data:" + file.getContentType() + ";base64,"
+                + Base64.getEncoder().encodeToString(file.getBytes());
+        return openAiService.reconocerNombre(base64);
+    }
 
     @GetMapping(value = "/api/openai-url")
     public Mono<OpenAiResponse> openAiReconocerURL(@RequestParam String urlImagen) {

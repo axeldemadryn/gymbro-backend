@@ -4,7 +4,6 @@ import java.time.LocalDate;
 
 public class HistorialReconocimientoDTO {
     private LocalDate fechaReconocimiento;
-    private String imagenUrl;
     private MaquinaDTO detalleReconocimiento; // toda la info de la máquina
 
     public HistorialReconocimientoDTO() {
@@ -17,14 +16,6 @@ public class HistorialReconocimientoDTO {
 
     public void setFechaReconocimiento(LocalDate fechaReconocimiento) {
         this.fechaReconocimiento = fechaReconocimiento;
-    }
-
-    public String getImagenUrl() {
-        return imagenUrl;
-    }
-
-    public void setImagenUrl(String imagenUrl) {
-        this.imagenUrl = imagenUrl;
     }
 
     public MaquinaDTO getDetalleReconocimiento() {
