@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,8 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.gym.backend.Response;
 import com.gym.backend.business.services.EjercicioService;
+import com.gym.backend.business.services.UserService;
 import com.gym.backend.model.Ejercicio;
 import com.gym.backend.model.TipoEjercicio;
+import com.gym.backend.model.User;
 
 @RestController
 @RequestMapping("/api/ejercicios")
@@ -26,6 +29,43 @@ public class EjercicioPresenter {
 
     @Autowired
     private EjercicioService ejercicioService;
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("/mis-ejercicios")
+    public ResponseEntity<Object> obtenerMisEjercicios() {
+        User user = userService.getAuthenticatedUser();
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
+        }
+        List<Ejercicio> ejercicios = ejercicioService.obtenerPorUserId(user.getId());
+        if (ejercicios.isEmpty()) {
+            return Response.notFound("No hay ejercicios para el usuario");
+        }
+        return Response.ok(ejercicios);
+    }
+
+    // 🔹 POST: crear ejercicio para el usuario autenticado
+    @PostMapping("/crear-usuario")
+    public ResponseEntity<Object> crearParaUsuario(@RequestBody Ejercicio ejercicio) {
+        User user = userService.getAuthenticatedUser(); // toma el usuario del token Bearer
+        if (user == null) {
+            return Response.dbError("Usuario no autenticado");
+        }
+        ejercicio.setUser(user);
+
+        if (ejercicio.getNombre() == null || ejercicio.getNombre().isEmpty()) {
+            return Response.dbError("El nombre del ejercicio no puede estar vacío.");
+        }
+
+        try {
+            Ejercicio guardado = ejercicioService.guardar(ejercicio);
+            return Response.ok(guardado);
+        } catch (DataIntegrityViolationException e) {
+            return Response.dbError("Ya existe un ejercicio con ese nombre para este usuario.");
+        }
+    }
 
     // Crear un nuevo ejercicio
     @PostMapping

@@ -32,6 +32,10 @@ public class EjercicioService {
         return ejercicioRepository.findAllConDetalles();
     }
 
+    public List<Ejercicio> obtenerPorUserId(Long userId) {
+        return ejercicioRepository.findByUserId(userId);
+    }
+
     // Obtener ejercicio por ID con detalles
     public Optional<Ejercicio> obtenerPorId(Long id) {
         return ejercicioRepository.findByIdConDetalles(id);
