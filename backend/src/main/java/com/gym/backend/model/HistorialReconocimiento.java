@@ -25,15 +25,16 @@ public class HistorialReconocimiento {
     private long id;
 
     @ManyToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private User usuario;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "maquina_id")
     private Maquina maquina;
 
-    private LocalDate fechaReconocimiento;
+    @Column(columnDefinition = "TEXT")
+    private String detalleReconocimiento; // el JSON del DTO completo
 
-    @Column(nullable = true)
-    private String imagenUrl;
+    private LocalDate fechaReconocimiento;
+    
 }

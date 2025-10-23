@@ -1,17 +1,18 @@
 package com.gym.backend.business.services;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.gym.backend.business.repositories.UserRepository;
 import com.gym.backend.model.User;
 import com.gym.backend.security.JwtUtil;
-
-import java.util.Map;
 
 import jakarta.transaction.Transactional;
 
@@ -31,6 +32,16 @@ public class UserService {
     // Encriptador de contraseñas
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+
+    public User getAuthenticatedUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof UserDetails userDetails) {
+            return userRepository.findByEmail(userDetails.getUsername()).orElse(null);
+        }
+
+        return null;
+    }
 
     public Map<String, Object> registrarUsuarioConToken(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
@@ -95,6 +106,9 @@ public class UserService {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new IllegalStateException("El e-mail ya está registrado.");
         }
+
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty())
+            throw new IllegalArgumentException("La contraseña no puede estar vacía.");
 
         // Encriptar la contraseña
         String encodedPassword = passwordEncoder.encode(user.getPassword());

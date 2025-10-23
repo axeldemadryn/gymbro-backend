@@ -1,4 +1,4 @@
-package com.gym.backend;
+package com.gym.backend.config;
 
 import java.time.ZoneId;
 

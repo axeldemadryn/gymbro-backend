@@ -32,6 +32,10 @@ public class EjercicioService {
         return ejercicioRepository.findAllConDetalles();
     }
 
+    public List<Ejercicio> obtenerPorUserId(Long userId) {
+        return ejercicioRepository.findByUserId(userId);
+    }
+
     // Obtener ejercicio por ID con detalles
     public Optional<Ejercicio> obtenerPorId(Long id) {
         return ejercicioRepository.findByIdConDetalles(id);
@@ -40,11 +44,6 @@ public class EjercicioService {
     // Buscar ejercicios por tipo
     public List<Ejercicio> buscarPorTipo(TipoEjercicio tipo) {
         return ejercicioRepository.findByTipo(tipo);
-    }
-
-    // Obtener ejercicios personalizados o globales
-    public List<Ejercicio> buscarPorPersonalizado(boolean esPersonalizado) {
-        return ejercicioRepository.findByEsPersonalizado(esPersonalizado);
     }
 
     // Borrar un ejercicio por ID

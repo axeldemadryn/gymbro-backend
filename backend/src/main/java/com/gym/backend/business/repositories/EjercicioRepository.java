@@ -14,13 +14,12 @@ import com.gym.backend.model.TipoEjercicio;
 @Repository
 public interface EjercicioRepository extends CrudRepository<Ejercicio, Long> {
 
+       List<Ejercicio> findByUserId(Long userId);
+
        boolean existsByNombreIgnoreCase(String nombre);
 
        // Buscar ejercicios por tipo (FUERZA, CARDIO, MOVILIDAD, ESTIRAMIENTO)
        List<Ejercicio> findByTipo(TipoEjercicio tipo);
-
-       // Buscar ejercicios solo personalizados o globales
-       List<Ejercicio> findByEsPersonalizado(boolean esPersonalizado);
 
        // Ejemplo de query personalizada para traer ejercicio con músculos y máquinas
        // (JOIN FETCH)

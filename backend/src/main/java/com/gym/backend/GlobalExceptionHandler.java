@@ -1,4 +1,4 @@
-package com.gym.backend.exceptions;
+package com.gym.backend;
 
 import java.util.HashMap;
 import java.util.Map;

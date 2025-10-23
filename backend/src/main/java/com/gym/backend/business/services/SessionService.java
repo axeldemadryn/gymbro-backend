@@ -30,6 +30,14 @@ public class SessionService {
         return repository.findByName(name).orElse(null);
     }
 
+    public List<Session> findByUserId(Long userId) {
+        return repository.findByUserId(userId);
+    }
+
+    public Session findByNameAndUserId(String name, Long userId) {
+        return repository.findByNameAndUserId(name, userId).orElse(null);
+    }
+
     public List<Session> findAll() {
         List<Session> result = new ArrayList<>();
         repository.findAll().forEach(aSession -> result.add(aSession));
