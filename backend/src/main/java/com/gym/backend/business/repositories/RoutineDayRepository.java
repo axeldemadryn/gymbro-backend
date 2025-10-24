@@ -26,4 +26,7 @@ public interface RoutineDayRepository extends CrudRepository<RoutineDay, Long> {
     @Query("SELECT r FROM RoutineDay r WHERE r.day = ?1 AND r.routine = ?2")
     Optional<RoutineDay> findByDayAndWeeklyRoutine(DiaDeSemana day, WeeklyRoutine routine);
 
+    // Buscar todas las rutinas diarias de una rutina semanal
+    @Query("SELECT r FROM RoutineDay r WHERE r.routine = ?1")
+    List<RoutineDay> findByWeeklyRoutine(WeeklyRoutine routine);
 }
