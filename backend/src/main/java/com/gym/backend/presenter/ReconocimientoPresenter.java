@@ -2,6 +2,7 @@ package com.gym.backend.presenter;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Base64;
 import java.util.stream.Collectors;
 
@@ -48,6 +49,12 @@ public class ReconocimientoPresenter {
     private HistorialReconocimientoService historialService;
     @Autowired
     private UserService userService;
+
+    private final ZoneId zoneId;
+
+    public ReconocimientoPresenter(ZoneId zoneId) {
+        this.zoneId = zoneId; // Spring inyecta el bean
+    }
 
     // ------------------Endpoints para Roboflow
     // -----------------------------------------
@@ -97,7 +104,7 @@ public class ReconocimientoPresenter {
         HistorialReconocimiento historial = new HistorialReconocimiento();
         historial.setUser(user);
         historial.setMaquina(maquinaService.findByNombre(nombre));
-        historial.setFechaReconocimiento(LocalDate.now());
+        historial.setFechaReconocimiento(LocalDate.now(zoneId));
         try {
             historial.setDetalleReconocimiento(
                     new ObjectMapper().writeValueAsString(maquinaDTO));
