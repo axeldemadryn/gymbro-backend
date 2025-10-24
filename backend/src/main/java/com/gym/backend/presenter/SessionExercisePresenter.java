@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.gym.backend.Response;
+import com.gym.backend.business.services.EjercicioService;
 import com.gym.backend.business.services.SessionExerciseService;
 import com.gym.backend.business.services.SessionService;
 import com.gym.backend.business.services.UserService;
@@ -25,6 +26,9 @@ public class SessionExercisePresenter {
 
     @Autowired
     private SessionService sessionService;
+
+    @Autowired
+    private EjercicioService ejercicioService;
 
     @Autowired
     private UserService userService;
@@ -74,14 +78,18 @@ public class SessionExercisePresenter {
         if (!session.getUser().getId().equals(user.getId()))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes permiso para esta sesión.");
 
-        // Crear objeto
+        // Verificar que el ejercicio pertenece al usuario
+        Ejercicio exercise = ejercicioService.obtenerPorId(dto.getExerciseId()).orElse(null);
+        if (exercise == null)
+            return Response.notFound("No se encontró el ejercicio con ID " + dto.getExerciseId() + ".");
+        if (exercise.getUser() != null && !exercise.getUser().getId().equals(user.getId()))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes permiso para usar este ejercicio.");
+
+        // Crear objeto SessionExercise
         SessionExercise se = new SessionExercise();
         se.setSets(dto.getSets());
         se.setReps(dto.getReps());
         se.setSession(session);
-
-        Ejercicio exercise = new Ejercicio();
-        exercise.setId(dto.getExerciseId());
         se.setExercise(exercise);
 
         try {
@@ -106,12 +114,22 @@ public class SessionExercisePresenter {
         if (sessionExercise.getSession() == null || sessionExercise.getExercise() == null)
             return Response.dbError("La SessionExercise debe tener sesión y ejercicio.");
 
-        // Verificar ownership
+        // Verificar ownership de la sesión
         Session dbSession = sessionService.findById(sessionExercise.getSession().getId());
         if (dbSession == null)
             return Response.notFound("No se encontró la sesión con ID " + sessionExercise.getSession().getId() + ".");
         if (!dbSession.getUser().getId().equals(user.getId()))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes permiso para esta sesión.");
+
+        // Verificar ownership del ejercicio
+        Ejercicio exercise = ejercicioService.obtenerPorId(sessionExercise.getExercise().getId()).orElse(null);
+        if (exercise == null)
+            return Response
+                    .notFound("No se encontró el ejercicio con ID " + sessionExercise.getExercise().getId() + ".");
+        if (exercise.getUser() != null && !exercise.getUser().getId().equals(user.getId()))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes permiso para usar este ejercicio.");
+
+        sessionExercise.setExercise(exercise);
 
         try {
             SessionExercise updated = service.save(sessionExercise);
