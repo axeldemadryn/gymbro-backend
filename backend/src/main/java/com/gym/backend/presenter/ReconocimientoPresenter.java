@@ -69,6 +69,7 @@ public class ReconocimientoPresenter {
 
     // ------------------ Endpoints para el flujo completo (Roboflow + OpenAI)
     // ------------------
+    // ------------------ Endpoint seguro (requiere usuario autenticado)
     @PostMapping(value = "/api/reconocimiento", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> reconocer(@RequestParam MultipartFile file) {
 

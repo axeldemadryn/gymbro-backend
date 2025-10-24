@@ -18,6 +18,8 @@ public interface WeeklyRoutineRepository extends CrudRepository<WeeklyRoutine, L
 
         Optional<WeeklyRoutine> findByStartDateAndEndDate(LocalDate startDate, LocalDate endDate);
 
+        Optional<WeeklyRoutine> findByStartDateAndEndDateAndUserId(LocalDate startDate, LocalDate endDate, Long userId);
+
         // Validar solapamiento de fechas
         @Query("SELECT w FROM WeeklyRoutine w " +
                         "WHERE (:startDate <= w.endDate) AND (:endDate >= w.startDate)")
