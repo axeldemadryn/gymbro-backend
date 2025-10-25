@@ -72,6 +72,23 @@ public class UserPresenter {
         return Response.ok("Cuenta verificada con éxito. Ya puedes iniciar sesión");
     }
 
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Object> resendVerification(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        if (email == null || email.isEmpty()) {
+            return Response.dbError("El correo electrónico es obligatorio.");
+        }
+
+        try {
+            Map<String, Object> result = userService.reenviarVerificacion(email);
+            return Response.ok(result);
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (Exception e) {
+            return Response.dbError("Error al reenviar verificación: " + e.getMessage());
+        }
+    }
+
     // 📋 Listar todos los usuarios (solo temporal para pruebas)
     @GetMapping
     public ResponseEntity<Object> listarUsuarios() {
