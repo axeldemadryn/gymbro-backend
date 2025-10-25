@@ -43,11 +43,23 @@ public class UserService {
         return null;
     }
 
+    @Transactional
     public Map<String, Object> registrarUsuarioConToken(User user) {
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalStateException("El e-mail ya está registrado.");
+        User existente = userRepository.findByEmail(user.getEmail()).orElse(null);
+
+        if (existente != null) {
+            if (existente.isActivo()) {
+                // Ya verificado → no puede volver a registrarse
+                throw new IllegalStateException("El e-mail ya está registrado y activo.");
+            } else {
+                // Usuario pendiente de verificación
+                throw new IllegalStateException(
+                        "Este e-mail ya está registrado pero aún no fue verificado. " +
+                                "Revisa tu correo o solicita un nuevo enlace de verificación.");
+            }
         }
 
+        // Crear nuevo usuario
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setFechaRegistro(LocalDateTime.now());
         user.setActivo(false);
@@ -101,41 +113,35 @@ public class UserService {
                 "token", tokenSesion);
     }
 
-    public User registrarUsuario(User user) {
-        // Validar si el email ya existe
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalStateException("El e-mail ya está registrado.");
+    @Transactional
+    public Map<String, Object> reenviarVerificacion(String email) {
+        User user = userRepository.findByEmail(email).orElse(null);
+
+        if (user == null) {
+            throw new IllegalStateException("No existe una cuenta registrada con ese correo.");
         }
 
-        if (user.getPassword() == null || user.getPassword().trim().isEmpty())
-            throw new IllegalArgumentException("La contraseña no puede estar vacía.");
+        if (user.isActivo()) {
+            throw new IllegalStateException("Esta cuenta ya fue verificada.");
+        }
 
-        // Encriptar la contraseña
-        String encodedPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword);
+        // Verificar si no pasó poco tiempo desde el último registro (evitar spam)
+        if (user.getFechaRegistro() != null &&
+                user.getFechaRegistro().isAfter(LocalDateTime.now().minusMinutes(10))) {
+            throw new IllegalStateException("Ya se envió un correo recientemente. Intenta de nuevo en unos minutos.");
+        }
 
-        // Fecha de registro
+        // Actualizar fecha de registro
         user.setFechaRegistro(LocalDateTime.now());
-        user.setActivo(true);
+        userRepository.save(user);
 
-        return userRepository.save(user);
-    }
+        // Generar nuevo token y enviar correo
+        String tokenVerificacion = jwtUtil.generarTokenVerificacion(user.getEmail());
+        enviarCorreoVerificacion(user.getEmail(), tokenVerificacion);
 
-    public User login(String email, String password) {
-        Optional<User> usuarioOpt = userRepository.findByEmail(email);
-
-        if (usuarioOpt.isEmpty()) {
-            throw new IllegalArgumentException("Usuario no encontrado con ese e-mail.");
-        }
-
-        User user = usuarioOpt.get();
-
-        // Verificar contraseña
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new IllegalArgumentException("Contraseña incorrecta.");
-        }
-
-        return user;
+        return Map.of(
+                "message", "Se reenviaron las instrucciones de verificación.",
+                "token", tokenVerificacion);
     }
 
     @Transactional
@@ -171,6 +177,7 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
+    @Transactional
     public User save(User user) {
         return userRepository.save(user);
     }
@@ -179,6 +186,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    @Transactional
     public void logout(String email) {
         User user = findByEmail(email);
         if (user != null) {

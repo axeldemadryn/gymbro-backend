@@ -29,23 +29,31 @@ public class SessionPresenter {
     @Autowired
     private UserService userService;
 
-    // 🔹 GET: sesiones del usuario autenticado
-    @GetMapping("/mis-sesiones")
-    public ResponseEntity<Object> encontrarMisSesiones() {
+    // 🔹 GET: listar todas las sesiones del usuario autenticado
+    @GetMapping
+    public ResponseEntity<Object> encontrarTodas() {
         User user = userService.getAuthenticatedUser();
-        if (user == null) {
+        if (user == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
-        }
+
         return Response.ok(sessionService.findByUserId(user.getId()));
     }
 
-    // 🔹 GET: sesión por ID (solo valida existencia)
+    // 🔹 GET: obtener una sesión específica (del usuario autenticado)
     @GetMapping("/id/{id}")
     public ResponseEntity<Object> encontrarById(@PathVariable("id") long id) {
+        User user = userService.getAuthenticatedUser();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
+
         Session session = sessionService.findById(id);
-        return (session != null)
-                ? Response.ok(session)
-                : Response.notFound("No se encontró la sesión con ID " + id + ".");
+        if (session == null)
+            return Response.notFound("No se encontró la sesión con ID " + id + ".");
+
+        if (!session.getUser().getId().equals(user.getId()))
+            return Response.dbError("No puede acceder a una sesión que no le pertenece.");
+
+        return Response.ok(session);
     }
 
     // 🔹 POST: crear sesión para el usuario autenticado
@@ -74,12 +82,22 @@ public class SessionPresenter {
     // 🔹 PUT
     @PutMapping
     public ResponseEntity<Object> actualizar(@RequestBody Session session) {
-        if (session.getId() == null || session.getId() <= 0) {
+        if (session.getId() == null || session.getId() <= 0)
             return Response.dbError("La sesión tiene un ID no válido.");
-        }
-        if (session.getName() == null || session.getName().isEmpty()) {
-            return Response.dbError("La sesión no puede tener un nombre vacío.");
-        }
+
+        User user = userService.getAuthenticatedUser();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
+
+        Session existente = sessionService.findById(session.getId());
+        if (existente == null)
+            return Response.notFound("No se encontró la sesión con ID " + session.getId() + ".");
+
+        if (!existente.getUser().getId().equals(user.getId()))
+            return Response.dbError("No puede modificar una sesión que no le pertenece.");
+
+        // mantener usuario original
+        session.setUser(existente.getUser());
 
         try {
             Session updated = sessionService.save(session);
@@ -92,13 +110,18 @@ public class SessionPresenter {
     // 🔹 DELETE: eliminar sesión del usuario autenticado
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> eliminar(@PathVariable("id") long id) {
+        User user = userService.getAuthenticatedUser();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
 
         Session session = sessionService.findById(id);
-        if (session == null) {
+        if (session == null)
             return Response.notFound("No se encontró la sesión con ID " + id + ".");
-        }
+
+        if (!session.getUser().getId().equals(user.getId()))
+            return Response.dbError("No puede eliminar una sesión que no le pertenece.");
 
         sessionService.delete(id);
-        return Response.ok("La sesión con ID " + id + " fue eliminada.");
+        return Response.ok("La sesión con ID " + id + " fue eliminada correctamente.");
     }
 }

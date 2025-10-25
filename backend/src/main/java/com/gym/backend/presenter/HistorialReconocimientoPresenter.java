@@ -5,11 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,18 +18,16 @@ import com.gym.backend.model.HistorialReconocimiento;
 import com.gym.backend.model.User;
 
 @RestController
-@RequestMapping("api/historial-reconocimientos")
+@RequestMapping("/api/historial-reconocimientos")
 public class HistorialReconocimientoPresenter {
+
     @Autowired
     private HistorialReconocimientoService service;
+
     @Autowired
     private UserService userService;
 
-    @GetMapping
-    public ResponseEntity<Object> encontrarTodos() {
-        return Response.ok(service.findAll());
-    }
-
+    // ------------------ Helpers ------------------
     private HistorialReconocimientoDTO toDTO(HistorialReconocimiento hist) {
         ObjectMapper mapper = new ObjectMapper();
         HistorialReconocimientoDTO dto = new HistorialReconocimientoDTO();
@@ -51,23 +45,39 @@ public class HistorialReconocimientoPresenter {
         return dto;
     }
 
+    private ResponseEntity<Object> validarUsuarioAutenticado() {
+        User user = userService.getAuthenticatedUser();
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
+        }
+        return null; // usuario válido
+    }
+
+    private boolean verificarPropiedad(HistorialReconocimiento hist, User user) {
+        return hist.getUser().getId().equals(user.getId());
+    }
+
+    // ------------------ Endpoints ------------------
+
+    // Todos los historiales
+    @GetMapping
+    public ResponseEntity<Object> encontrarTodos() {
+        return Response.ok(service.findAll());
+    }
+
+    // Historiales del usuario autenticado
     @GetMapping("/por-usuario")
     public ResponseEntity<Object> encontrarPorUsuarioAutenticado() {
-        // Obtener usuario autenticado desde el servicio
+        ResponseEntity<Object> authCheck = validarUsuarioAutenticado();
+        if (authCheck != null)
+            return authCheck;
+
         User user = userService.getAuthenticatedUser();
-
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Usuario no autenticado");
-        }
-
-        // Buscar historiales del usuario autenticado
         List<HistorialReconocimiento> historiales = service.findAllByUserId(user.getId());
         if (historiales.isEmpty()) {
             return Response.notFound("No hay historiales de reconocimiento para este usuario.");
         }
 
-        // Convertir a DTOs
         List<HistorialReconocimientoDTO> response = historiales.stream()
                 .map(this::toDTO)
                 .toList();
@@ -75,21 +85,50 @@ public class HistorialReconocimientoPresenter {
         return Response.ok(response);
     }
 
+    // Buscar historial por ID (solo si pertenece al usuario autenticado)
     @GetMapping("/id/{id}")
     public ResponseEntity<Object> encontrarPorId(@PathVariable long id) {
+        ResponseEntity<Object> authCheck = validarUsuarioAutenticado();
+        if (authCheck != null)
+            return authCheck;
+
+        User user = userService.getAuthenticatedUser();
         HistorialReconocimiento hist = service.findById(id);
-        return Response.ok(hist != null ? toDTO(hist) : null);
+        if (hist == null)
+            return Response.notFound("Historial no encontrado");
+        if (!verificarPropiedad(hist, user))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes acceso a este historial");
+
+        return Response.ok(toDTO(hist));
     }
 
+    // Eliminar historial por ID (solo propietario)
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> eliminarPorId(@PathVariable long id) {
+        ResponseEntity<Object> authCheck = validarUsuarioAutenticado();
+        if (authCheck != null)
+            return authCheck;
+
+        User user = userService.getAuthenticatedUser();
+        HistorialReconocimiento hist = service.findById(id);
+        if (hist == null)
+            return Response.notFound("Historial no encontrado");
+        if (!verificarPropiedad(hist, user))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes permiso para eliminar este historial");
+
         service.deleteById(id);
         return Response.ok("El historial con ID " + id + " fue eliminado");
     }
 
-    @DeleteMapping("/eliminar-por-usuario/{id}")
-    public ResponseEntity<Object> eliminarPorIdDeUsuario(@PathVariable long id) {
-        service.deleteAllByUserId(id);
-        return Response.ok("Los historiales asociados al usuario con ID " + id + " fueron eliminados");
+    // Eliminar todos los historiales del usuario autenticado
+    @DeleteMapping("/por-usuario")
+    public ResponseEntity<Object> eliminarHistoralesDelUsuario() {
+        ResponseEntity<Object> authCheck = validarUsuarioAutenticado();
+        if (authCheck != null)
+            return authCheck;
+
+        User user = userService.getAuthenticatedUser();
+        service.deleteAllByUserId(user.getId());
+        return Response.ok("Se eliminaron todos los historiales del usuario autenticado");
     }
 }

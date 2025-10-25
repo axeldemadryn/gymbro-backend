@@ -21,6 +21,11 @@ public class SessionExerciseService {
     @Autowired
     private RoutineDayRepository routineDayRepository;
 
+    // 🔹 Nuevo método: obtener todos los ejercicios de sesión de un usuario
+    public List<SessionExercise> findAllByUserId(Long userId) {
+        return repository.findAllBySessionUserId(userId);
+    }
+
     public SessionExercise findById(long id) {
         return repository.findById(id).orElse(null);
     }

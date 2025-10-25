@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.gym.backend.business.repositories.RoutineDayRepository;
 import com.gym.backend.business.repositories.WeeklyRoutineRepository;
+import com.gym.backend.model.RoutineDay;
 import com.gym.backend.model.WeeklyRoutine;
 
 import jakarta.transaction.Transactional;
@@ -24,6 +25,9 @@ public class WeeklyRoutineService {
 
     @Autowired
     private RoutineDayRepository routineDayRepository;
+
+    @Autowired
+    private RoutineDayService routineDayService;
 
     public WeeklyRoutine findById(long id) {
         return repository.findById(id).orElse(null);
@@ -40,15 +44,17 @@ public class WeeklyRoutineService {
                 .orElseThrow(() -> new RuntimeException("No se encontró la rutina semanal con esas fechas"));
     }
 
+    // 🔹 Buscar rutina por fechas (para un usuario)
+    public WeeklyRoutine findByDatesAndUserId(LocalDate start, LocalDate end, Long userId) {
+        return repository.findByStartDateAndEndDateAndUserId(start, end, userId)
+                .orElse(null);
+    }
+
     public List<WeeklyRoutine> findByUserId(Long userId) {
-        if (userId == null) {
-            return findAll(); // Si no hay usuarios, devuelve todas
-        }
         return repository.findByUserId(userId);
     }
 
-    @Transactional
-    public WeeklyRoutine save(WeeklyRoutine weeklyRoutine) {
+    private void validarRutina(WeeklyRoutine weeklyRoutine) {
         LocalDate start = weeklyRoutine.getStartDate();
         LocalDate end = weeklyRoutine.getEndDate();
 
@@ -92,7 +98,11 @@ public class WeeklyRoutineService {
             if (!solap.isEmpty())
                 throw new IllegalArgumentException("La rutina semanal se solapa con otra existente.");
         }
+    }
 
+    @Transactional
+    public WeeklyRoutine save(WeeklyRoutine weeklyRoutine) {
+        validarRutina(weeklyRoutine);
         return repository.save(weeklyRoutine);
     }
 
@@ -105,5 +115,34 @@ public class WeeklyRoutineService {
         }
 
         repository.deleteById(weeklyRoutineId);
+    }
+
+    @Transactional
+    public WeeklyRoutine clone(WeeklyRoutine weeklyRoutine, LocalDate startDate) {
+
+        WeeklyRoutine clonada = new WeeklyRoutine();
+
+        clonada.setName(weeklyRoutine.getName()); // mismo nombre
+        clonada.setDescription(weeklyRoutine.getDescription()); // misma descripción
+        clonada.setStartDate(startDate); // nueva fecha, ingresada en el método
+
+        // Mantener la misma duración en días que la original
+        long dias = ChronoUnit.DAYS.between(weeklyRoutine.getStartDate(), weeklyRoutine.getEndDate());
+        clonada.setEndDate(startDate.plusDays(dias));
+        clonada.setUser(weeklyRoutine.getUser()); // mismo usuario
+
+        clonada = save(clonada);
+
+        for (RoutineDay rd : routineDayRepository.findByWeeklyRoutine(weeklyRoutine)) {
+            RoutineDay nuevo = new RoutineDay();
+            nuevo.setDay(rd.getDay());
+            nuevo.setRoutine(clonada);
+            nuevo.setSession(rd.getSession());
+
+            // No seteamos status manualmente, lo hará routineDayService.save()
+            routineDayService.save(nuevo);
+        }
+
+        return clonada;
     }
 }
