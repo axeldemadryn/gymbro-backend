@@ -153,19 +153,18 @@ public class WeeklyRoutinePresenter {
     // Clonar rutina semanal
     @PostMapping("/clone")
     public ResponseEntity<Object> clonar(
-        @RequestParam("startDate") LocalDate startDate,
-        @RequestBody WeeklyRoutine routine
-    ){
+            @RequestParam("startDate") LocalDate startDate,
+            @RequestBody WeeklyRoutine routine) {
         if (routine.getId() == null || routine.getId() <= 0)
             return Response.dbError("La rutina tiene un ID inválido.");
 
         User user = userService.getAuthenticatedUser();
         if (user == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
-        
+
         if (routine.getName() == null || routine.getName().isEmpty())
             return Response.dbError("La rutina no puede tener un nombre vacío.");
-        
+
         WeeklyRoutine existente = routineService.findById(routine.getId());
         if (existente == null)
             return Response.notFound("No se encontró la rutina con ID " + routine.getId());
@@ -173,9 +172,7 @@ public class WeeklyRoutinePresenter {
         if (!existente.getUser().getId().equals(user.getId()))
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("No tiene permiso para modificar esta rutina.");
-        
-        routine.setUser(user);
-        
+
         try {
             return Response.ok(routineService.clone(routine, startDate));
         } catch (DataIntegrityViolationException e) {

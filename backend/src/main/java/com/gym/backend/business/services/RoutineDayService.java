@@ -1,6 +1,7 @@
 package com.gym.backend.business.services;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,12 @@ public class RoutineDayService {
 
     @Autowired
     private SessionExerciseRepository sessionExerciseRepository;
+
+    private final ZoneId zoneId;
+
+    public RoutineDayService(ZoneId zoneId) {
+        this.zoneId = zoneId; // Spring inyecta el bean
+    }
 
     // 🔹 Nuevo método: obtener todos los RoutineDay de un User
     public List<RoutineDay> findAllByUser(Long userId) {
@@ -83,13 +90,13 @@ public class RoutineDayService {
          * completada
          */
         if (rd.getStatus() == SessionStatus.PENDIENTE && // La rutina debe ser pendiente para aplicar el IF.
-                (LocalDate.now().isAfter(rd.getRoutine().getEndDate()) || // La rutina semanal completa debe haber
-                                                                          // pasado, o bien...
+                (LocalDate.now(zoneId).isAfter(rd.getRoutine().getEndDate()) || // La rutina semanal completa debe haber
+                // pasado, o bien...
                         (
                         // Al menos, la rutina semanal debería haber empezado, y el día de rutina haber
                         // transcurrido.
-                        LocalDate.now().isAfter(rd.getRoutine().getStartDate()) &&
-                                LocalDate.now().getDayOfWeek().getValue() > rd.getDay().getDia().getValue()))) {
+                        LocalDate.now(zoneId).isAfter(rd.getRoutine().getStartDate()) &&
+                                LocalDate.now(zoneId).getDayOfWeek().getValue() > rd.getDay().getDia().getValue()))) {
             rd.setStatus(SessionStatus.NO_COMPLETADA);
         }
     }
@@ -150,7 +157,7 @@ public class RoutineDayService {
                     : "Error. La rutina ya ha expirado."); // rutina incompleta
 
         // Validar que hoy es el día correspondiente
-        if (!LocalDate.now()
+        if (!LocalDate.now(zoneId)
                 // Calcular el LocalDate real del RoutineDay según el día de la semana (dentro
                 // de isEqual)
                 .isEqual(routine.getRoutine().getStartDate()

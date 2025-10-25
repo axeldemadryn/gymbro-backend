@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import com.gym.backend.business.repositories.RoutineDayRepository;
 import com.gym.backend.business.repositories.WeeklyRoutineRepository;
 import com.gym.backend.model.RoutineDay;
-import com.gym.backend.model.SessionStatus;
 import com.gym.backend.model.WeeklyRoutine;
 
 import jakarta.transaction.Transactional;
@@ -26,6 +25,9 @@ public class WeeklyRoutineService {
 
     @Autowired
     private RoutineDayRepository routineDayRepository;
+
+    @Autowired
+    private RoutineDayService routineDayService;
 
     public WeeklyRoutine findById(long id) {
         return repository.findById(id).orElse(null);
@@ -52,7 +54,7 @@ public class WeeklyRoutineService {
         return repository.findByUserId(userId);
     }
 
-    private void validarRutina(WeeklyRoutine weeklyRoutine){
+    private void validarRutina(WeeklyRoutine weeklyRoutine) {
         LocalDate start = weeklyRoutine.getStartDate();
         LocalDate end = weeklyRoutine.getEndDate();
 
@@ -117,26 +119,28 @@ public class WeeklyRoutineService {
 
     @Transactional
     public WeeklyRoutine clone(WeeklyRoutine weeklyRoutine, LocalDate startDate) {
-        validarRutina(weeklyRoutine);
-        WeeklyRoutine clonada = repository.save(new WeeklyRoutine(
-            (long) 0, // ID 0 que se va a cambiar en el save a un valor positivo
-            weeklyRoutine.getName(), // mismo nombre
-            weeklyRoutine.getDescription(), // misma descripción
-            startDate, // nueva fecha, ingresada en el método
-            startDate.plusDays(weeklyRoutine.getEndDate().getDayOfWeek().getValue() - 1),
-            weeklyRoutine.getUser() // mismo usuario
-        ));
-        
-        for(RoutineDay rd: routineDayRepository.findByWeeklyRoutine(weeklyRoutine)){
-            routineDayRepository.save(new RoutineDay( // Clonado de rutinas diarias asociadas a la rutina semanal vieja
-                (long) 0, // ID nulo, la base de datos asignará otro
-                rd.getDay(), // Mismo día de semana
-                clonada, // Rutina nueva asociada
-                rd.getSession(), // Misma sesión
-                LocalDate.now().isAfter(startDate) // Lógica de elección de estados, ya que es una rutina diaria nueva
-                    ? SessionStatus.COMPLETADA
-                    : SessionStatus.PENDIENTE
-            ));
+
+        WeeklyRoutine clonada = new WeeklyRoutine();
+
+        clonada.setName(weeklyRoutine.getName()); // mismo nombre
+        clonada.setDescription(weeklyRoutine.getDescription()); // misma descripción
+        clonada.setStartDate(startDate); // nueva fecha, ingresada en el método
+
+        // Mantener la misma duración en días que la original
+        long dias = ChronoUnit.DAYS.between(weeklyRoutine.getStartDate(), weeklyRoutine.getEndDate());
+        clonada.setEndDate(startDate.plusDays(dias));
+        clonada.setUser(weeklyRoutine.getUser()); // mismo usuario
+
+        clonada = save(clonada);
+
+        for (RoutineDay rd : routineDayRepository.findByWeeklyRoutine(weeklyRoutine)) {
+            RoutineDay nuevo = new RoutineDay();
+            nuevo.setDay(rd.getDay());
+            nuevo.setRoutine(clonada);
+            nuevo.setSession(rd.getSession());
+
+            // No seteamos status manualmente, lo hará routineDayService.save()
+            routineDayService.save(nuevo);
         }
 
         return clonada;

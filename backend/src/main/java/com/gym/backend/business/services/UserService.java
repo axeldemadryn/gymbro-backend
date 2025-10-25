@@ -43,14 +43,25 @@ public class UserService {
         return null;
     }
 
+    @Transactional
     public Map<String, Object> registrarUsuarioConToken(User user) {
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalStateException("El e-mail ya está registrado.");
-        }
+        // Verificar si ya existe un usuario con ese email
+        User existente = userRepository.findByEmail(user.getEmail()).orElse(null);
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setFechaRegistro(LocalDateTime.now());
-        user.setActivo(false);
+        if (existente != null) {
+            if (existente.isActivo()) {
+                throw new IllegalStateException("El e-mail ya está registrado y activo.");
+            } else {
+                // Actualizamos usuario inactivo con los nuevos datos
+                existente.setPassword(passwordEncoder.encode(user.getPassword()));
+                existente.setFechaRegistro(LocalDateTime.now());
+                user = existente; // para hacer save y devolverlo
+            }
+        } else {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setFechaRegistro(LocalDateTime.now());
+            user.setActivo(false);
+        }
 
         User created = userRepository.save(user);
 
@@ -101,6 +112,7 @@ public class UserService {
                 "token", tokenSesion);
     }
 
+    @Transactional
     public User registrarUsuario(User user) {
         // Validar si el email ya existe
         if (userRepository.existsByEmail(user.getEmail())) {
@@ -171,6 +183,7 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
+    @Transactional
     public User save(User user) {
         return userRepository.save(user);
     }
@@ -179,6 +192,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    @Transactional
     public void logout(String email) {
         User user = findByEmail(email);
         if (user != null) {
