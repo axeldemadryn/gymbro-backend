@@ -36,6 +36,20 @@ public class RoutineDayService {
         this.zoneId = zoneId; // Spring inyecta el bean
     }
 
+    /**
+     * Verifica si existe al menos un RoutineDay asociado a la sesión con id dado
+     */
+    public boolean existsBySessionId(Long sessionId) {
+        return repository.existsBySessionId(sessionId);
+    }
+
+    /**
+     * Verifica si existe al menos un RoutineDay asociado a la WeeklyRoutine
+     */
+    public boolean existsByWeeklyRoutineId(Long weeklyRoutineId) {
+        return repository.existsByWeeklyRoutineId(weeklyRoutineId);
+    }
+
     // 🔹 Nuevo método: obtener todos los RoutineDay de un User
     public List<RoutineDay> findAllByUser(Long userId) {
         actualizarEstadosSegunHoy();
