@@ -37,18 +37,14 @@ public class Maquina {
     private TipoEquipo tipoEquipo;
 
     private String descripcion;
-    
-    private String imagenUrl;
+
+    private String imagenUrl; // foto genérica o de catálogo
 
     @ManyToMany(mappedBy = "maquinas")
     @JsonIgnore // evita recursión Ejercicio -> Maquina -> Ejercicio
     private Set<Ejercicio> ejercicios;
 
     @ManyToMany
-    @JoinTable(
-        name = "maquina_musculos",
-        joinColumns = @JoinColumn(name = "maquina_id"),
-        inverseJoinColumns = @JoinColumn(name = "musculo_id")
-    )
+    @JoinTable(name = "maquina_musculos", joinColumns = @JoinColumn(name = "maquina_id"), inverseJoinColumns = @JoinColumn(name = "musculo_id"))
     private Set<Musculo> musculos;
 }

@@ -6,11 +6,12 @@ public class MaquinaDTO {
     private String nombre;
     private String tipoEquipo;
     private String descripcion;
-    private String imagen;
+    private String imagen; // imagen genérica o reconocida
     private List<EjercicioDTO> ejercicios;
-    private List<MusculoDTO> musculos; 
+    private List<MusculoDTO> musculos;
 
-    public MaquinaDTO() {}
+    public MaquinaDTO() {
+    }
 
     public String getImagen() {
         return imagen;
