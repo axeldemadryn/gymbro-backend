@@ -6,8 +6,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.gym.backend.business.repositories.MaquinaRepository;
 import com.gym.backend.business.repositories.RoutineDayRepository;
 import com.gym.backend.business.repositories.SessionRepository;
+import com.gym.backend.model.Maquina;
 import com.gym.backend.model.Session;
 import com.gym.backend.model.SessionExercise;
 
@@ -21,6 +23,9 @@ public class SessionService {
 
     @Autowired
     private RoutineDayRepository routineDayRepository;
+
+    @Autowired
+    private MaquinaRepository maquinaRepository;
 
     public Session findById(long id) {
         return repository.findById(id).orElse(null);
@@ -47,16 +52,11 @@ public class SessionService {
     @Transactional
     public Session save(Session aSession) {
 
-        boolean esActualizacion = aSession.getId() != null;
-
-        // Caso actualización: verificar si la sesión está asociada a alguna rutina
-        // diaria
-        if (esActualizacion) {
-            long count = routineDayRepository.countBySessionId(aSession.getId());
-            if (count > 0) {
-                throw new IllegalArgumentException(
-                        "No se puede modificar esta sesión, porque está asociada a una rutina diaria.");
-            }
+        /* Si es actualización (el ID no es nulo), se verifica si la sesión está asociada a
+        alguna rutina diaria */
+        if (aSession.getId() != null && routineDayRepository.countBySessionId(aSession.getId()) > 0) {
+            throw new IllegalArgumentException(
+                    "No se puede modificar esta sesión, porque está asociada a una rutina diaria.");
         }
 
         // Setear la relación bidireccional
@@ -77,5 +77,9 @@ public class SessionService {
         }
 
         repository.deleteById(sessionId);
+    }
+
+    public List<Maquina> obtenerMaquinasPorIdDeSesion(Long sessionId) {
+        return maquinaRepository.findMaquinasBySessionId(sessionId);
     }
 }

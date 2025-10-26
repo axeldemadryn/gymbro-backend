@@ -60,6 +60,15 @@ public class SessionPresenter {
         return Response.ok(session);
     }
 
+    @GetMapping("maquinas-asociadas-a/{id}")
+    public ResponseEntity<Object> encontrarMaquinasPorIdDeSesion(@PathVariable long id){
+        try {
+            return Response.ok(sessionService.obtenerMaquinasPorIdDeSesion(id));
+        } catch (Exception e) {
+            return Response.error(e, e.getMessage());
+        }
+    }
+
     // 🔹 POST: crear sesión para el usuario autenticado
     @PostMapping
     public ResponseEntity<Object> crear(@RequestBody Session session) {
