@@ -6,12 +6,12 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.gym.backend.business.repositories.UserRepository;
 import com.gym.backend.model.User;
+import com.gym.backend.security.CustomUserDetails;
 import com.gym.backend.security.JwtUtil;
 
 import jakarta.transaction.Transactional;
@@ -36,7 +36,7 @@ public class UserService {
     public User getAuthenticatedUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (principal instanceof UserDetails userDetails) {
+        if (principal instanceof CustomUserDetails userDetails) {
             return userRepository.findByEmail(userDetails.getUsername()).orElse(null);
         }
 
