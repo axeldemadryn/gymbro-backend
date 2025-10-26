@@ -1,11 +1,11 @@
 -- Crear sesiones
-INSERT INTO sessions (name, description) VALUES ('Sesion Pecho', 'Rutina de pecho con máquinas básicas');
-INSERT INTO sessions (name, description) VALUES ('Sesion Espalda', 'Rutina de espalda y dorsales');
-INSERT INTO sessions (name, description) VALUES ('Sesion Piernas', 'Rutina de piernas con enfoque en fuerza');
-INSERT INTO sessions (name, description) VALUES ('Sesion Brazos', 'Rutina de biceps y triceps');
-INSERT INTO sessions (name, description) VALUES ('Sesion Hombros', 'Rutina de hombros y deltoides');
-
-INSERT INTO sessions (name, description) VALUES ('Sesion Vacía', 'Rutina vacia');
+INSERT INTO sessions (name, description, user_id) VALUES
+('Sesion Pecho', 'Rutina de pecho con máquinas básicas', NULL),
+('Sesion Espalda', 'Rutina de espalda y dorsales', NULL),
+('Sesion Piernas', 'Rutina de piernas con enfoque en fuerza', NULL),
+('Sesion Brazos', 'Rutina de biceps y triceps', NULL),
+('Sesion Hombros', 'Rutina de hombros y deltoides', NULL),
+('Sesion Vacía', 'Rutina vacia', NULL);
 
 
 -- Asignar ejercicios a las sesiones (sin IDs fijos, se hace por nombre de sesión)

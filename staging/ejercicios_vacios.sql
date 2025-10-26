@@ -1,4 +1,4 @@
--- Vacíos porque no están asociados a ningún músculo, ni máquina (en principio)
+-- Vacíos porque no están asociados a ningún video, ni usuario (en principio)
 INSERT INTO ejercicios (id, nombre, tipo, descripcion, video_url, user_id)
 VALUES
 -- Pecho
