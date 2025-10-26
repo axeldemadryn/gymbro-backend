@@ -27,7 +27,7 @@ public interface RoutineDayRepository extends CrudRepository<RoutineDay, Long> {
     /**
      * Devuelve true si existe al menos un RoutineDay con la WeeklyRoutine dada
      */
-    boolean existsByWeeklyRoutineId(Long weeklyRoutineId);
+    boolean existsByRoutineId(Long weeklyRoutineId);
 
     // Buscar todos los RoutineDay de un usuario por userId
     @Query("SELECT rd FROM RoutineDay rd WHERE rd.routine.user.id = :userId")

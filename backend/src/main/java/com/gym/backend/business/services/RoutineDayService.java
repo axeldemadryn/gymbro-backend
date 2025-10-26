@@ -47,7 +47,7 @@ public class RoutineDayService {
      * Verifica si existe al menos un RoutineDay asociado a la WeeklyRoutine
      */
     public boolean existsByWeeklyRoutineId(Long weeklyRoutineId) {
-        return repository.existsByWeeklyRoutineId(weeklyRoutineId);
+        return repository.existsByRoutineId(weeklyRoutineId);
     }
 
     // 🔹 Nuevo método: obtener todos los RoutineDay de un User
