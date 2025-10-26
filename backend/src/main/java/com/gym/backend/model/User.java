@@ -38,6 +38,16 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+/*
+    @NotBlank(message = "La contraseña no puede estar vacía")
+@Pattern(
+    regexp = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[@#$%^&+=!]).{8,}$",
+    message = "La contraseña debe tener al menos 8 caracteres, incluir mayúscula, minúscula, número y carácter especial"
+)
+@Column(nullable = false)
+private String password;
+*/
+
     @Column(nullable = false)
     private LocalDateTime fechaRegistro = LocalDateTime.now();
 

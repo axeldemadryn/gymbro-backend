@@ -26,6 +26,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/register", "/api/users/verify", "api/users/resend-verification",
                                 "/api/users/login")
                         .permitAll()
+                        // ✅ AGREGAR: Permitir acceso a las imágenes
+                        .requestMatchers("/imagenes_maquinas_reconocidas/**").permitAll()
                         // rutas públicas
                         .anyRequest().authenticated() // el resto necesita token
                 )

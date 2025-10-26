@@ -117,9 +117,9 @@ public class ReconocimientoPresenter {
             return Response.notFound("No se encontró la máquina.");
         }
 
-        // 5. Generar la URL protegida para la imagen guardada
-        String protectedUrl = "/api/imagenes/" + fileName;
-        maquinaDTO.setImagen(protectedUrl);
+        // 5. Generar URL pública directa
+        String publicUrl = "/imagenes_maquinas_reconocidas/" + fileName;
+        maquinaDTO.setImagen(publicUrl);
 
         // 6. Guardar el reconocimiento en historial
         HistorialReconocimiento historial = new HistorialReconocimiento();
