@@ -10,6 +10,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/imagenes_maquinas_reconocidas/**")
-                .addResourceLocations("file:/opt/gymapp/imagenes_maquinas_reconocidas/");
+                .addResourceLocations("file:imagenes_maquinas_reconocidas/");
     }
 }

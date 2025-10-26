@@ -91,9 +91,9 @@ public class ReconocimientoPresenter {
         }
 
         // 2. Definir carpeta donde se guardarán las fotos
-        String uploadDir = "/opt/gymapp/imagenes_maquinas_reconocidas/";
+        String uploadDir = "imagenes_maquinas_reconocidas/";
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        Path filePath = Paths.get(uploadDir + fileName);
+        Path filePath = Paths.get(uploadDir, fileName);
 
         try {
             // Crear carpeta si no existe
