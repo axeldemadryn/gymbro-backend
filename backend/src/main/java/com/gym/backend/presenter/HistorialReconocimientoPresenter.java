@@ -31,6 +31,7 @@ public class HistorialReconocimientoPresenter {
     private HistorialReconocimientoDTO toDTO(HistorialReconocimiento hist) {
         ObjectMapper mapper = new ObjectMapper();
         HistorialReconocimientoDTO dto = new HistorialReconocimientoDTO();
+        dto.setId(hist.getId());
         dto.setFechaReconocimiento(hist.getFechaReconocimiento());
 
         try {

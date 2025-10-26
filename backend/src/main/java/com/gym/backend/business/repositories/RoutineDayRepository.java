@@ -19,6 +19,16 @@ public interface RoutineDayRepository extends CrudRepository<RoutineDay, Long> {
 
     long countByRoutineId(Long routineid);
 
+    /**
+     * Devuelve true si existe al menos un RoutineDay con la sesión dada
+     */
+    boolean existsBySessionId(Long sessionId);
+
+    /**
+     * Devuelve true si existe al menos un RoutineDay con la WeeklyRoutine dada
+     */
+    boolean existsByRoutineId(Long weeklyRoutineId);
+
     // Buscar todos los RoutineDay de un usuario por userId
     @Query("SELECT rd FROM RoutineDay rd WHERE rd.routine.user.id = :userId")
     List<RoutineDay> findAllByRoutineUserId(@Param("userId") Long userId);

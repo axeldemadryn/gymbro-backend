@@ -1,6 +1,10 @@
 package com.gym.backend.presenter;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Base64;
@@ -79,41 +83,58 @@ public class ReconocimientoPresenter {
     // ------------------ Endpoint seguro (requiere usuario autenticado)
     @PostMapping(value = "/api/reconocimiento", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> reconocer(@RequestParam MultipartFile file) {
-
-        // Obtener usuario autenticado
+        // 1. Obtener usuario autenticado
         User user = userService.getAuthenticatedUser();
-
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Usuario no autenticado");
         }
 
-        // Bloquear el Mono para obtener el nombre de la máquina
+        // 2. Definir carpeta donde se guardarán las fotos
+        String uploadDir = "imagenes_maquinas_reconocidas/";
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        Path filePath = Paths.get(uploadDir, fileName);
+
+        try {
+            // Crear carpeta si no existe
+            Files.createDirectories(filePath.getParent());
+            // Guardar la imagen
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al guardar la imagen en el servidor.");
+        }
+
+        // 3. Reconocer la máquina a partir de la foto
         String nombre = reconocimientoService.reconocer(file).block();
         if ("no_reconocido".equalsIgnoreCase(nombre)) {
             return Response.ok("no_reconocido");
         }
 
-        // Bloquear el Mono para obtener la info completa de la máquina
+        // 4. Obtener la info completa de la máquina reconocida
         MaquinaDTO maquinaDTO = maquinaService.obtenerMaquinaConInfo(nombre).block();
         if (maquinaDTO == null) {
             return Response.notFound("No se encontró la máquina.");
         }
 
-        // Guardar en historial
+        // 5. Generar la URL pública para la imagen guardada
+        String publicUrl = "/imagenes_maquinas_reconocidas/" + fileName;
+        maquinaDTO.setImagen(publicUrl);
+
+        // 6. Guardar el reconocimiento en historial
         HistorialReconocimiento historial = new HistorialReconocimiento();
         historial.setUser(user);
         historial.setMaquina(maquinaService.findByNombre(nombre));
         historial.setFechaReconocimiento(LocalDate.now(zoneId));
+
         try {
-            historial.setDetalleReconocimiento(
-                    new ObjectMapper().writeValueAsString(maquinaDTO));
+            historial.setDetalleReconocimiento(new ObjectMapper().writeValueAsString(maquinaDTO));
         } catch (JsonProcessingException e) {
             historial.setDetalleReconocimiento(null);
         }
         historialService.save(historial);
 
-        // Devolver la máquina al frontend
+        // 7. Devolver la info de la máquina (incluyendo la foto reconocida)
         return Response.ok(maquinaDTO);
     }
 
