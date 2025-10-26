@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,6 +31,7 @@ public class User {
     private String nombre;
 
     @NotBlank(message = "El e-mail no puede estar vacío")
+    @NotNull(message = "El e-mail no puede ser nulo")
     @Pattern(regexp = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", message = "Por favor, escriba un e-mail válido")
     @Column(nullable = false, unique = true)
     private String email;

@@ -1,4 +1,4 @@
-package com.gym.backend;
+package com.gym.backend.response;
 
 import java.util.HashMap;
 import java.util.Map;

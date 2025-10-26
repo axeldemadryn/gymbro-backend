@@ -1,16 +1,29 @@
 package com.gym.backend.presenter;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.gym.backend.Response;
 import com.gym.backend.business.services.UserService;
 import com.gym.backend.model.User;
+import com.gym.backend.response.Response;
 import com.gym.backend.security.JwtUtil;
 
-import java.util.Map;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users")
@@ -24,7 +37,7 @@ public class UserPresenter {
 
     // 🧩 Registro de usuario
     @PostMapping("/register")
-    public ResponseEntity<Object> register(@RequestBody User user) {
+    public ResponseEntity<Object> register(@Valid @RequestBody User user) {
         try {
             Map<String, Object> result = userService.registrarUsuarioConToken(user);
             return Response.ok(result);
@@ -115,7 +128,7 @@ public class UserPresenter {
             userService.desactivarUsuario(id);
             return Response.ok("Usuario desactivado correctamente.");
         } catch (IllegalArgumentException e) {
-            return Response.dbError(e.getMessage());
+            return Response.error(e, e.getMessage());
         } catch (Exception e) {
             return Response.dbError("Error al desactivar el usuario: " + e.getMessage());
         }
@@ -131,10 +144,10 @@ public class UserPresenter {
         try {
             String email = jwtUtil.extraerUsername(token);
             userService.logout(email);
-        } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            return Response.error(null, "Token expirado");
-        } catch (io.jsonwebtoken.JwtException e) {
-            return Response.error(null, "Token inválido");
+        } catch (ExpiredJwtException e) {
+            return Response.error(e, "Token expirado");
+        } catch (JwtException e) {
+            return Response.error(e, "Token inválido");
         } catch (Exception e) {
             return Response.dbError("Error durante logout: " + e.getMessage());
         }

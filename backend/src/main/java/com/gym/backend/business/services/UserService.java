@@ -1,6 +1,8 @@
 package com.gym.backend.business.services;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -182,8 +184,10 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Iterable<User> listarUsuarios() {
-        return userRepository.findAll();
+    public List<User> listarUsuarios() {
+        List<User> usuarios = new ArrayList<>();
+        userRepository.findAll().forEach(usuarios::add);
+        return usuarios;
     }
 
     @Transactional
