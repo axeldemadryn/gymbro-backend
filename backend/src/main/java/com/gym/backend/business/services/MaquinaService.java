@@ -74,14 +74,14 @@ public class MaquinaService {
                                 return ejDTO;
                             })
                             .toList());
-            dto.setMusculos(null); // no mostramos músculos directos
-        } else if (maquina.getMusculos() != null && !maquina.getMusculos().isEmpty()) {
+        } 
+        
+        if (maquina.getMusculos() != null && !maquina.getMusculos().isEmpty()) {
             // Si no tiene ejercicios, mostramos los músculos que trabaja
             dto.setMusculos(
                     maquina.getMusculos().stream()
                             .map(m -> new MusculoDTO(m.getNombre()))
                             .toList());
-            dto.setEjercicios(null);
         }
 
         return Mono.just(dto);
