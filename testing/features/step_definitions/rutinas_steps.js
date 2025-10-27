@@ -1,8 +1,5 @@
 const { Given, When } = require('@cucumber/cucumber');
-const get = require('./common').get;
-const post = require('./common').post;
-const addWeeklyRoutine = require('./common').addWeeklyRoutine;
-const addRoutineDay = require('./common').addRoutineDay;
+const { get, post } = require('./common');
 
 // ---------------- Given ----------------
 
@@ -37,7 +34,6 @@ Given('se intenta crear la rutina diaria para {string} con la sesión {string}',
 When('se guarda la rutina semanal', function () {
     try {
         this.weeklyRoutine = post('weekly-routines', this.weeklyRoutine);
-        addWeeklyRoutine(this.weeklyRoutine);
     } catch (error) {
         console.warn('Error al guardar la rutina semanal: ' + error.message);
     }
@@ -47,7 +43,6 @@ When('se guarda la rutina semanal', function () {
 When('se guarda la rutina diaria', function () {
     try {
         this.routineDay = post(`routine-days`, this.routineDay);
-        addRoutineDay(this.routineDay);
     } catch (error) {
         console.warn('Error al crear la rutina diaria: ' + error.message);
     }

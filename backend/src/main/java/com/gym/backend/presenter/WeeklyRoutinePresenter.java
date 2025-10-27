@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gym.backend.Response;
 import com.gym.backend.business.services.RoutineDayService;
 import com.gym.backend.business.services.UserService;
 import com.gym.backend.business.services.WeeklyRoutineService;
 import com.gym.backend.model.User;
 import com.gym.backend.model.WeeklyRoutine;
+import com.gym.backend.response.Response;
 
 @RestController
 @RequestMapping("/api/weekly-routines")

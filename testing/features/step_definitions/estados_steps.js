@@ -1,10 +1,6 @@
 const assert = require('assert');
 const { Given, When, Then } = require('@cucumber/cucumber');
-const post = require('./common').post;
-const get = require('./common').get;
-const put = require('./common').put;
-const addWeeklyRoutine = require('./common').addWeeklyRoutine;
-const addRoutineDay = require('./common').addRoutineDay;
+const { post, get, put } = require('./common');
 
 /********Creación inicial de rutinas semanales***********/
 
@@ -21,7 +17,6 @@ Given('que se intenta crear la rutina semanal {string} con descripción {string}
 
 When('se crea la rutina semanal con descripción', function(){
     this.weeklyRoutine = post('weekly-routines', this.weeklyRoutine);
-    addWeeklyRoutine(this.weeklyRoutine);
 });
 
 /**************Creación y validación de estados de rutinas diarias***************/
@@ -38,7 +33,6 @@ Given('que se intenta crear la rutina diaria para {string} con la rutina semanal
 
 When('se crea la rutina diaria', function(){
     this.routineDay = post('routine-days', this.routineDay); // Esta asignación guardará la rutina y además, la devolverá con ID y un estado fijado por el backend
-    addRoutineDay(this.routineDay);
 });
 
 Then('el estado de la rutina debería ser {string}', function(estadoEsperado){
@@ -53,7 +47,6 @@ Given('que se tiene la rutina diaria para {string} con la rutina semanal que dur
 
 When('se cambia el estado de la rutina diaria a COMPLETADA', function(){
     this.routineDay = put('routine-days/completada', this.routineDay);
-    // No es necesario acá modificar nada en el common
 });
 
 /**************************Día de hoy******************************/
@@ -83,7 +76,7 @@ Given('que se quiere crear una rutina diaria para el día de hoy asociada a la s
 
     // Función para guardar en formato YYYY-MM-DD para enviar al backend
     const formatoISO = d => {
-        const anio = d.getFullYear();
+        const anio = d.getFullYear(); // año
         const mes = String(d.getMonth() + 1).padStart(2, '0');
         const dia = String(d.getDate()).padStart(2, '0');
         return `${anio}-${mes}-${dia}`;

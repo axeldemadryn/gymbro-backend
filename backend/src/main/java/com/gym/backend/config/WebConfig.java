@@ -9,6 +9,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // ✅ Permitir servir imágenes desde la carpeta "imagenes_maquinas_reconocidas"
         registry.addResourceHandler("/imagenes_maquinas_reconocidas/**")
                 .addResourceLocations("file:imagenes_maquinas_reconocidas/");
     }

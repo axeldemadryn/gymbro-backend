@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gym.backend.Response;
 import com.gym.backend.business.services.MaquinaService;
 import com.gym.backend.model.Maquina;
+import com.gym.backend.response.Response;
 
 @RestController
 @RequestMapping("api/maquinas")

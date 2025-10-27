@@ -10,8 +10,6 @@ import java.time.ZoneId;
 import java.util.Base64;
 import java.util.stream.Collectors;
 
-import reactor.core.publisher.Mono;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gym.backend.Response;
 import com.gym.backend.business.services.HistorialReconocimientoService;
 import com.gym.backend.business.services.MaquinaService;
 import com.gym.backend.business.services.OpenAiService;
@@ -37,6 +34,9 @@ import com.gym.backend.dto.ReconocimientoViewModel;
 import com.gym.backend.dto.RoboflowResponse;
 import com.gym.backend.model.HistorialReconocimiento;
 import com.gym.backend.model.User;
+import com.gym.backend.response.Response;
+
+import reactor.core.publisher.Mono;
 
 @RestController
 public class ReconocimientoPresenter {
@@ -117,7 +117,7 @@ public class ReconocimientoPresenter {
             return Response.notFound("No se encontró la máquina.");
         }
 
-        // 5. Generar la URL pública para la imagen guardada
+        // 5. Generar URL pública directa
         String publicUrl = "/imagenes_maquinas_reconocidas/" + fileName;
         maquinaDTO.setImagen(publicUrl);
 

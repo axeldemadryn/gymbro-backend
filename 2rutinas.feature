@@ -4,19 +4,19 @@ Característica: Gestionar rutinas semanales y diarias
 
   # Escenario 1: Validar que la rutina semanal empiece un lunes
   Escenario: Crear una WeeklyRoutine que no empiece un lunes
-    Dado que se intenta crear la rutina semanal "Semana A" con fechas desde "2023-10-03" hasta "2023-10-08"
+    Dado que se intenta crear la rutina semanal "Semana A" con fechas desde "2023-10-03" hasta "2023-10-08" con usuario "enriquelopez@ejemplo.com"
     Cuando se guarda la rutina semanal
     Entonces se obtiene un error con mensaje "La rutina semanal debe comenzar un lunes."
 
   # Escenario 2: Validar duración de la rutina semanal (5-7 días)
   Escenario: Crear una WeeklyRoutine con duración inválida
-    Dado que se intenta crear la rutina semanal "Semana B" con fechas desde "2023-10-02" hasta "2023-10-05"
+    Dado que se intenta crear la rutina semanal "Semana B" con fechas desde "2023-10-02" hasta "2023-10-05" con usuario "enriquelopez@ejemplo.com"
     Cuando se guarda la rutina semanal
     Entonces se obtiene un error con mensaje "La rutina semanal debe tener entre 5 y 7 días."
 
   # Escenario 3: Validar que no se solapen fechas de rutinas semanales
   Escenario: Crear una WeeklyRoutine que se solapa con otra existente
-    Dado que existe la rutina semanal "Semana C" con fechas desde "2023-10-09" hasta "2023-10-15"
+    Dado que existe la rutina semanal "Semana C" con fechas desde "2023-10-09" hasta "2023-10-15" con
     Y se intenta crear la rutina semanal "Semana D" con fechas desde "2023-10-09" hasta "2023-10-13"
     Cuando se guarda la rutina semanal
     Entonces se obtiene un error con mensaje "La rutina semanal se solapa con otra existente."
@@ -41,7 +41,14 @@ Característica: Gestionar rutinas semanales y diarias
     Cuando se guarda la rutina semanal
     Entonces se debería obtener el mensaje "OK"
 
-  # Escenario 7: Crear días de rutina para una rutina semanal existente
+  Ejemplos:
+    | semana   | fechaInicio | fechaFin   | emailUsuario              | mensaje |
+    | Semana C | 2023-10-09  | 2023-10-15 | enriquelopez@ejemplo.com  | OK      |
+    | Semana E | 2023-10-16  | 2023-10-21 | camilandretti@ejemplo.com | OK      |
+    | Semana F | 2023-10-23  | 2023-10-29 | julioibanez@ejemplo.com   | OK      |
+    | Semana G | 2023-10-30  | 2023-11-05 | enriquelopez@ejemplo.com  | OK      |
+
+  # Escenario: Crear días de rutina para una rutina semanal existente
   Esquema del escenario: Crear RoutineDays correctamente
     Dado que existe la rutina semanal "Semana G" con fechas desde "2023-10-30" hasta "2023-11-05"
     Y se intenta crear la rutina diaria para "<Día>" con la sesión "<Sesión>"
