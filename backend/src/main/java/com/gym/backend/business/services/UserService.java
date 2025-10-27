@@ -63,7 +63,7 @@ public class UserService {
 
         // Crear nuevo usuario
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setFechaRegistro(LocalDateTime.now());
+        user.setFechaYHoraRegistro(LocalDateTime.now());
         user.setActivo(false);
 
         User created = userRepository.save(user);
@@ -128,13 +128,13 @@ public class UserService {
         }
 
         // Verificar si no pasó poco tiempo desde el último registro (evitar spam)
-        if (user.getFechaRegistro() != null &&
-                user.getFechaRegistro().isAfter(LocalDateTime.now().minusMinutes(10))) {
+        if (user.getFechaYHoraRegistro() != null &&
+                user.getFechaYHoraRegistro().isAfter(LocalDateTime.now().minusMinutes(10))) {
             throw new IllegalStateException("Ya se envió un correo recientemente. Intenta de nuevo en unos minutos.");
         }
 
         // Actualizar fecha de registro
-        user.setFechaRegistro(LocalDateTime.now());
+        user.setFechaYHoraRegistro(LocalDateTime.now());
         userRepository.save(user);
 
         // Generar nuevo token y enviar correo

@@ -1,16 +1,20 @@
 const assert = require('assert');
 const request = require('sync-request');
-const { Then, AfterAll } = require('@cucumber/cucumber');
+const { BeforeAll, Then, AfterAll } = require('@cucumber/cucumber');
 
-// URL base del backend
-const URL = 'http://backend:8080/api/';
+const URL = 'http://backend:8080/api/'; // URL base del backend
 
 let lastResponse = null;
 
-let weeklyRoutines = [];
-let routineDays = [];
+let userToken = null; // Token del usuario para todos los steps
 
-// AGREGADO para manejar user
+// Datos de usuario de testings
+const testUser = {
+    nombre: 'Usuario Test',
+    email: 'testuser@example.com',
+    password: '123456'
+};
+
 function doRequest(method, path, body = null, token = null) {
     try {
         const opts = body ? {
@@ -31,24 +35,117 @@ function doRequest(method, path, body = null, token = null) {
     }
 }
 
-function post(path, body, token = null) { return doRequest('POST', path, body, token); }
+// Consultas GET, PUT y DELETE
 function get(path, token = null) { return doRequest('GET', path, null, token); }
-function put(path, body, token = null) {
-    return doRequest('PUT', path, body, token);
-}
-function deleteReq(path, token = null) {
-    try {
-        // permitimos DELETE que devuelva 204/no content
-        doRequest('DELETE', path, null, token);
-        return true;
-    } catch (err) {
-        // devolver false en limpieza; caller puede loguear
-        return false;
+function put(path, body, token = null) { return doRequest('PUT', path, body, token); }
+function deleteReq(path, token = null) { return doRequest('DELETE', path, null, token); }
+
+class MapaDatosBackend {
+
+    constructor() {
+        // Map para almacenar colecciones de datos del backend: se pueden agregar nuevos tipos aquí posteriormente.
+        this.colecciones = new Map([
+            ['users', []],
+            ['weekly-routines', []],
+            ['routine-days', []]
+        ]);
+        this.prioridad = ['users', 'routine-days', 'weekly-routines'];
+        this.rutasPost = {
+            'users': 'users/register',
+            'routine-days': 'routine-days',
+            'weekly-routines': 'weekly-routines'
+        };
+    }
+
+    // Agrega un elemento a la colección correspondiente
+    agregarElemento(tipo, elemento) {
+        if (!this.colecciones.has(tipo))
+            throw new Error(`No existe la colección: ${tipo}`);
+        this.colecciones.get(tipo).push(elemento);
     }
 }
 
+let datosAntesTest = new MapaDatosBackend();
+let datosDespuesTest = new MapaDatosBackend();
 
-/* Asserts */
+// Consulta POST e inserción de datos
+function post(path, body, token = null) {
+    const data = doRequest('POST', path, body, token); // Hace el post del body y lo recupera luego
+    const clave_almacenamiento = path.startsWith('/') // Elimina barra inicial si existe y luego toma el primer segmento
+        ? path.substring(1).split("/")[0] // substring(1) elimina el primer elemento (la barra inicial, si aplica)
+        : path.split("/")[0];
+    datosDespuesTest.agregarElemento(clave_almacenamiento, data); // Inserta el body entre los almacenados
+    return data; // Retorna el body
+}
+
+/************************************BeforeAll para manejar user*******************************************/
+
+BeforeAll(function () {
+    /****Asignación de usuario ***/
+    
+    let tokenToVerify = null;
+
+    // 1. Intentar registrar el usuario. Si ya existe, capturar el error.
+    try {
+        const registerRes = post('users/register', testUser);
+        tokenToVerify = registerRes?.token; // Token si el registro es nuevo
+    } catch (e) {
+        console.log('Usuario de prueba ya registrado. Intentando reenviar verificación...');
+        
+        // 2. Si el registro falló, forzar el reenvío para obtener un token fresco.
+        try {
+            const resendRes = post('users/resend-verification', { email: testUser.email });
+            tokenToVerify = resendRes?.token;
+        } catch (resendError) {
+            console.log('No se pudo reenviar la verificación. Asumiendo que el usuario está ACTIVO o que la cuenta ya fue verificada.');
+        }
+    }
+
+    // 3. Verificar la cuenta si tenemos un token.
+    if (tokenToVerify) {
+        try {
+            get(`users/verify?token=${tokenToVerify}`);
+            console.log('Cuenta verificada.');
+        } catch (e) {
+            console.warn('Error durante la verificación, pero continuamos (posiblemente ya estaba activo):', e.message);
+        }
+    } else {
+        console.log('Token de verificación no disponible, asumiendo usuario activo.');
+    }
+
+    // 4. Login del usuario
+    const loginRes = post('users/login', {
+        email: testUser.email,
+        password: testUser.password
+    });
+
+    if (!loginRes || !loginRes.token) {
+        throw new Error('No se pudo loguear al usuario de prueba. La cuenta puede estar inactiva o con credenciales incorrectas.');
+    }
+
+    userToken = loginRes.token;
+    this.userToken = userToken; // disponible para todos los steps
+
+    /*** Obtención y eliminación del backend de datos previamente almacenados ***/
+
+    // Función para cargar datos en datosAntesTest
+    for (const tipo of datosAntesTest.prioridad) {
+        const datos = get(tipo);
+        datosAntesTest.colecciones.set(tipo, datos);
+    }
+
+    try {
+        for (const tipo of datosAntesTest.prioridad) {
+            for (const elemento of datosAntesTest.colecciones.get(tipo)) {
+                if (elemento?.id) deleteReq(`${tipo}/${elemento.id}`);
+            }
+        }
+    } catch (e) {
+        console.warn('BeforeAll: error eliminando datos previos al testing:', e.message);
+    }
+});
+
+/*******************************************Asserts*******************************************************/
 Then('se debería obtener el mensaje {string}', function (expected) {
     if (!lastResponse) throw new Error('No hay respuesta disponible del backend.');
     assert(
@@ -66,89 +163,32 @@ Then('se obtiene un error con mensaje {string}', function (expected) {
     );
 });
 
-/* AfterAll: eliminar todas las weekly-routines y routine-days usadas para el testing */
+/***********AfterAll: eliminar todas las weekly-routines y routine-days usadas para el testing****************/
 AfterAll(() => {
     // Primero eliminar los routineDays, porque dependen de weeklyRoutines
     try {
-        routineDays.forEach(day => {
-            if (day && day.id) {
-                deleteReq(`routine-days/${day.id}`, userToken);
+        for (const tipo of datosDespuesTest.prioridad) {
+            for (const elemento of datosDespuesTest.colecciones.get(tipo)) {
+                if (elemento?.id) deleteReq(`${tipo}/${elemento.id}`);
             }
-        });
+        }
     } catch (e) {
-        console.warn('AfterAll: error eliminando routineDays:', e.message);
-    }
-
-    // Luego eliminar las weeklyRoutines
-    try {
-        weeklyRoutines.forEach(weekly => {
-            if (weekly && weekly.id) {
-                deleteReq(`weekly-routines/${weekly.id}`, userToken);
-            }
-        });
-    } catch (e) {
-        console.warn('AfterAll: error eliminando weeklyRoutines:', e.message);
+        console.warn('AfterAll: error eliminando datos de testing:', e.message);
     }
 
     console.log('Limpieza completada.');
-});
 
-
-function addWeeklyRoutine(r) {
-    weeklyRoutines.push(r);
-}
-
-function addRoutineDay(r) {
-    routineDays.push(r);
-}
-
-module.exports = { get, post, put, deleteReq, addWeeklyRoutine, addRoutineDay };
-
-// AGREGADO para manejar user
-
-const { Before } = require('@cucumber/cucumber');
-
-const testUser = {
-    nombre: 'Usuario Test',
-    email: 'testuser@example.com',
-    password: '123456'
-};
-
-// Token del usuario para todos los steps
-let userToken = null;
-
-Before(function () {
-    // Registrar usuario
-    let registerRes = null;
-    try {
-        registerRes = post('users/register', testUser);
-    } catch (e) {
-        console.log('Usuario ya registrado, continuando...');
-    }
-
-    // Extraer token de verificación del registro
-    const verifyToken = registerRes?.token;
-    if (verifyToken) {
-        // Verificar cuenta usando GET
-        try {
-            const verifyRes = get(`users/verify?token=${verifyToken}`);
-            console.log('Cuenta verificada:', verifyRes);
-        } catch (e) {
-            console.log('Error verificando cuenta:', e.message);
+    for (const tipo of datosAntesTest.prioridad) {
+        if(Array.isArray(datosAntesTest.colecciones.get(tipo))){
+            for (const elemento of datosAntesTest.colecciones.get(tipo)){
+                post(datosAntesTest.rutasPost[tipo], elemento);
+            }
         }
-    } else {
-        console.log('Token de verificación no disponible, se asume usuario ya activo.');
     }
 
-    // Login del usuario
-    const loginRes = post('users/login', {
-        email: testUser.email,
-        password: testUser.password
-    });
-
-    if (!loginRes || !loginRes.token) throw new Error('No se pudo loguear al usuario de prueba');
-
-    userToken = loginRes.token;
-    this.userToken = userToken; // disponible para todos los steps
+    console.log('Recarga de datos previos completada.');
 });
 
+/*******************************************************************************************************/
+
+module.exports = { get, post, put, deleteReq };

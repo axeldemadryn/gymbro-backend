@@ -51,7 +51,7 @@ private String password;
 */
 
     @Column(nullable = false)
-    private LocalDateTime fechaRegistro = LocalDateTime.now();
+    private LocalDateTime fechaYHoraRegistro = LocalDateTime.now();
 
     private LocalDateTime lastLogout;
 

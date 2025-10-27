@@ -1,3 +1,4 @@
+-- ERROR: user_id NO puede ser nulo
 -- Crear sesiones
 INSERT INTO sessions (name, description, user_id) VALUES
 ('Sesion Pecho', 'Rutina de pecho con máquinas básicas', NULL),

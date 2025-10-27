@@ -40,8 +40,8 @@ public class CustomUserDetails implements UserDetails {
         return user.getLastLogout();
     }
 
-    public LocalDateTime getfechaRegistro() {
-        return user.getFechaRegistro();
+    public LocalDateTime getfechaYHoraRegistro() {
+        return user.getFechaYHoraRegistro();
     }
 
     @Override
