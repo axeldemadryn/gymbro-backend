@@ -1,12 +1,11 @@
 const { Given, When } = require('@cucumber/cucumber');
 const { post } = require('./common');
 
-Given('que se tiene el usuario con nombre {string}, e-mail {string}, contraseña {string} y registrado en la fecha {string}', function(unNombre, unEMail, unaContrasena, unaFechaYHoraRegistro){
+Given('que se tiene el usuario con nombre {string}, e-mail {string} y contraseña {string}', function(unNombre, unEMail, unaContrasena){
     this.usuario = {
         nombre: unNombre,
         email: unEMail,
-        password: unaContrasena,
-        fechaYHoraRegistro: unaFechaYHoraRegistro
+        password: unaContrasena
     }
 });
 
