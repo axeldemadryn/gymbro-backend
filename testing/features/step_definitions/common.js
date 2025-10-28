@@ -10,7 +10,7 @@ let userToken = null; // Token del usuario para todos los steps
 
 // Pegar acá abajo (sobre <mi-token>) el token creado localmente
 const miToken =
-    'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJnYWJpQGVtYWlsLmNvbSIsInRpcG8iOiJzZXNpb24iLCJpYXQiOjE3NjE2ODMyOTgsImV4cCI6MTc2MjI4ODA5OH0.g9faRnekEiJlmSr0d_rUJbF-l2XJoujvJP831XCp2vo'
+    '<mi-token>'
 ;
 
 // Datos de usuario de testings
@@ -139,6 +139,7 @@ BeforeAll(function () {
     // Función para cargar datos en datosAntesTest
     for (const tipo of datosAntesTest.prioridad) {
         const datos = get(tipo);
+        console.log(datos);
         datosAntesTest.colecciones.set(tipo, Array.isArray(datos) ? datos : []);
     }
 
@@ -156,85 +157,49 @@ BeforeAll(function () {
     } catch (e) {
         console.warn('BeforeAll: error eliminando datos previos al testing:', e.message);
     }
-    //console.log(datosAntesTest.colecciones);
+    console.log(datosAntesTest.colecciones);
 });
 
-/*******************************************Asserts*******************************************************/
 /*******************************************Asserts*******************************************************/
 Then('se debería obtener el mensaje {string}', function (expected) {
     if (!lastResponse) throw new Error('No hay respuesta disponible del backend.');
     
     let found = false;
-    let actualMessage = 'Respuesta no coincidente';
-    let responseToCheck = lastResponse;
+    let actualMessage = JSON.stringify(lastResponse); // Mensaje por defecto para la aserción
     
-    // --- LÓGICA DE LIMPIEZA DE MENSAJE DE ERROR ---
-    // Si la respuesta es una excepción de sync-request (cadena sucia), extraemos el JSON limpio.
-    if (typeof lastResponse.message === 'string' && lastResponse.message.startsWith('Server responded to')) {
-        const rawMessage = lastResponse.message;
-        // Regex para extraer el objeto JSON que empieza con '{' y termina con '}'
-        const jsonMatch = rawMessage.match(/\{.*\}$/s); 
-        
-        if (jsonMatch) {
-            try {
-                // 1. Reemplazamos el objeto a chequear con el JSON limpio extraído
-                responseToCheck = JSON.parse(jsonMatch[0]); 
-            } catch (e) {
-                // Si falla el parseo del JSON incrustado, mantenemos el mensaje original para que el assert falle si es necesario.
-            }
-        }
-    }
-    // --- FIN LÓGICA DE LIMPIEZA ---
-
-    // Check 1: Buscar en el mensaje principal (incluye "OK" y errores de servicio 409)
-    if (responseToCheck.message && responseToCheck.message.includes(expected)) {
+    // Check 1: Buscar en el mensaje principal (Funciona para "OK", y mensajes 409/500 no validados)
+    if (lastResponse.message && lastResponse.message.includes(expected)) {
         found = true;
-        actualMessage = responseToCheck.message; 
     }
     
-    // Check 2: Buscar en los campos de datos (Errores de validación 400)
-    if (responseToCheck.data && typeof responseToCheck.data === 'object') {
-        for (const key in responseToCheck.data) {
-            if (typeof responseToCheck.data[key] === 'string' && responseToCheck.data[key].includes(expected)) {
+    // Check 2: Buscar en los campos de datos (Necesario para errores de validación 400)
+    // El backend pone los errores de campo como {"email": "mensaje"} dentro de 'data'.
+    if (lastResponse.data && typeof lastResponse.data === 'object') {
+        for (const key in lastResponse.data) {
+            if (typeof lastResponse.data[key] === 'string' && lastResponse.data[key].includes(expected)) {
                 found = true;
-                actualMessage = responseToCheck.data[key]; // El mensaje de error específico (ej. "El nombre no puede estar vacío")
+                actualMessage = lastResponse.data[key]; // Capturar el mensaje específico de la data
                 break;
             }
         }
-    }
-
-    // Fallback: Si no se encontró (test fallido), usamos el mensaje limpio o el mensaje completo del backend.
-    if (!found) {
-        // Para el mensaje de fallo del assert, mostramos la versión más limpia posible
-        actualMessage = responseToCheck.message || JSON.stringify(responseToCheck);
     }
     
     assert(
         found,
         `Se esperaba "${expected}", pero se obtuvo: ${actualMessage}`
     );
-    
-    // El log ahora mostrará la cadena limpia almacenada en actualMessage
-    console.log(`Se esperaba "${expected}", pero se obtuvo: ${actualMessage}`); 
 });
-
-
-// NOTA: Para el otro Then ('se obtiene un error con mensaje {string}'), aplique la misma lógica de 'LÓGICA DE LIMPIEZA DE MENSAJE DE ERROR' 
-// para la variable 'lastResponse' antes de realizar los checks de 'found'.
 
 Then('se obtiene un error con mensaje {string}', function (expected) {
     if (!lastResponse) throw new Error('No hay respuesta disponible del backend.');
     
     let found = false;
-    let actualMessage = 'Respuesta no coincidente'; 
+    let actualMessage = JSON.stringify(lastResponse);
 
     // Búsqueda en el mensaje principal (error o message)
-    if ((lastResponse.error && lastResponse.error.includes(expected))) {
+    if ((lastResponse.error && lastResponse.error.includes(expected)) ||
+        (lastResponse.message && lastResponse.message.includes(expected))) {
         found = true;
-        actualMessage = lastResponse.error; // ⬅️ ASIGNAMOS LA CADENA LIMPIA
-    } else if (lastResponse.message && lastResponse.message.includes(expected)) {
-        found = true;
-        actualMessage = lastResponse.message; // ⬅️ ASIGNAMOS LA CADENA LIMPIA
     }
 
     // Búsqueda en los campos de datos (si es un error 400)
@@ -242,24 +207,16 @@ Then('se obtiene un error con mensaje {string}', function (expected) {
         for (const key in lastResponse.data) {
             if (typeof lastResponse.data[key] === 'string' && lastResponse.data[key].includes(expected)) {
                 found = true;
-                actualMessage = lastResponse.data[key]; // ⬅️ ASIGNAMOS LA CADENA LIMPIA
+                actualMessage = lastResponse.data[key];
                 break;
             }
         }
-    }
-    
-    // Fallback para el mensaje de error
-    if (!found) {
-        actualMessage = lastResponse.message || JSON.stringify(lastResponse.data || lastResponse);
     }
 
     assert(
         found,
         `Se esperaba error "${expected}", pero se obtuvo: ${actualMessage}`
     );
-
-    // LIMPIEZA: NO usar JSON.stringify aquí.
-    console.log(`Se esperaba error "${expected}", pero se obtuvo: ${actualMessage}\n\n`);
 });
 
 /***********AfterAll: eliminar todas las weekly-routines y routine-days usadas para el testing****************/
@@ -275,18 +232,18 @@ AfterAll(() => {
         console.warn('AfterAll: error eliminando datos de testing:', e.message);
     }
 
-    //console.log('Limpieza completada.');
+    console.log('Limpieza completada.');
 
     for (const tipo of datosAntesTest.prioridad) {
         if(Array.isArray(datosAntesTest.colecciones.get(tipo))){
             for (const elemento of datosAntesTest.colecciones.get(tipo)) {
                 let x = post(datosAntesTest.rutasPost[tipo], elemento);
-                //console.log(x);
+                console.log(x);
             }
         }
     }
 
-    //console.log('Recarga de datos previos completada.');
+    console.log('Recarga de datos previos completada.');
 });
 
 /*******************************************************************************************************/
