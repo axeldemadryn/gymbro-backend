@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gym.backend.business.services.RoutineDayService;
 import com.gym.backend.business.services.UserService;
 import com.gym.backend.business.services.WeeklyRoutineService;
 import com.gym.backend.model.User;
@@ -30,9 +29,6 @@ public class WeeklyRoutinePresenter {
 
     @Autowired
     private WeeklyRoutineService routineService;
-
-    @Autowired
-    private RoutineDayService routineDayService;
 
     @Autowired
     private UserService userService;
@@ -132,11 +128,6 @@ public class WeeklyRoutinePresenter {
         if (!routine.getUser().getId().equals(user.getId()))
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("No tiene permiso para eliminar esta rutina.");
-
-        // Validación: existe al menos un RoutineDay asociado a esta rutina
-        if (routineDayService.existsByWeeklyRoutineId(id)) {
-            return Response.dbError("No se puede eliminar la rutina semanal porque tiene días de rutina asociados.");
-        }
 
         routineService.delete(id);
         return Response.ok("Rutina semanal eliminada correctamente.");

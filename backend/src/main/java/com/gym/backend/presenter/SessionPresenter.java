@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gym.backend.business.services.RoutineDayService;
 import com.gym.backend.business.services.SessionService;
 import com.gym.backend.business.services.UserService;
 import com.gym.backend.model.Session;
@@ -26,9 +25,6 @@ public class SessionPresenter {
 
     @Autowired
     private SessionService sessionService;
-
-    @Autowired
-    private RoutineDayService routineDayService;
 
     @Autowired
     private UserService userService;
@@ -61,7 +57,7 @@ public class SessionPresenter {
     }
 
     @GetMapping("maquinas-asociadas-a/{id}")
-    public ResponseEntity<Object> encontrarMaquinasPorIdDeSesion(@PathVariable long id){
+    public ResponseEntity<Object> encontrarMaquinasPorIdDeSesion(@PathVariable long id) {
         try {
             return Response.ok(sessionService.obtenerMaquinasPorIdDeSesion(id));
         } catch (Exception e) {
@@ -133,11 +129,6 @@ public class SessionPresenter {
 
         if (!session.getUser().getId().equals(user.getId()))
             return Response.dbError("No puede eliminar una sesión que no le pertenece.");
-
-        // Validar si la sesión está asociada a algún RoutineDay
-        if (routineDayService.existsBySessionId(id)) {
-            return Response.dbError("No se puede eliminar la sesión porque está asociada a una rutina diaria.");
-        }
 
         sessionService.delete(id);
         return Response.ok("La sesión con ID " + id + " fue eliminada correctamente.");
