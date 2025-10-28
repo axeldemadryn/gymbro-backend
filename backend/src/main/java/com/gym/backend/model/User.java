@@ -30,9 +30,9 @@ public class User {
     @Column(nullable = false)
     private String nombre;
 
-    @Pattern(regexp = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", message = "Por favor, escriba un e-mail válido")
-    @NotBlank(message = "El e-mail no puede estar vacío")
     @NotNull(message = "El e-mail no puede ser nulo")
+    @NotBlank(message = "El e-mail no puede estar vacío")
+    @Pattern(regexp = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", message = "Por favor, escriba un e-mail válido")
     @Column(nullable = false, unique = true)
     private String email;
 

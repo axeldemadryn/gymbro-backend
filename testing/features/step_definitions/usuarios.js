@@ -7,6 +7,7 @@ Given('que se tiene el usuario con nombre {string}, e-mail {string} y contraseñ
         email: unEMail,
         password: unaContrasena
     }
+    console.log(`Cargamos usuario con nombre: ${unNombre}, e-mail: ${unEMail} y contraseña: ${unaContrasena}`);
 });
 
 When('se guarda al usuario', function(){
