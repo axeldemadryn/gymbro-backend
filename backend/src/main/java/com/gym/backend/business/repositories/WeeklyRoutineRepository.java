@@ -22,15 +22,15 @@ public interface WeeklyRoutineRepository extends CrudRepository<WeeklyRoutine, L
 
         // Validar solapamiento de fechas
         @Query("SELECT w FROM WeeklyRoutine w " +
-                        "WHERE (:startDate <= w.endDate) AND (:endDate >= w.startDate)")
+                        "WHERE (:startDate <= w.endDate) AND (:endDate >= w.startDate) AND (:userId = w.user.id)")
         List<WeeklyRoutine> findOverlapping(@Param("startDate") LocalDate startDate,
-                        @Param("endDate") LocalDate endDate);
+                        @Param("endDate") LocalDate endDate, @Param("userId") Long userId);
 
         @Query("SELECT w FROM WeeklyRoutine w " +
                         "WHERE (:startDate <= w.endDate) AND (:endDate >= w.startDate) " +
-                        "AND (:id IS NULL OR w.id <> :id)")
+                        "AND (:id IS NULL OR w.id <> :id) AND (:userId = w.user.id)")
         List<WeeklyRoutine> findOverlappingExcludingId(
                         @Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate,
-                        @Param("id") Long id);
+                        @Param("id") Long id, @Param("userId") Long userId);
 }

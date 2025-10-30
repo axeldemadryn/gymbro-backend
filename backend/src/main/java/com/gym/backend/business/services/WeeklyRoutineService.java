@@ -89,10 +89,11 @@ public class WeeklyRoutineService {
             List<WeeklyRoutine> solap;
             if (weeklyRoutine.getId() != null) {
                 // Si es actualización, excluir la rutina actual
-                solap = repository.findOverlappingExcludingId(start, end, weeklyRoutine.getId());
+                solap = repository.findOverlappingExcludingId(start, end, weeklyRoutine.getId(),
+                        weeklyRoutine.getUser().getId());
             } else {
                 // Si es creación, revisar solapamientos normales
-                solap = repository.findOverlapping(start, end);
+                solap = repository.findOverlapping(start, end, weeklyRoutine.getUser().getId());
             }
 
             if (!solap.isEmpty())
