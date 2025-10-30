@@ -19,4 +19,6 @@ public interface SessionRepository extends CrudRepository<Session, Long> {
     // Buscar por nombre dentro de un usuario
     Optional<Session> findByNameAndUserId(String name, Long userId);
 
+    boolean existsByNameAndUserId(String name, Long userId);
+
 }

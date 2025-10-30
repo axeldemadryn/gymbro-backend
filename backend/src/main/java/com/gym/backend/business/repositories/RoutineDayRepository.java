@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.gym.backend.model.DiaDeSemana;
 import com.gym.backend.model.RoutineDay;
+import com.gym.backend.model.SessionStatus;
 import com.gym.backend.model.WeeklyRoutine;
 
 @Repository
@@ -17,7 +18,12 @@ public interface RoutineDayRepository extends CrudRepository<RoutineDay, Long> {
 
     long countBySessionId(Long sessionId);
 
+    List<RoutineDay> findBySessionId(Long sessionId);
+
     long countByRoutineId(Long routineid);
+
+    // Buscar solo los RoutineDay con un estado específico
+    List<RoutineDay> findByStatus(SessionStatus status);
 
     /**
      * Devuelve true si existe al menos un RoutineDay con la sesión dada

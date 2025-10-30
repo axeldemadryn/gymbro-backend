@@ -14,4 +14,6 @@ public interface SessionExerciseRepository extends CrudRepository<SessionExercis
 
     List<SessionExercise> findAllBySessionUserId(Long userId);
 
+    List<SessionExercise> findAllBySessionId(Long sessionId);
+
 }

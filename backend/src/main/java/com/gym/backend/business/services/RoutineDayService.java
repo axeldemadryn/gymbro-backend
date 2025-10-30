@@ -117,7 +117,7 @@ public class RoutineDayService {
 
     @Transactional
     public void actualizarEstadosSegunHoy() {
-        List<RoutineDay> routineDays = logicaObtencionDeTodas();
+        List<RoutineDay> routineDays = obtenerPendientes();
 
         for (RoutineDay rd : routineDays) {
             evaluarRutina(rd);
@@ -134,6 +134,10 @@ public class RoutineDayService {
         WeeklyRoutine routine = weeklyRoutineRepository.findByStartDateAndEndDate(start, end)
                 .orElseThrow(() -> new RuntimeException("No se encontró una rutina semanal con esas fechas"));
         return repository.findByDayAndWeeklyRoutine(day, routine).orElse(null);
+    }
+
+    private List<RoutineDay> obtenerPendientes() {
+        return repository.findByStatus(SessionStatus.PENDIENTE);
     }
 
     private List<RoutineDay> logicaObtencionDeTodas() {
