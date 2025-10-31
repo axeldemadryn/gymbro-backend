@@ -43,7 +43,22 @@ public class UserViewController {
     public String procesarResetPassword(
             @RequestParam("token") String token,
             @RequestParam("password") String password,
+            @RequestParam("confirmPassword") String confirmPassword,
             Model model) {
+
+        if (!password.equals(confirmPassword)) {
+            model.addAttribute("mensaje", "Las contraseñas no coinciden.");
+            model.addAttribute("token", token); // mantener token para el form
+            return "reset-password-form";
+        }
+
+        /* 
+        if (!password.matches("^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[@#$%^&+=!]).{8,}$")) {
+            model.addAttribute("mensaje",
+                    "La contraseña debe tener al menos 8 caracteres, incluir mayúscula, minúscula, número y carácter especial.");
+            model.addAttribute("token", token); // mantener token para el form
+            return "reset-password-form";
+        } */
 
         try {
             String email = jwtUtil.extraerUsername(token);
@@ -55,7 +70,7 @@ public class UserViewController {
             }
 
             userService.resetearPassword(user, password);
-            return "reset-password-success"; // template de éxito
+            return "reset-password-success";
 
         } catch (ExpiredJwtException e) {
             model.addAttribute("mensaje", "El enlace de recuperación expiró. Solicita uno nuevo.");
