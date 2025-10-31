@@ -93,14 +93,55 @@ public class UserPresenter {
         }
 
         try {
-            Map<String, Object> result = userService.reenviarVerificacion(email);
-            return Response.ok(result);
+            userService.reenviarVerificacion(email);
+            return Response.ok("Correo de verificación enviado con éxito.");
         } catch (IllegalStateException e) {
             return Response.dbError(e.getMessage());
         } catch (Exception e) {
             return Response.dbError("Error al reenviar verificación: " + e.getMessage());
         }
     }
+
+    // Recuperación de contraseña
+    // 📧 Enviar link de recuperación
+    @PostMapping("/recover-password")
+    public ResponseEntity<Object> recoverPassword(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        if (email == null || email.isEmpty()) {
+            return Response.dbError("Debes ingresar un correo.");
+        }
+
+        try {
+            userService.enviarRecuperacion(email);
+            return Response.ok("Correo de recuperación enviado con éxito.");
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
+        } catch (Exception e) {
+            return Response.dbError("Error al enviar correo de recuperación: " + e.getMessage());
+        }
+    }
+
+    /* 
+    @PostMapping("/reset-password")
+    public ResponseEntity<Object> resetearPassword(@RequestParam String token, @RequestParam String password) {
+        String email;
+        try {
+            email = jwtUtil.extraerUsername(token);
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return Response.error(null, "El enlace de recuperación expiró. Solicita uno nuevo.");
+        } catch (io.jsonwebtoken.JwtException e) {
+            return Response.error(null, "Token inválido.");
+        }
+
+        User user = userService.findByEmail(email);
+        if (user == null) {
+            return Response.notFound("Token inválido o usuario no encontrado");
+        }
+
+        userService.resetearPassword(user, password);
+        return Response.ok("Contraseña restablecida correctamente");
+    }
+ */
 
     // 📋 Listar todos los usuarios (solo temporal para pruebas)
     @GetMapping

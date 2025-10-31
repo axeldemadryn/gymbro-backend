@@ -24,7 +24,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/register", "/api/users/verify", "/api/users/resend-verification",
-                                "/api/users/login")
+                                "/api/users/login", "/api/users/recover-password", "/api/users/reset-password")
                         .permitAll()
                         // ✅ AGREGAR: Permitir acceso a las imágenes
                         .requestMatchers("/imagenes_maquinas_reconocidas/**").permitAll()

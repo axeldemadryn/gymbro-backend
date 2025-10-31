@@ -116,7 +116,7 @@ public class UserService {
     }
 
     @Transactional
-    public Map<String, Object> reenviarVerificacion(String email) {
+    public void reenviarVerificacion(String email) {
         User user = userRepository.findByEmail(email).orElse(null);
 
         if (user == null) {
@@ -140,10 +140,34 @@ public class UserService {
         // Generar nuevo token y enviar correo
         String tokenVerificacion = jwtUtil.generarTokenVerificacion(user.getEmail());
         enviarCorreoVerificacion(user.getEmail(), tokenVerificacion);
+    }
 
-        return Map.of(
-                "message", "Se reenviaron las instrucciones de verificación.",
-                "token", tokenVerificacion);
+    @Transactional
+    public void enviarRecuperacion(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new IllegalArgumentException("No existe un usuario con ese correo."));
+
+        if (!user.isActivo()) {
+            throw new IllegalArgumentException("Tu cuenta aún no fue verificada.");
+        }
+
+        String token = jwtUtil.generarTokenRecuperacion(email);
+        enviarCorreoRecuperacion(email, token);
+    }
+
+    @Transactional
+    public void resetearPassword(User user, String nuevaPassword) {
+
+        user.setPassword(passwordEncoder.encode(nuevaPassword));
+        userRepository.save(user);
+    }
+
+    private void enviarCorreoRecuperacion(String email, String token) {
+        String link = "http://localhost:8080/api/users/reset-password?token=" + token;
+
+        String cuerpo = "Hola!\n\nPara restablecer tu contraseña, haz clic en el siguiente enlace:\n"
+                + link + "\n\nEste enlace caduca en 15 minutos.";
+        emailService.enviarCorreo(email, "Recuperación de contraseña", cuerpo);
     }
 
     @Transactional
