@@ -61,12 +61,8 @@ public class RoutineDayService {
     public RoutineDay findByDayAndWeeklyRoutineDatesAndUser(DiaDeSemana day, LocalDate start, LocalDate end,
             Long userId) {
         WeeklyRoutine routine = weeklyRoutineRepository
-                .findByStartDateAndEndDate(start, end)
+                .findByStartDateAndEndDateAndUserId(start, end, userId)
                 .orElseThrow(() -> new RuntimeException("No se encontró una rutina semanal con esas fechas"));
-
-        // Verificamos que la rutina pertenece al user
-        if (!routine.getUser().getId().equals(userId))
-            throw new RuntimeException("No tienes acceso a esa rutina semanal");
 
         return repository.findByDayAndWeeklyRoutine(day, routine).orElse(null);
     }
@@ -98,21 +94,15 @@ public class RoutineDayService {
         }
 
         /*
-         * Si la rutina era pendiente, y si además la semana completa ya pasó o bien la
-         * semana ya inició y ya pasó
-         * el día de semana de la propia rutina diaria, entonces se marca como no
+         * Si la rutina era pendiente, y si además la fecha exacta de la rutina diaria
+         * ya pasó, entonces se marca como no
          * completada
          */
-        if (rd.getStatus() == SessionStatus.PENDIENTE && // La rutina debe ser pendiente para aplicar el IF.
-                (LocalDate.now(zoneId).isAfter(rd.getRoutine().getEndDate()) || // La rutina semanal completa debe haber
-                // pasado, o bien...
-                        (
-                        // Al menos, la rutina semanal debería haber empezado, y el día de rutina haber
-                        // transcurrido.
-                        LocalDate.now(zoneId).isAfter(rd.getRoutine().getStartDate()) &&
-                                LocalDate.now(zoneId).getDayOfWeek().getValue() > rd.getDay().getDia().getValue()))) {
+        LocalDate fechaRutinaDia = rd.getRoutine().getStartDate().plusDays(rd.getDay().getDia().getValue() - 1);
+        if (rd.getStatus() == SessionStatus.PENDIENTE && LocalDate.now(zoneId).isAfter(fechaRutinaDia)) {
             rd.setStatus(SessionStatus.NO_COMPLETADA);
         }
+
     }
 
     @Transactional
@@ -128,12 +118,6 @@ public class RoutineDayService {
     public RoutineDay findById(long id) {
         actualizarEstadosSegunHoy();
         return repository.findById(id).orElse(null);
-    }
-
-    public RoutineDay findByDayAndWeeklyRoutineDates(DiaDeSemana day, LocalDate start, LocalDate end) {
-        WeeklyRoutine routine = weeklyRoutineRepository.findByStartDateAndEndDate(start, end)
-                .orElseThrow(() -> new RuntimeException("No se encontró una rutina semanal con esas fechas"));
-        return repository.findByDayAndWeeklyRoutine(day, routine).orElse(null);
     }
 
     private List<RoutineDay> obtenerPendientes() {
@@ -186,7 +170,7 @@ public class RoutineDayService {
                          * día del 1 al 7
                          * (LUNES=1 ... DOMINGO=7)
                          */
-                        .plusDays((long) routine.getDay().getDia().getValue() - 1)))
+                        .plusDays(routine.getDay().getDia().getValue() - 1)))
             throw new RuntimeException(
                     "Error. Sólo se puede marcar como completada si el día de hoy corresponde al de la rutina.");
 

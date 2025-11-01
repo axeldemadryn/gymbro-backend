@@ -39,11 +39,6 @@ public class WeeklyRoutineService {
         return result;
     }
 
-    public WeeklyRoutine findByDates(LocalDate start, LocalDate end) {
-        return repository.findByStartDateAndEndDate(start, end)
-                .orElseThrow(() -> new RuntimeException("No se encontró la rutina semanal con esas fechas"));
-    }
-
     // 🔹 Buscar rutina por fechas (para un usuario)
     public WeeklyRoutine findByDatesAndUserId(LocalDate start, LocalDate end, Long userId) {
         return repository.findByStartDateAndEndDateAndUserId(start, end, userId)

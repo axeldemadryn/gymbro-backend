@@ -71,7 +71,7 @@ public class SessionExerciseService {
 
                             // Fecha real del RoutineDay (asumiendo que la semana empieza lunes)
                             LocalDate fechaDia = weeklyRoutine.getStartDate()
-                                    .plusDays((long) (rd.getDay().getDia().getValue() - 1));
+                                    .plusDays(rd.getDay().getDia().getValue() - 1);
 
                             // Bloqueamos si ya pasó la fecha o el estado indica que se completó/no se
                             // completó
@@ -106,7 +106,7 @@ public class SessionExerciseService {
 
                             // Fecha real del RoutineDay (asumiendo que la semana empieza lunes)
                             LocalDate fechaDia = weeklyRoutine.getStartDate()
-                                    .plusDays((long) (rd.getDay().getDia().getValue() - 1));
+                                    .plusDays(rd.getDay().getDia().getValue() - 1);
 
                             // Bloqueamos si ya pasó la fecha o el estado indica que se completó/no se
                             // completó

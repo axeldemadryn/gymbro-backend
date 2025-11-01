@@ -53,10 +53,6 @@ public class SessionService {
         return repository.findById(id).orElse(null);
     }
 
-    public Session findByName(String name) {
-        return repository.findByName(name).orElse(null);
-    }
-
     public List<Session> findByUserId(Long userId) {
         return repository.findByUserId(userId);
     }
@@ -87,7 +83,7 @@ public class SessionService {
 
                     // Fecha real del RoutineDay (asumiendo que la semana empieza lunes)
                     LocalDate fechaDia = weeklyRoutine.getStartDate()
-                            .plusDays((long) (rd.getDay().getDia().getValue() - 1));
+                            .plusDays(rd.getDay().getDia().getValue() - 1);
 
                     // Bloqueamos si ya pasó la fecha o el estado indica que se completó/no se
                     // completó
