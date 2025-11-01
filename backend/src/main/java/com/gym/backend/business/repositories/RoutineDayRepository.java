@@ -1,5 +1,6 @@
 package com.gym.backend.business.repositories;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +35,15 @@ public interface RoutineDayRepository extends CrudRepository<RoutineDay, Long> {
      * Devuelve true si existe al menos un RoutineDay con la WeeklyRoutine dada
      */
     boolean existsByRoutineId(Long weeklyRoutineId);
+
+    @Query("""
+                SELECT rd
+                FROM RoutineDay rd
+                WHERE rd.routine.user.id = :userId
+                AND :hoy BETWEEN rd.routine.startDate AND rd.routine.endDate
+            """)
+    List<RoutineDay> findRoutineDaysForUserAndDate(@Param("userId") Long userId,
+            @Param("hoy") LocalDate hoy);
 
     // Buscar todos los RoutineDay de un usuario por userId
     @Query("SELECT rd FROM RoutineDay rd WHERE rd.routine.user.id = :userId")

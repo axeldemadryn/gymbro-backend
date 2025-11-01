@@ -47,7 +47,8 @@ public class RecomendacionService {
         LocalDate hoy = LocalDate.now(zoneId);
 
         // 1️⃣ Obtener todos los RoutineDay del usuario
-        List<RoutineDay> routineDays = routineDayRepository.findAllByRoutineUserId(userId);
+        List<RoutineDay> routineDays = routineDayRepository.findRoutineDaysForUserAndDate(userId, hoy);
+
         if (routineDays == null || routineDays.isEmpty())
             return Optional.empty(); // No hay rutinas, no hay recomendación
 
