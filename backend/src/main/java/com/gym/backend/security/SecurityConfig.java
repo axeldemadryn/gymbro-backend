@@ -23,14 +23,17 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/register", "/api/users/verify", "/api/users/resend-verification",
-                                "/api/users/login", "/api/users/recover-password", "/api/users/reset-password")
+                        .requestMatchers(
+                                "/api/users/register",
+                                "/api/users/verify",
+                                "/api/users/resend-verification",
+                                "/api/users/login")
                         .permitAll()
-                        // ✅ AGREGAR: Permitir acceso a las imágenes
-                        .requestMatchers("/imagenes_maquinas_reconocidas/**").permitAll()
-                        // rutas públicas
-                        .anyRequest().authenticated() // el resto necesita token
-                )
+
+                        // ✅ Cambiar de /imagenes_maquinas_reconocidas/** a /imagenes_usuarios/**
+                        .requestMatchers("/imagenes_usuarios/**").permitAll()
+
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

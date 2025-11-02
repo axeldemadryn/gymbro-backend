@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.core.env.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,6 +31,9 @@ public class UserService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private Environment environment;
 
     // Encriptador de contraseñas
     @Autowired
@@ -80,15 +84,17 @@ public class UserService {
     }
 
     private void enviarCorreoVerificacion(String email, String token) {
-        String link = "http://localhost:8080/api/users/verify?token=" + token;
+        String baseUrl = environment.getProperty("app.base.url", "http://localhost:8080");
+        String link = baseUrl + "/api/users/verify?token=" + token;
 
-        // Enviar correo con Mailpit
         emailService.enviarCorreo(
                 email,
-                "Verificación de cuenta",
+                "Verificación de cuenta - GymBro",
                 "¡Hola!\n\n" +
                         "Por favor, verifica tu cuenta haciendo clic en el siguiente enlace:\n" +
-                        link + "\n\nGracias por registrarte");
+                        link + "\n\n" +
+                        "Si no solicitaste esta verificación, puedes ignorar este correo.\n\n" +
+                        "Gracias por registrarte en GymBro");
     }
 
     public Map<String, Object> loginConToken(String email, String password) {

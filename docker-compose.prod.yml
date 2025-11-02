@@ -1,4 +1,13 @@
 services:
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: gymbro_mailpit
+    restart: always
+    ports:
+      - "127.0.0.1:1025:1025"   # SMTP
+      - "127.0.0.1:8025:8025"   # Web UI
+      
   database:
     image: postgres:alpine
     container_name: gymbro_database
@@ -37,8 +46,13 @@ services:
       OPENAI_BASE_URL: ${OPENAI_BASE_URL}
       OPENAI_MODEL: ${OPENAI_MODEL}
 
+      # ✅ AGREGAR ESTA LÍNEA:
+      APP_IMAGENES_USUARIOS_PATH: /app/imagenes_usuarios
+
     volumes:
       - /var/www/api-gymbroMachine/static/imagenes:/app/static/imagenes
+      # ✅ Imágenes de usuarios (reconocimientos) - PERSISTENTE
+      - /var/www/api-gymbroMachine/imagenes_usuarios:/app/imagenes_usuarios
 
 volumes:
   postgres_data:
