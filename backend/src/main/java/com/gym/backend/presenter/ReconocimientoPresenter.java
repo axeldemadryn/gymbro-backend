@@ -41,6 +41,7 @@ import com.gym.backend.model.HistorialReconocimiento;
 import com.gym.backend.model.User;
 import com.gym.backend.response.Response;
 
+import jakarta.annotation.PostConstruct;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -71,6 +72,22 @@ public class ReconocimientoPresenter {
         this.zoneId = zoneId; // Spring inyecta el bean
     }
 
+    // ✅ Log en el inicio para verificar la variable
+    @PostConstruct
+    public void init() {
+        System.out.println("════════════════════════════════════════");
+        System.out.println("🔧 INICIALIZACIÓN DE ReconocimientoPresenter");
+        System.out.println("📂 imagenesUsuariosPath = " + imagenesUsuariosPath);
+        System.out.println("📂 ¿Es null? " + (imagenesUsuariosPath == null));
+        if (imagenesUsuariosPath != null) {
+            File dir = new File(imagenesUsuariosPath);
+            System.out.println("📂 Ruta absoluta: " + dir.getAbsolutePath());
+            System.out.println("📂 ¿Existe? " + dir.exists());
+            System.out.println("📂 ¿Se puede escribir? " + dir.canWrite());
+        }
+        System.out.println("════════════════════════════════════════");
+    }
+
     // ------------------Endpoints para Roboflow
     // -----------------------------------------
 
@@ -94,69 +111,128 @@ public class ReconocimientoPresenter {
     // ------------------ Endpoint seguro (requiere usuario autenticado)
     @PostMapping(value = "/api/reconocimiento", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> reconocer(@RequestParam MultipartFile file) {
+        System.out.println("\n════════════════════════════════════════");
+        System.out.println("🚀 INICIO DE RECONOCIMIENTO");
+        System.out.println("════════════════════════════════════════");
+
         // 1. Obtener usuario autenticado
+        System.out.println("👤 Obteniendo usuario autenticado...");
         User user = userService.getAuthenticatedUser();
         if (user == null) {
+            System.err.println("❌ Usuario no autenticado");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Usuario no autenticado");
         }
+        System.out.println("✅ Usuario autenticado: ID=" + user.getId() + ", Email=" + user.getEmail());
 
-        // 2. Guardar la imagen del usuario
+        // 2. Información del archivo recibido
+        System.out.println("\n📸 INFORMACIÓN DEL ARCHIVO:");
+        System.out.println("   Nombre: " + file.getOriginalFilename());
+        System.out.println("   Tamaño: " + file.getSize() + " bytes");
+        System.out.println("   Tipo: " + file.getContentType());
+        System.out.println("   ¿Está vacío? " + file.isEmpty());
+
+        // 3. Guardar la imagen del usuario
+        System.out.println("\n💾 GUARDANDO IMAGEN...");
+        System.out.println("   Ruta configurada: " + imagenesUsuariosPath);
+
         String publicUrl;
         try {
             publicUrl = guardarImagenUsuario(file, user.getId());
+            System.out.println("✅ Imagen guardada exitosamente");
+            System.out.println("   URL pública: " + publicUrl);
         } catch (IOException e) {
+            System.err.println("❌ ERROR AL GUARDAR IMAGEN:");
+            System.err.println("   Mensaje: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al guardar la imagen: " + e.getMessage());
         }
 
-        // 3. Reconocer la máquina a partir de la foto
+        // 4. Reconocer la máquina a partir de la foto
+        System.out.println("\n🤖 RECONOCIENDO MÁQUINA...");
         String nombre = reconocimientoService.reconocer(file).block();
+        System.out.println("   Resultado: " + nombre);
+
         if ("no_reconocido".equalsIgnoreCase(nombre)) {
+            System.out.println("⚠️ Máquina no reconocida");
+            System.out.println("════════════════════════════════════════\n");
             return Response.ok("no_reconocido");
         }
+        System.out.println("✅ Máquina reconocida: " + nombre);
 
-        // 4. Obtener la info completa de la máquina reconocida
+        // 5. Obtener la info completa de la máquina reconocida
+        System.out.println("\n📋 OBTENIENDO INFORMACIÓN DE LA MÁQUINA...");
         MaquinaDTO maquinaDTO = maquinaService.obtenerMaquinaConInfo(nombre).block();
         if (maquinaDTO == null) {
+            System.err.println("❌ No se encontró información de la máquina: " + nombre);
+            System.out.println("════════════════════════════════════════\n");
             return Response.notFound("No se encontró la máquina.");
         }
+        System.out.println("✅ Información obtenida: " + maquinaDTO.getNombre());
 
-        // 5. Reemplazar con la foto del usuario
+        // 6. Reemplazar con la foto del usuario
+        System.out.println("\n🔄 REEMPLAZANDO IMAGEN...");
+        System.out.println("   Imagen original: " + maquinaDTO.getImagen());
         maquinaDTO.setImagen(publicUrl);
+        System.out.println("   Nueva imagen: " + maquinaDTO.getImagen());
 
-        // 6. Guardar el reconocimiento en historial
+        // 7. Guardar el reconocimiento en historial
+        System.out.println("\n💿 GUARDANDO EN HISTORIAL...");
         HistorialReconocimiento historial = new HistorialReconocimiento();
         historial.setUser(user);
         historial.setMaquina(maquinaService.findByNombre(nombre));
         historial.setFechaReconocimiento(LocalDate.now(zoneId));
 
         try {
-            historial.setDetalleReconocimiento(new ObjectMapper().writeValueAsString(maquinaDTO));
+            String jsonDetalle = new ObjectMapper().writeValueAsString(maquinaDTO);
+            historial.setDetalleReconocimiento(jsonDetalle);
+            System.out.println("   JSON guardado (primeros 100 chars): "
+                    + jsonDetalle.substring(0, Math.min(100, jsonDetalle.length())) + "...");
         } catch (JsonProcessingException e) {
+            System.err.println("⚠️ Error al serializar JSON: " + e.getMessage());
             historial.setDetalleReconocimiento(null);
         }
-        historialService.save(historial);
 
-        // 7. Generar recomendación (solo si tiene rutina de hoy)
+        historialService.save(historial);
+        System.out.println("✅ Historial guardado con ID: " + historial.getId());
+
+        // 8. Generar recomendación (solo si tiene rutina de hoy)
+        System.out.println("\n🎯 GENERANDO RECOMENDACIÓN...");
         Optional<RecomendacionDTO> recomendacionOpt = recomendacionService.calcularSiCorresponde(user.getId(),
                 maquinaDTO);
 
-        // 8. Devolver respuesta final
+        // 9. Devolver respuesta final
         if (recomendacionOpt.isPresent()) {
+            System.out.println("✅ Recomendación generada");
+            System.out.println("════════════════════════════════════════\n");
             return Response.ok(recomendacionOpt.get());
         } else {
+            System.out.println("ℹ️ Sin recomendación (usuario sin rutina de hoy)");
+            System.out.println("════════════════════════════════════════\n");
             return Response.ok(maquinaDTO);
         }
     }
 
-    // ✅ Método auxiliar - usa la variable inyectada
+    // ✅ Método auxiliar con logs detallados
     private String guardarImagenUsuario(MultipartFile file, Long userId) throws IOException {
+        System.out.println("   → Iniciando guardarImagenUsuario()");
+        System.out.println("   → Ruta base: " + imagenesUsuariosPath);
+
         // Crear directorio si no existe
         File directory = new File(imagenesUsuariosPath);
+        System.out.println("   → Verificando directorio...");
+        System.out.println("      Existe: " + directory.exists());
+        System.out.println("      Puede escribir: " + directory.canWrite());
+        System.out.println("      Puede leer: " + directory.canRead());
+
         if (!directory.exists()) {
+            System.out.println("   → Directorio no existe, creando...");
             boolean created = directory.mkdirs();
-            System.out.println("📁 Directorio creado: " + created);
+            System.out.println("      ¿Creado? " + created);
+            if (!created) {
+                throw new IOException("No se pudo crear el directorio: " + directory.getAbsolutePath());
+            }
         }
 
         // Generar nombre único
@@ -167,15 +243,31 @@ public class ReconocimientoPresenter {
                 : ".jpg";
         String filename = timestamp + "_user_" + userId + extension;
 
+        System.out.println("   → Nombre del archivo: " + filename);
+
         // Guardar archivo
         Path filePath = Paths.get(imagenesUsuariosPath, filename);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        System.out.println("   → Ruta completa: " + filePath.toAbsolutePath());
+        System.out.println("   → Copiando archivo...");
 
-        System.out.println("✅ Imagen guardada: " + filePath.toAbsolutePath());
+        try {
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("   → ✅ Archivo copiado exitosamente");
+        } catch (Exception e) {
+            System.err.println("   → ❌ Error al copiar archivo: " + e.getMessage());
+            throw e;
+        }
 
-        // ✅ IMPORTANTE: Ahora retorna /imagenes_usuarios/ (no
-        // /imagenes_maquinas_reconocidas/)
-        return "/imagenes_usuarios/" + filename;
+        // Verificar que se guardó
+        File savedFile = filePath.toFile();
+        System.out.println("   → Verificando archivo guardado:");
+        System.out.println("      ¿Existe? " + savedFile.exists());
+        System.out.println("      Tamaño: " + savedFile.length() + " bytes");
+
+        String publicUrl = "/imagenes_usuarios/" + filename;
+        System.out.println("   → URL pública generada: " + publicUrl);
+
+        return publicUrl;
     }
 
     @GetMapping(value = "/api/reconocimiento-url")
