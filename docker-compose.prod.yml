@@ -46,10 +46,13 @@ services:
       OPENAI_BASE_URL: ${OPENAI_BASE_URL}
       OPENAI_MODEL: ${OPENAI_MODEL}
 
+      # ✅ AGREGAR ESTA LÍNEA:
+      APP_IMAGENES_USUARIOS_PATH: /app/imagenes_usuarios
+
     volumes:
       - /var/www/api-gymbroMachine/static/imagenes:/app/static/imagenes
       # ✅ Imágenes de usuarios (reconocimientos) - PERSISTENTE
       - /var/www/api-gymbroMachine/imagenes_usuarios:/app/imagenes_usuarios
-      
+
 volumes:
   postgres_data:
