@@ -49,6 +49,17 @@ public class JwtUtil {
                 .compact();
     }
 
+    public String generarTokenRecuperacion(String email) {
+        long expirationMs = 15 * 60 * 1000; // 15 minutos
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("tipo", "recuperacion")
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     public String extraerTipo(String token) {
         return (String) extraerClaims(token).get("tipo");
     }

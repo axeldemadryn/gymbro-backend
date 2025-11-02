@@ -14,7 +14,7 @@ public class SchedulerConfig {
     private RoutineDayService service;
 
     // Ejecuta todos los días a la medianoche
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = "America/Argentina/Buenos_Aires")
     public void actualizarEstadosRutinasDiarias() {
         service.actualizarEstadosSegunHoy();
     }

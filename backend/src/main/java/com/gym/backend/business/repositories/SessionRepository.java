@@ -11,12 +11,12 @@ import com.gym.backend.model.Session;
 @Repository
 public interface SessionRepository extends CrudRepository<Session, Long> {
 
-    Optional<Session> findByName(String nombre);
+  // Todas las sesiones de un usuario
+  List<Session> findByUserId(Long userId);
 
-    // Todas las sesiones de un usuario
-    List<Session> findByUserId(Long userId);
+  // Buscar por nombre dentro de un usuario
+  Optional<Session> findByNameAndUserId(String name, Long userId);
 
-    // Buscar por nombre dentro de un usuario
-    Optional<Session> findByNameAndUserId(String name, Long userId);
+  boolean existsByNameAndUserId(String name, Long userId);
 
 }

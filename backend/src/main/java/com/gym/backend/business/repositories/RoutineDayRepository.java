@@ -1,5 +1,6 @@
 package com.gym.backend.business.repositories;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import com.gym.backend.model.DiaDeSemana;
 import com.gym.backend.model.RoutineDay;
+import com.gym.backend.model.SessionStatus;
 import com.gym.backend.model.WeeklyRoutine;
 
 @Repository
@@ -17,7 +19,12 @@ public interface RoutineDayRepository extends CrudRepository<RoutineDay, Long> {
 
     long countBySessionId(Long sessionId);
 
+    List<RoutineDay> findBySessionId(Long sessionId);
+
     long countByRoutineId(Long routineid);
+
+    // Buscar solo los RoutineDay con un estado específico
+    List<RoutineDay> findByStatus(SessionStatus status);
 
     /**
      * Devuelve true si existe al menos un RoutineDay con la sesión dada
@@ -28,6 +35,15 @@ public interface RoutineDayRepository extends CrudRepository<RoutineDay, Long> {
      * Devuelve true si existe al menos un RoutineDay con la WeeklyRoutine dada
      */
     boolean existsByRoutineId(Long weeklyRoutineId);
+
+    @Query("""
+                SELECT rd
+                FROM RoutineDay rd
+                WHERE rd.routine.user.id = :userId
+                AND :hoy BETWEEN rd.routine.startDate AND rd.routine.endDate
+            """)
+    List<RoutineDay> findRoutineDaysForUserAndDate(@Param("userId") Long userId,
+            @Param("hoy") LocalDate hoy);
 
     // Buscar todos los RoutineDay de un usuario por userId
     @Query("SELECT rd FROM RoutineDay rd WHERE rd.routine.user.id = :userId")

@@ -133,4 +133,26 @@ public class SessionPresenter {
         sessionService.delete(id);
         return Response.ok("La sesión con ID " + id + " fue eliminada correctamente.");
     }
+
+    @PostMapping("/clone")
+    public ResponseEntity<Object> clonar(@RequestBody Session original) {
+        User user = userService.getAuthenticatedUser();
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
+        }
+
+        if (original.getId() == null) {
+            return Response.dbError("Debe proporcionar el ID de la sesión a clonar.");
+        }
+
+        try {
+            Session clonada = sessionService.clone(original, user);
+            return Response.ok(clonada);
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
+        } catch (Exception e) {
+            return Response.dbError("Error al clonar la sesión: " + e.getMessage());
+        }
+    }
+
 }

@@ -16,8 +16,6 @@ public interface WeeklyRoutineRepository extends CrudRepository<WeeklyRoutine, L
 
         List<WeeklyRoutine> findByUserId(Long userId);
 
-        Optional<WeeklyRoutine> findByStartDateAndEndDate(LocalDate startDate, LocalDate endDate);
-
         Optional<WeeklyRoutine> findByStartDateAndEndDateAndUserId(LocalDate startDate, LocalDate endDate, Long userId);
 
         // Validar solapamiento de fechas

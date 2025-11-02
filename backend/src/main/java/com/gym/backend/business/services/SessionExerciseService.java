@@ -1,5 +1,7 @@
 package com.gym.backend.business.services;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +10,10 @@ import org.springframework.stereotype.Service;
 
 import com.gym.backend.business.repositories.RoutineDayRepository;
 import com.gym.backend.business.repositories.SessionExerciseRepository;
+import com.gym.backend.model.RoutineDay;
 import com.gym.backend.model.SessionExercise;
+import com.gym.backend.model.SessionStatus;
+import com.gym.backend.model.WeeklyRoutine;
 
 import jakarta.transaction.Transactional;
 
@@ -20,6 +25,12 @@ public class SessionExerciseService {
 
     @Autowired
     private RoutineDayRepository routineDayRepository;
+
+    private final ZoneId zoneId;
+
+    public SessionExerciseService(ZoneId zoneId) {
+        this.zoneId = zoneId; // Spring inyecta el bean
+    }
 
     // 🔹 Nuevo método: obtener todos los ejercicios de sesión de un usuario
     public List<SessionExercise> findAllByUserId(Long userId) {
@@ -49,10 +60,30 @@ public class SessionExerciseService {
         }
 
         if (e.getSession() != null && e.getSession().getId() != null) {
-            long cantidad = routineDayRepository.countBySessionId(e.getSession().getId());
-            if (cantidad > 0) {
-                throw new IllegalStateException(
-                        "No se pueden modificar los ejercicios de una sesión ya asignada a una rutina diaria.");
+            List<RoutineDay> diasAsociados = routineDayRepository.findBySessionId(e.getSession().getId());
+
+            if (!diasAsociados.isEmpty()) {
+                // Verificar si la sesión pertenece a una rutina ya pasada (Completada o No
+                // Completada)
+                boolean rutinaPasada = diasAsociados.stream()
+                        .anyMatch(rd -> {
+                            WeeklyRoutine weeklyRoutine = rd.getRoutine(); // se obtiene la rutina semanal
+
+                            // Fecha real del RoutineDay (asumiendo que la semana empieza lunes)
+                            LocalDate fechaDia = weeklyRoutine.getStartDate()
+                                    .plusDays(rd.getDay().getDia().getValue() - 1);
+
+                            // Bloqueamos si ya pasó la fecha o el estado indica que se completó/no se
+                            // completó
+                            return fechaDia.isBefore(LocalDate.now(zoneId)) ||
+                                    rd.getStatus() == SessionStatus.COMPLETADA ||
+                                    rd.getStatus() == SessionStatus.NO_COMPLETADA;
+                        });
+
+                if (rutinaPasada) {
+                    throw new IllegalStateException(
+                            "No se pueden crear o modificar ejercicios de una sesión que pertenece a una rutina ya pasada.");
+                }
             }
         }
 
@@ -64,10 +95,30 @@ public class SessionExerciseService {
         SessionExercise e = findById(anId);
 
         if (e.getSession() != null && e.getSession().getId() != null) {
-            long cantidad = routineDayRepository.countBySessionId(e.getSession().getId());
-            if (cantidad > 0) {
-                throw new IllegalStateException(
-                        "No se puede eliminar el ejercicio de una sesión ya asignada a una rutina diaria.");
+            List<RoutineDay> diasAsociados = routineDayRepository.findBySessionId(e.getSession().getId());
+
+            if (!diasAsociados.isEmpty()) {
+                // Verificar si la sesión pertenece a una rutina ya pasada (Completada o No
+                // Completada)
+                boolean rutinaPasada = diasAsociados.stream()
+                        .anyMatch(rd -> {
+                            WeeklyRoutine weeklyRoutine = rd.getRoutine(); // se obtiene la rutina semanal
+
+                            // Fecha real del RoutineDay (asumiendo que la semana empieza lunes)
+                            LocalDate fechaDia = weeklyRoutine.getStartDate()
+                                    .plusDays(rd.getDay().getDia().getValue() - 1);
+
+                            // Bloqueamos si ya pasó la fecha o el estado indica que se completó/no se
+                            // completó
+                            return fechaDia.isBefore(LocalDate.now(zoneId)) ||
+                                    rd.getStatus() == SessionStatus.COMPLETADA ||
+                                    rd.getStatus() == SessionStatus.NO_COMPLETADA;
+                        });
+
+                if (rutinaPasada) {
+                    throw new IllegalStateException(
+                            "No se puede eliminar un ejercicio de una sesión que pertenece a una rutina ya pasada.");
+                }
             }
         }
 

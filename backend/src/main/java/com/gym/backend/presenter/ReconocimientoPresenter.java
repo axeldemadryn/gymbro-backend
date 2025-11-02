@@ -8,6 +8,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +26,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gym.backend.business.services.HistorialReconocimientoService;
 import com.gym.backend.business.services.MaquinaService;
 import com.gym.backend.business.services.OpenAiService;
+import com.gym.backend.business.services.RecomendacionService;
 import com.gym.backend.business.services.ReconocimientoService;
 import com.gym.backend.business.services.RoboflowService;
 import com.gym.backend.business.services.UserService;
 import com.gym.backend.dto.MaquinaDTO;
 import com.gym.backend.dto.OpenAiResponse;
+import com.gym.backend.dto.RecomendacionDTO;
 import com.gym.backend.dto.ReconocimientoViewModel;
 import com.gym.backend.dto.RoboflowResponse;
 import com.gym.backend.model.HistorialReconocimiento;
@@ -53,6 +56,8 @@ public class ReconocimientoPresenter {
     private HistorialReconocimientoService historialService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private RecomendacionService recomendacionService;
 
     private final ZoneId zoneId;
 
@@ -134,8 +139,16 @@ public class ReconocimientoPresenter {
         }
         historialService.save(historial);
 
-        // 7. Devolver la info de la máquina (incluyendo la foto reconocida)
-        return Response.ok(maquinaDTO);
+        // 7. Generar recomendación (solo si tiene rutina de hoy)
+        Optional<RecomendacionDTO> recomendacionOpt = recomendacionService.calcularSiCorresponde(user.getId(),
+                maquinaDTO);
+
+        // 8. Devolver respuesta final
+        if (recomendacionOpt.isPresent()) {
+            return Response.ok(recomendacionOpt.get());
+        } else {
+            return Response.ok(maquinaDTO);
+        }
     }
 
     @GetMapping(value = "/api/reconocimiento-url")
