@@ -6,6 +6,7 @@ backend/src/main/resources/application.properties
 backend/src/main/resources/application-local.properties
 
 backend/imagenes_maquinas_reconocidas
+imagenes_usuarios/
 
 /static/
 

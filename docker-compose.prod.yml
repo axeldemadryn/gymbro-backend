@@ -48,6 +48,8 @@ services:
 
     volumes:
       - /var/www/api-gymbroMachine/static/imagenes:/app/static/imagenes
-
+      # ✅ Imágenes de usuarios (reconocimientos) - PERSISTENTE
+      - /var/www/api-gymbroMachine/imagenes_usuarios:/app/imagenes_usuarios
+      
 volumes:
   postgres_data:

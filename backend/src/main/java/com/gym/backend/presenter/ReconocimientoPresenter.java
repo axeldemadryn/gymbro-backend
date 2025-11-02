@@ -1,5 +1,6 @@
 package com.gym.backend.presenter;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,6 +13,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +63,10 @@ public class ReconocimientoPresenter {
 
     private final ZoneId zoneId;
 
+    // ✅ Inyectar ruta desde properties
+    @Value("${app.imagenes.usuarios.path}")
+    private String imagenesUsuariosPath;
+
     public ReconocimientoPresenter(ZoneId zoneId) {
         this.zoneId = zoneId; // Spring inyecta el bean
     }
@@ -95,19 +101,13 @@ public class ReconocimientoPresenter {
                     .body("Usuario no autenticado");
         }
 
-        // 2. Definir carpeta donde se guardarán las fotos
-        String uploadDir = "imagenes_maquinas_reconocidas/";
-        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        Path filePath = Paths.get(uploadDir, fileName);
-
+        // 2. Guardar la imagen del usuario
+        String publicUrl;
         try {
-            // Crear carpeta si no existe
-            Files.createDirectories(filePath.getParent());
-            // Guardar la imagen
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            publicUrl = guardarImagenUsuario(file, user.getId());
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al guardar la imagen en el servidor.");
+                    .body("Error al guardar la imagen: " + e.getMessage());
         }
 
         // 3. Reconocer la máquina a partir de la foto
@@ -122,8 +122,7 @@ public class ReconocimientoPresenter {
             return Response.notFound("No se encontró la máquina.");
         }
 
-        // 5. Generar URL pública directa
-        String publicUrl = "/imagenes_maquinas_reconocidas/" + fileName;
+        // 5. Reemplazar con la foto del usuario
         maquinaDTO.setImagen(publicUrl);
 
         // 6. Guardar el reconocimiento en historial
@@ -149,6 +148,34 @@ public class ReconocimientoPresenter {
         } else {
             return Response.ok(maquinaDTO);
         }
+    }
+
+    // ✅ Método auxiliar - usa la variable inyectada
+    private String guardarImagenUsuario(MultipartFile file, Long userId) throws IOException {
+        // Crear directorio si no existe
+        File directory = new File(imagenesUsuariosPath);
+        if (!directory.exists()) {
+            boolean created = directory.mkdirs();
+            System.out.println("📁 Directorio creado: " + created);
+        }
+
+        // Generar nombre único
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String originalFilename = file.getOriginalFilename();
+        String extension = originalFilename != null && originalFilename.contains(".")
+                ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                : ".jpg";
+        String filename = timestamp + "_user_" + userId + extension;
+
+        // Guardar archivo
+        Path filePath = Paths.get(imagenesUsuariosPath, filename);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        System.out.println("✅ Imagen guardada: " + filePath.toAbsolutePath());
+
+        // ✅ IMPORTANTE: Ahora retorna /imagenes_usuarios/ (no
+        // /imagenes_maquinas_reconocidas/)
+        return "/imagenes_usuarios/" + filename;
     }
 
     @GetMapping(value = "/api/reconocimiento-url")
