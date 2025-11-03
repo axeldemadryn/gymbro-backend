@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.gym.backend.model.Maquina;
@@ -25,5 +26,13 @@ public interface MaquinaRepository extends CrudRepository<Maquina, Long> {
                 WHERE s.id = ?1
             """)
     List<Maquina> findMaquinasBySessionId(Long sessionId);
+
+    @Query("""
+                SELECT DISTINCT m
+                FROM Maquina m
+                JOIN m.musculos mm
+                WHERE mm.id = :musculoId
+            """)
+    List<Maquina> findMaquinasByMusculoId(@Param("musculoId") Long musculoId);
 
 }

@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -121,28 +122,6 @@ public class UserPresenter {
         }
     }
 
-    /* 
-    @PostMapping("/reset-password")
-    public ResponseEntity<Object> resetearPassword(@RequestParam String token, @RequestParam String password) {
-        String email;
-        try {
-            email = jwtUtil.extraerUsername(token);
-        } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            return Response.error(null, "El enlace de recuperación expiró. Solicita uno nuevo.");
-        } catch (io.jsonwebtoken.JwtException e) {
-            return Response.error(null, "Token inválido.");
-        }
-
-        User user = userService.findByEmail(email);
-        if (user == null) {
-            return Response.notFound("Token inválido o usuario no encontrado");
-        }
-
-        userService.resetearPassword(user, password);
-        return Response.ok("Contraseña restablecida correctamente");
-    }
- */
-
     // 📋 Listar todos los usuarios (solo temporal para pruebas)
     @GetMapping
     public ResponseEntity<Object> listarUsuarios() {
@@ -182,6 +161,11 @@ public class UserPresenter {
         }
 
         String token = authHeader.substring(7);
+
+        User user = userService.getAuthenticatedUser();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
+
         try {
             String email = jwtUtil.extraerUsername(token);
             userService.logout(email);
