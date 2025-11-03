@@ -2,6 +2,7 @@ package com.gym.backend.business.services;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,12 @@ public class WeeklyRoutineService {
     @Autowired
     private RoutineDayService routineDayService;
 
+    private final ZoneId zoneId;
+
+    public WeeklyRoutineService(ZoneId zoneId) {
+        this.zoneId = zoneId; // Spring inyecta el bean
+    }
+
     public WeeklyRoutine findById(long id) {
         return repository.findById(id).orElse(null);
     }
@@ -55,14 +62,25 @@ public class WeeklyRoutineService {
 
         boolean esActualizacion = weeklyRoutine.getId() != null;
 
-        // Caso actualización: verificar si la rutina semanal está asociada a alguna
-        // rutina
-        // diaria
         if (esActualizacion) {
+            WeeklyRoutine existente = repository.findById(weeklyRoutine.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("No se encontró la rutina semanal."));
+
+            // 🔹Si la rutina semanal ya finalizó, no se puede modificar nada
+            if (LocalDate.now(zoneId).isAfter(existente.getEndDate())) {
+                throw new IllegalArgumentException("No se puede modificar una rutina semanal que ya ha finalizado.");
+            }
+
+            // 🔹Si tiene rutinas diarias asociadas, solo se bloquea la edición de fechas
             long count = routineDayRepository.countByRoutineId(weeklyRoutine.getId());
             if (count > 0) {
-                throw new IllegalArgumentException(
-                        "No se puede modificar esta rutina semanal, porque está asociada a una rutina diaria.");
+                boolean fechasCambiaron = (start != null && !start.equals(existente.getStartDate())) ||
+                        (end != null && !end.equals(existente.getEndDate()));
+
+                if (fechasCambiaron) {
+                    throw new IllegalArgumentException(
+                            "No se pueden modificar las fechas de una rutina semanal con rutinas diarias asociadas.");
+                }
             }
         }
 
