@@ -95,6 +95,8 @@ public class SessionExerciseService {
         SessionExercise e = findById(anId);
 
         if (e.getSession() != null && e.getSession().getId() != null) {
+
+            Long sessionId = e.getSession().getId();
             List<RoutineDay> diasAsociados = routineDayRepository.findBySessionId(e.getSession().getId());
 
             if (!diasAsociados.isEmpty()) {
@@ -118,6 +120,13 @@ public class SessionExerciseService {
                 if (rutinaPasada) {
                     throw new IllegalStateException(
                             "No se puede eliminar un ejercicio de una sesión que pertenece a una rutina ya pasada.");
+                }
+
+                // Evitar que la sesión quede vacía
+                long ejerciciosTotales = repository.countBySessionId(sessionId);
+                if (ejerciciosTotales <= 1) {
+                    throw new IllegalStateException(
+                            "No se puede eliminar este ejercicio porque la sesión forma parte de una rutina y debe tener al menos un ejercicio.");
                 }
             }
         }
