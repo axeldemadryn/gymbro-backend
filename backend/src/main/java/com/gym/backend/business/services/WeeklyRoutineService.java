@@ -5,7 +5,9 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.gym.backend.business.repositories.RoutineDayRepository;
 import com.gym.backend.business.repositories.WeeklyRoutineRepository;
 import com.gym.backend.model.RoutineDay;
+import com.gym.backend.model.Session;
 import com.gym.backend.model.WeeklyRoutine;
 
 import jakarta.transaction.Transactional;
@@ -29,6 +32,9 @@ public class WeeklyRoutineService {
 
     @Autowired
     private RoutineDayService routineDayService;
+
+    @Autowired
+    private SessionService sessionService;
 
     private final ZoneId zoneId;
 
@@ -133,6 +139,10 @@ public class WeeklyRoutineService {
 
     @Transactional
     public WeeklyRoutine clone(WeeklyRoutine weeklyRoutine, LocalDate startDate) {
+        List<RoutineDay> diasAsociados = routineDayRepository.findByWeeklyRoutine(weeklyRoutine);
+        if (diasAsociados.isEmpty()) {
+            throw new IllegalArgumentException("No se puede clonar una rutina semanal sin días asociados.");
+        }
 
         WeeklyRoutine clonada = new WeeklyRoutine();
 
@@ -147,11 +157,23 @@ public class WeeklyRoutineService {
 
         clonada = save(clonada);
 
-        for (RoutineDay rd : routineDayRepository.findByWeeklyRoutine(weeklyRoutine)) {
+        // Evitar clonar la misma sesión más de una vez
+        Map<Long, Session> sesionesClonadas = new HashMap<>();
+
+        for (RoutineDay rd : diasAsociados) {
             RoutineDay nuevo = new RoutineDay();
             nuevo.setDay(rd.getDay());
             nuevo.setRoutine(clonada);
-            nuevo.setSession(rd.getSession());
+
+            Session sesionBase = rd.getSession();
+            Session sesionClonada = sesionesClonadas.get(sesionBase.getId());
+
+            if (sesionClonada == null) {
+                sesionClonada = sessionService.clone(sesionBase, clonada.getUser());
+                sesionesClonadas.put(sesionBase.getId(), sesionClonada);
+            }
+
+            nuevo.setSession(sesionClonada);
 
             // No seteamos status manualmente, lo hará routineDayService.save()
             routineDayService.save(nuevo);
@@ -159,4 +181,5 @@ public class WeeklyRoutineService {
 
         return clonada;
     }
+
 }
