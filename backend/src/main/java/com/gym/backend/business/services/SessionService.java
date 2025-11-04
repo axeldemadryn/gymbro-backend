@@ -195,7 +195,7 @@ public class SessionService {
         return guardada;
     }
 
-    public String generarNombreUnico(String baseName, Long userId) {
+    private String generarNombreUnico(String baseName, Long userId) {
         // Si el nombre ya contiene "(copia", lo limpiamos para evitar duplicar
         String baseLimpio = baseName.replaceAll("\\s*\\(copia(\\s*\\d+)?\\)", "").trim();
 
