@@ -124,7 +124,7 @@ public class SessionExerciseService {
 
                 // Evitar que la sesión quede vacía
                 long ejerciciosTotales = repository.countBySessionId(sessionId);
-                if (ejerciciosTotales <= 1) {
+                if (ejerciciosTotales == 1) {
                     throw new IllegalStateException(
                             "No se puede eliminar este ejercicio porque la sesión forma parte de una rutina y debe tener al menos un ejercicio.");
                 }
