@@ -106,12 +106,17 @@ public class RecomendacionService {
             return Optional.empty(); // Ningún ejercicio coincide, no recomendable
 
         // 4️⃣ Asignar mensaje según porcentaje
-        String mensaje = mejorPorcentaje <= 30 ? "No recomendable"
+        String mensaje = mejorPorcentaje <= 30 ? "No recomendable para hoy"
                 : mejorPorcentaje <= 70 ? "Parcialmente recomendable para hoy"
                         : "Altamente recomendable para hoy";
 
-        // 5️⃣ Devolver DTO de recomendación con porcentaje y mensaje
-        return Optional.of(new RecomendacionDTO(maquinaDTO, mejorPorcentaje, mensaje));
+        // 5️⃣ Crear y devolver DTO de recomendación
+        RecomendacionDTO dto = new RecomendacionDTO();
+        dto.setMaquina(maquinaDTO);
+        dto.setNivelCoincidencia(mejorPorcentaje);
+        dto.setMensaje(mensaje);
+
+        return Optional.of(dto);
     }
 
     /**
