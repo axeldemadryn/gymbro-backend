@@ -14,10 +14,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gym.backend.business.services.UserService;
+import com.gym.backend.dto.EmailRequestDTO;
+import com.gym.backend.dto.LoginRequestDTO;
 import com.gym.backend.model.User;
 import com.gym.backend.response.Response;
 import com.gym.backend.security.JwtUtil;
@@ -53,9 +54,9 @@ public class UserPresenter {
 
     // 🔐 Login
     @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestBody User user) {
+    public ResponseEntity<Object> login(@Valid @RequestBody LoginRequestDTO dto) {
         try {
-            Map<String, Object> result = userService.loginConToken(user.getEmail(), user.getPassword());
+            Map<String, Object> result = userService.loginConToken(dto.getEmail(), dto.getPassword());
             return Response.ok(result);
         } catch (IllegalArgumentException e) {
             return Response.dbError(e.getMessage());
@@ -64,34 +65,9 @@ public class UserPresenter {
         }
     }
 
-    @GetMapping("/verify")
-    public ResponseEntity<Object> verificarCuenta(@RequestParam("token") String token) {
-        String email;
-        try {
-            email = jwtUtil.extraerUsername(token);
-        } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            return Response.error(null, "El token de verificación expiró. Solicita uno nuevo.");
-        } catch (io.jsonwebtoken.JwtException e) {
-            return Response.error(null, "Token inválido.");
-        }
-
-        User user = userService.findByEmail(email);
-        if (user == null) {
-            return Response.notFound("Token inválido o usuario no encontrado");
-        }
-
-        user.setActivo(true);
-        userService.save(user);
-
-        return Response.ok("Cuenta verificada con éxito. Ya puedes iniciar sesión");
-    }
-
     @PostMapping("/resend-verification")
-    public ResponseEntity<Object> resendVerification(@RequestBody Map<String, String> body) {
-        String email = body.get("email");
-        if (email == null || email.isEmpty()) {
-            return Response.dbError("El correo electrónico es obligatorio.");
-        }
+    public ResponseEntity<Object> resendVerification(@Valid @RequestBody EmailRequestDTO request) {
+        String email = request.getEmail();
 
         try {
             userService.reenviarVerificacion(email);
@@ -106,11 +82,8 @@ public class UserPresenter {
     // Recuperación de contraseña
     // 📧 Enviar link de recuperación
     @PostMapping("/recover-password")
-    public ResponseEntity<Object> recoverPassword(@RequestBody Map<String, String> body) {
-        String email = body.get("email");
-        if (email == null || email.isEmpty()) {
-            return Response.dbError("Debes ingresar un correo.");
-        }
+    public ResponseEntity<Object> recoverPassword(@Valid @RequestBody EmailRequestDTO request) {
+        String email = request.getEmail();
 
         try {
             userService.enviarRecuperacion(email);

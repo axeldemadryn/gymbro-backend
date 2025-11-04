@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Contraseña cambiada - GymBro</title>
+    <title>Cuenta verificada - GymBro</title>
     <style>
         body {
             font-family: 'Segoe UI', Roboto, sans-serif;
@@ -27,7 +27,7 @@
         }
 
         h2 {
-            color: #4CAF50;
+            color: #00b894;
             margin-bottom: 20px;
             font-size: 22px;
         }
@@ -59,8 +59,11 @@
 
 <body>
     <div class="container">
-        <h2>¡Éxito!</h2>
-        <p>Tu contraseña se ha restablecido correctamente.</p>
+        <h2>¡Cuenta verificada!</h2>
+        <!-- Muestra el mensaje si viene del backend, si no usa el texto por defecto -->
+        <p
+            th:text="${mensaje != null ? mensaje : 'Tu cuenta ha sido verificada correctamente. Ya podés iniciar sesión en GymBro.'}">
+        </p>
     </div>
 </body>
 
