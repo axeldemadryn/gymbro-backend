@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.gym.backend.business.services.RecomendacionService;
 import com.gym.backend.business.services.SessionService;
 import com.gym.backend.business.services.UserService;
 import com.gym.backend.model.Session;
@@ -28,6 +29,9 @@ public class SessionPresenter {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RecomendacionService recomendacionService;
 
     // 🔹 GET: listar todas las sesiones del usuario autenticado
     @GetMapping
@@ -58,8 +62,19 @@ public class SessionPresenter {
 
     @GetMapping("maquinas-asociadas-a/{id}")
     public ResponseEntity<Object> encontrarMaquinasPorIdDeSesion(@PathVariable long id) {
+        User user = userService.getAuthenticatedUser();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
+
+        Session existente = sessionService.findById(id);
+        if (existente == null)
+            return Response.notFound("No se encontró la sesión con ID " + id + ".");
+
+        if (!existente.getUser().getId().equals(user.getId()))
+            return Response.dbError("No puede modificar una sesión que no le pertenece.");
+
         try {
-            return Response.ok(sessionService.obtenerMaquinasPorIdDeSesion(id));
+            return Response.ok(recomendacionService.obtenerRecomendacionesPorSesion(id));
         } catch (Exception e) {
             return Response.error(e, e.getMessage());
         }

@@ -1,15 +1,69 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
 <head>
-    <title>Enlace expirado</title>
+    <meta charset="UTF-8">
+    <title th:text="'Enlace expirado - ' + ${tipoToken} + ' - GymBro'">Enlace expirado - GymBro</title>
     <style>
-        body { font-family: sans-serif; max-width: 400px; margin: 50px auto; text-align: center; }
-        a { display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #f44336; color: white; text-decoration: none; }
-        a:hover { background-color: #da190b; }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: #0d0d0d;
+            color: #e6e6e6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #111;
+            padding: 40px 50px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+            max-width: 420px;
+            width: 100%;
+        }
+
+        h2 {
+            color: #ff4d4d;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        p {
+            color: #ccc;
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+
+        a {
+            display: inline-block;
+            padding: 10px 22px;
+            background: linear-gradient(90deg, #1e90ff, #007bff);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+        }
+
+        a:hover {
+            background: linear-gradient(90deg, #007bff, #0056b3);
+            box-shadow: 0 0 12px rgba(30, 144, 255, 0.6);
+            transform: translateY(-1px);
+        }
     </style>
 </head>
+
 <body>
-    <h2>Enlace expirado</h2>
-    <p>El enlace de recuperación ya expiró.</p>
+    <div class="container">
+        <h2>Enlace expirado</h2>
+        <p th:text="'El enlace de ' + ${tipoToken} + ' ha expirado. Solicita uno nuevo.'">
+            El enlace ha expirado. Solicita uno nuevo.
+        </p>
+    </div>
 </body>
+
 </html>

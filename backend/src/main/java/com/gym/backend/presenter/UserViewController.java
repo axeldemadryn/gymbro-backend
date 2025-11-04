@@ -25,20 +25,59 @@ public class UserViewController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/reset-password")
-    public String mostrarFormularioResetPassword(@RequestParam("token") String token, Model model) {
+    // 🔹 Verificación de cuenta (enlace del mail)
+    @GetMapping("/verify")
+    public String verificarCuenta(@RequestParam("token") String token, Model model) {
         try {
-            jwtUtil.extraerUsername(token); // solo valida el token
-            model.addAttribute("token", token);
-            return "reset-password-form"; // template Thymeleaf
+            String email = jwtUtil.extraerUsername(token);
+            User user = userService.findByEmail(email);
+
+            if (user == null) {
+                model.addAttribute("tipoToken", "verificación");
+                return "token-invalido";
+            }
+
+            if (user.isActivo()) {
+                model.addAttribute("mensaje", "Tu cuenta ya fue verificada anteriormente. Ya podés iniciar sesión.");
+                return "verify-success";
+            }
+
+            user.setActivo(true);
+            userService.save(user);
+
+            return "verify-success";
+
         } catch (ExpiredJwtException e) {
-            return "token-expirado"; // otro template
+            model.addAttribute("tipoToken", "verificación");
+            return "token-expirado";
+
         } catch (JwtException e) {
-            return "token-invalido"; // otro template
+            model.addAttribute("tipoToken", "verificación");
+            return "token-invalido";
+
+        } catch (Exception e) {
+            model.addAttribute("mensaje", "Ocurrió un error al verificar la cuenta.");
+            return "verify-error";
         }
     }
 
-    // 🔹 Procesar envío del formulario de reset
+    // 🔹 Mostrar formulario de restablecimiento
+    @GetMapping("/reset-password")
+    public String mostrarFormularioResetPassword(@RequestParam("token") String token, Model model) {
+        try {
+            jwtUtil.extraerUsername(token); // valida token
+            model.addAttribute("token", token);
+            return "reset-password-form";
+        } catch (ExpiredJwtException e) {
+            model.addAttribute("tipoToken", "recuperación");
+            return "token-expirado";
+        } catch (JwtException e) {
+            model.addAttribute("tipoToken", "recuperación");
+            return "token-invalido";
+        }
+    }
+
+    // 🔹 Procesar el envío del formulario
     @PostMapping("/reset-password")
     public String procesarResetPassword(
             @RequestParam("token") String token,
@@ -48,40 +87,46 @@ public class UserViewController {
 
         if (!password.equals(confirmPassword)) {
             model.addAttribute("mensaje", "Las contraseñas no coinciden.");
-            model.addAttribute("token", token); // mantener token para el form
+            model.addAttribute("token", token);
             return "reset-password-form";
         }
 
-        /* 
-        if (!password.matches("^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[@#$%^&+=!]).{8,}$")) {
-            model.addAttribute("mensaje",
-                    "La contraseña debe tener al menos 8 caracteres, incluir mayúscula, minúscula, número y carácter especial.");
-            model.addAttribute("token", token); // mantener token para el form
-            return "reset-password-form";
-        } */
+        /*
+         * Validación opcional de complejidad:
+         *
+         * if (!password.matches(
+         * "^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[@#$%^&+=!]).{8,}$")) {
+         * model.addAttribute("mensaje",
+         * "La contraseña debe tener al menos 8 caracteres, incluir mayúscula, minúscula, número y carácter especial."
+         * );
+         * model.addAttribute("token", token);
+         * return "reset-password-form";
+         * }
+         */
 
         try {
             String email = jwtUtil.extraerUsername(token);
             User user = userService.findByEmail(email);
 
             if (user == null) {
-                model.addAttribute("mensaje", "Token inválido o usuario no encontrado");
-                return "reset-password-error";
+                model.addAttribute("tipoToken", "recuperación");
+                return "token-invalido";
             }
 
             userService.resetearPassword(user, password);
             return "reset-password-success";
 
         } catch (ExpiredJwtException e) {
-            model.addAttribute("mensaje", "El enlace de recuperación expiró. Solicita uno nuevo.");
-            return "reset-password-error";
+            model.addAttribute("tipoToken", "recuperación");
+            return "token-expirado";
+
         } catch (JwtException e) {
-            model.addAttribute("mensaje", "Token inválido.");
-            return "reset-password-error";
+            model.addAttribute("tipoToken", "recuperación");
+            return "token-invalido";
+
         } catch (Exception e) {
             model.addAttribute("mensaje", "Ocurrió un error al cambiar la contraseña.");
             return "reset-password-error";
         }
     }
-
 }

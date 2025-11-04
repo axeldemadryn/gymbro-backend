@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Contraseña cambiada - GymBro</title>
+    <title>Error de verificación - GymBro</title>
     <style>
         body {
             font-family: 'Segoe UI', Roboto, sans-serif;
@@ -27,7 +27,7 @@
         }
 
         h2 {
-            color: #4CAF50;
+            color: #ff4c4c;
             margin-bottom: 20px;
             font-size: 22px;
         }
@@ -59,8 +59,8 @@
 
 <body>
     <div class="container">
-        <h2>¡Éxito!</h2>
-        <p>Tu contraseña se ha restablecido correctamente.</p>
+        <h2>Ocurrió un error</h2>
+        <p th:text="${mensaje}">No se pudo verificar tu cuenta. Inténtalo nuevamente más tarde.</p>
     </div>
 </body>
 

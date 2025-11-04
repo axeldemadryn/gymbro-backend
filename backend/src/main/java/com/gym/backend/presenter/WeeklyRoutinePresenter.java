@@ -174,7 +174,7 @@ public class WeeklyRoutinePresenter {
                     .body("No tiene permiso para modificar esta rutina.");
 
         try {
-            return Response.ok(routineService.clone(routine, startDate));
+            return Response.ok(routineService.clone(existente, startDate));
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe una rutina semanal con ese nombre.");
         } catch (IllegalArgumentException | IllegalStateException e) {

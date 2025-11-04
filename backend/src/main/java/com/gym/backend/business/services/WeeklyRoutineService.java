@@ -2,9 +2,12 @@ package com.gym.backend.business.services;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.gym.backend.business.repositories.RoutineDayRepository;
 import com.gym.backend.business.repositories.WeeklyRoutineRepository;
 import com.gym.backend.model.RoutineDay;
+import com.gym.backend.model.Session;
 import com.gym.backend.model.WeeklyRoutine;
 
 import jakarta.transaction.Transactional;
@@ -28,6 +32,15 @@ public class WeeklyRoutineService {
 
     @Autowired
     private RoutineDayService routineDayService;
+
+    @Autowired
+    private SessionService sessionService;
+
+    private final ZoneId zoneId;
+
+    public WeeklyRoutineService(ZoneId zoneId) {
+        this.zoneId = zoneId; // Spring inyecta el bean
+    }
 
     public WeeklyRoutine findById(long id) {
         return repository.findById(id).orElse(null);
@@ -55,14 +68,25 @@ public class WeeklyRoutineService {
 
         boolean esActualizacion = weeklyRoutine.getId() != null;
 
-        // Caso actualización: verificar si la rutina semanal está asociada a alguna
-        // rutina
-        // diaria
         if (esActualizacion) {
+            WeeklyRoutine existente = repository.findById(weeklyRoutine.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("No se encontró la rutina semanal."));
+
+            // 🔹Si la rutina semanal ya finalizó, no se puede modificar nada
+            if (LocalDate.now(zoneId).isAfter(existente.getEndDate())) {
+                throw new IllegalArgumentException("No se puede modificar una rutina semanal que ya ha finalizado.");
+            }
+
+            // 🔹Si tiene rutinas diarias asociadas, solo se bloquea la edición de fechas
             long count = routineDayRepository.countByRoutineId(weeklyRoutine.getId());
             if (count > 0) {
-                throw new IllegalArgumentException(
-                        "No se puede modificar esta rutina semanal, porque está asociada a una rutina diaria.");
+                boolean fechasCambiaron = (start != null && !start.equals(existente.getStartDate())) ||
+                        (end != null && !end.equals(existente.getEndDate()));
+
+                if (fechasCambiaron) {
+                    throw new IllegalArgumentException(
+                            "No se pueden modificar las fechas de una rutina semanal con rutinas diarias asociadas.");
+                }
             }
         }
 
@@ -115,6 +139,10 @@ public class WeeklyRoutineService {
 
     @Transactional
     public WeeklyRoutine clone(WeeklyRoutine weeklyRoutine, LocalDate startDate) {
+        List<RoutineDay> diasAsociados = routineDayRepository.findByWeeklyRoutine(weeklyRoutine);
+        if (diasAsociados.isEmpty()) {
+            throw new IllegalArgumentException("No se puede clonar una rutina semanal sin días asociados.");
+        }
 
         WeeklyRoutine clonada = new WeeklyRoutine();
 
@@ -129,11 +157,23 @@ public class WeeklyRoutineService {
 
         clonada = save(clonada);
 
-        for (RoutineDay rd : routineDayRepository.findByWeeklyRoutine(weeklyRoutine)) {
+        // Evitar clonar la misma sesión más de una vez
+        Map<Long, Session> sesionesClonadas = new HashMap<>();
+
+        for (RoutineDay rd : diasAsociados) {
             RoutineDay nuevo = new RoutineDay();
             nuevo.setDay(rd.getDay());
             nuevo.setRoutine(clonada);
-            nuevo.setSession(rd.getSession());
+
+            Session sesionBase = rd.getSession();
+            Session sesionClonada = sesionesClonadas.get(sesionBase.getId());
+
+            if (sesionClonada == null) {
+                sesionClonada = sessionService.clone(sesionBase, clonada.getUser());
+                sesionesClonadas.put(sesionBase.getId(), sesionClonada);
+            }
+
+            nuevo.setSession(sesionClonada);
 
             // No seteamos status manualmente, lo hará routineDayService.save()
             routineDayService.save(nuevo);
@@ -141,4 +181,5 @@ public class WeeklyRoutineService {
 
         return clonada;
     }
+
 }

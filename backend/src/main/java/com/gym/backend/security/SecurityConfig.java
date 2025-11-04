@@ -27,7 +27,7 @@ public class SecurityConfig {
                                 "/api/users/register",
                                 "/api/users/verify",
                                 "/api/users/resend-verification",
-                                "/api/users/login")
+                                "/api/users/login", "/api/users/recover-password", "/api/users/reset-password")
                         .permitAll()
 
                         // ✅ Cambiar de /imagenes_maquinas_reconocidas/** a /imagenes_usuarios/**
