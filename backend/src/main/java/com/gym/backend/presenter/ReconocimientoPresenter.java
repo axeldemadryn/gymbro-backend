@@ -279,11 +279,11 @@ public class ReconocimientoPresenter {
 
     // Endpoints para testear directamente OpenAI
     @PostMapping(value = "/api/openai", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Mono<String> openAiReconocer(@RequestParam MultipartFile file)
+    public String openAiReconocer(@RequestParam MultipartFile file)
             throws IOException {
         String base64 = "data:" + file.getContentType() + ";base64,"
                 + Base64.getEncoder().encodeToString(file.getBytes());
-        return openAiService.reconocerNombre(base64);
+        return openAiService.reconocerNombre(base64).block();
     }
 
     @GetMapping(value = "/api/openai-url")
