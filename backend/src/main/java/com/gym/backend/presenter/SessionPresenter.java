@@ -60,6 +60,23 @@ public class SessionPresenter {
         return Response.ok(session);
     }
 
+    // 🔹 GET: obtener una sesión específica por nombre
+    @GetMapping("/name/{name}")
+    public ResponseEntity<Object> encontrarByName(@PathVariable String name) {
+        User user = userService.getAuthenticatedUser();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
+
+        Session session = sessionService.findByName(name);
+        if (session == null)
+            return Response.notFound("No se encontró la sesión con nombre " + name + ".");
+
+        if (!session.getUser().getId().equals(user.getId()))
+            return Response.dbError("No puede acceder a una sesión que no le pertenece.");
+
+        return Response.ok(session);
+    }
+
     @GetMapping("maquinas-asociadas-a/{id}")
     public ResponseEntity<Object> encontrarMaquinasPorIdDeSesion(@PathVariable long id) {
         User user = userService.getAuthenticatedUser();

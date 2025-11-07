@@ -132,6 +132,17 @@ public class EjercicioPresenter {
                 .orElseGet(() -> Response.notFound("Ejercicio no encontrado"));
     }
 
+    // 🔹 GET: ejercicio por ID
+    @GetMapping("/nombre/{nombre}")
+    public ResponseEntity<Object> obtenerPorNombre(@PathVariable String nombre) {
+        try {
+            Ejercicio ejercicio = ejercicioService.obtenerPorNombre(nombre);
+            return Response.ok(ejercicio);
+        } catch (Exception e) {
+            return Response.error(e, "Algo impidió el retorno del ejercicio. Se trata de:\n" + e.getMessage());
+        }
+    }
+
     // 🔹 GET: buscar ejercicios por nombre
     @GetMapping("/buscar")
     public ResponseEntity<Object> buscarPorNombre(@RequestParam String nombre) {

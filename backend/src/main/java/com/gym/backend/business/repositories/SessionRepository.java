@@ -3,6 +3,7 @@ package com.gym.backend.business.repositories;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +17,10 @@ public interface SessionRepository extends CrudRepository<Session, Long> {
 
   // Buscar por nombre dentro de un usuario
   Optional<Session> findByNameAndUserId(String name, Long userId);
+
+  // Buscar por nombre únicamente dentro de un usuario
+  @Query("SELECT s FROM Session s WHERE s.name = ?1")
+  Optional<Session> findByName(String name);
 
   boolean existsByNameAndUserId(String name, Long userId);
 

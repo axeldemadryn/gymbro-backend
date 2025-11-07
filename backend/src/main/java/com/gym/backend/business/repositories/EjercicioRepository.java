@@ -36,4 +36,7 @@ public interface EjercicioRepository extends CrudRepository<Ejercicio, Long> {
        List<Ejercicio> findAllConDetalles();
 
        List<Ejercicio> findByNombreContainingIgnoreCase(String nombre);
+
+       @Query("SELECT e FROM Ejercicio e WHERE e.nombre = ?1")
+       Optional<Ejercicio> findByNombre(String nombre);
 }

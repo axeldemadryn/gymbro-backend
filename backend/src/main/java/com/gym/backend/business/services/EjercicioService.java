@@ -41,6 +41,11 @@ public class EjercicioService {
         return ejercicioRepository.findByIdConDetalles(id);
     }
 
+    // Obtener ejercicio por ID con detalles
+    public Ejercicio obtenerPorNombre(String nombre) {
+        return ejercicioRepository.findByNombre(nombre).orElse(null);
+    }
+
     // Buscar ejercicios por tipo
     public List<Ejercicio> buscarPorTipo(TipoEjercicio tipo) {
         return ejercicioRepository.findByTipo(tipo);

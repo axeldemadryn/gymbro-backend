@@ -191,7 +191,7 @@ public class RecomendacionService {
 
                     // DTO básico de máquina
                     MaquinaDTO dto = new MaquinaDTO();
-                    dto.setNombre(m.getNombre());
+                    dto.setNombre(m.getNombreTraducido());
                     dto.setTipoEquipo(m.getTipoEquipo() != null ? m.getTipoEquipo().name() : null);
                     dto.setDescripcion(m.getDescripcion());
                     dto.setImagen(m.getImagenUrl());

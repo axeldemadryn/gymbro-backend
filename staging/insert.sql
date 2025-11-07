@@ -1,9 +1,4 @@
--- 🟩 USUARIOS precargados para asociar a los demás datos del staging
-INSERT INTO users(id, nombre, email, password) VALUES
-(1, "Antonio Vargas", "antoniovargas@luli.com", "unpshb"),
-(2, "Julio Noriega", "juliodenoruega@git.com", "elvikingo");
-
--- MÚSCULOS
+-- 🟩 MÚSCULOS
 INSERT INTO musculos(id, nombre) VALUES
 
 -- pecho
@@ -63,56 +58,64 @@ INSERT INTO musculos(id, nombre) VALUES
 (42, 'Estabilizadores del core'),
 (43, 'Músculos posturales');
 
--- 🟦 MÁQUINAS con URLs de imágenes asociadas
+-- 🟦 MÁQUINAS con URLs de imágenes asociadas.
 
-INSERT INTO maquinas (id, nombre, tipo_equipo, descripcion, imagen_url) VALUES
-(1, 'Chest Press Machine', 'MAQUINA_PECHO', 'Máquina para press de pecho sentado', '/imagenes/chest-press-machine.jpg'),
-(2, 'Lat Pull Down', 'POLEAS', 'Máquina para jalones dorsales', '/imagenes/lat-pull-down.jpg'),
-(3, 'Seated Cable Rows', 'POLEAS', 'Remo sentado con polea baja', '/imagenes/seated-cable-row.jpg'),
-(4, 'Arm Curl Machine', 'MAQUINA_HOMBRO', 'Máquina para curl de brazos', '/imagenes/arm-curl.jpeg'),
-(5, 'Chest Fly Machine', 'MAQUINA_PECHO', 'Máquina de apertura de pecho', '/imagenes/chest-fly.jpeg'),
-(6, 'Chinning Dipping', 'MULTIFUNCIONAL', 'Estación para dominadas y fondos', '/imagenes/chinning-dipping.jpeg'),
-(7, 'Lateral Raises Machine', 'MAQUINA_HOMBRO', 'Máquina para elevaciones laterales de hombros', '/imagenes/lateral-raises.jpeg'),
-(8, 'Leg Extension', NULL, 'Máquina de extensión de cuadríceps', '/imagenes/leg-extension.jpeg'),
-(9, 'Leg Press', NULL, 'Prensa de piernas', '/imagenes/leg-press.jpeg'),
-(10, 'Leg Curl Machine', NULL, 'Máquina para curl de piernas', '/imagenes/leg-curl.jpeg'),
-(11, 'Seated Dip Machine', NULL, 'Máquina para fondos de tríceps sentado', '/imagenes/seated-dip.jpg'),
-(12, 'Shoulder Press Machine', 'MAQUINA_HOMBRO', 'Máquina para press de hombros', '/imagenes/shoulder-press.jpeg'),
-(13, 'Smith Machine', 'MULTIFUNCIONAL', 'Máquina multipower con barra guiada', '/imagenes/smith-machine.jpeg'),
-(14, 'Hack Squat Machine', NULL, 'Máquina para sentadilla hack', '/imagenes/hack-sqat.jpeg');
+INSERT INTO maquinas (id, nombre, nombre_traducido, tipo_equipo, descripcion, imagen_url) VALUES
+(1, 'Chest Press Machine', 'Máquina Chest Press', 'MAQUINA_PECHO', 'Máquina para press de pecho sentado', '/imagenes/chest-press-machine.jpg'),
+(2, 'Lat Pull Down', 'Máquina de Jalón', 'POLEAS', 'Máquina para jalones dorsales', '/imagenes/lat-pull-down.jpg'),
+(3, 'Seated Cable Rows', 'Remo en Polea Sentado', 'POLEAS', 'Remo sentado con polea baja', '/imagenes/seated-cable-row.jpg'),
+(4, 'Arm Curl Machine', 'Máquina de Curl de Brazos', 'MAQUINA_HOMBRO', 'Máquina para curl de brazos', '/imagenes/arm-curl.jpeg'),
+(5, 'Chest Fly Machine', 'Máquina de Aperturas de Pecho', 'MAQUINA_PECHO', 'Máquina de apertura de pecho', '/imagenes/chest-fly.jpeg'),
+(6, 'Chinning Dipping', 'Estación de Dominadas y Fondos', 'MULTIFUNCIONAL', 'Estación para dominadas y fondos', '/imagenes/chinning-dipping.jpeg'),
+(7, 'Lateral Raises Machine', 'Máquina de Elevaciones Laterales', 'MAQUINA_HOMBRO', 'Máquina para elevaciones laterales de hombros', '/imagenes/lateral-raises.jpeg'),
+(8, 'Leg Extension', 'Máquina de Extensión de Piernas', NULL, 'Máquina de extensión de cuadríceps', '/imagenes/leg-extension.jpeg'),
+(9, 'Leg Press', 'Prensa de Piernas', NULL, 'Prensa de piernas', '/imagenes/leg-press.jpeg'),
+(10, 'Leg Curl Machine', 'Máquina de Curl de Piernas', NULL, 'Máquina para curl de piernas', '/imagenes/leg-curl.jpeg'),
+(11, 'Seated Dip Machine', 'Máquina de Fondos Sentado', NULL, 'Máquina para fondos de tríceps sentado', '/imagenes/seated-dip.jpg'),
+(12, 'Shoulder Press Machine', 'Máquina de Press de Hombros', 'MAQUINA_HOMBRO', 'Máquina para press de hombros', '/imagenes/shoulder-press.jpeg'),
+(13, 'Smith Machine', 'Máquina Smith', 'MULTIFUNCIONAL', 'Máquina multipower con barra guiada', '/imagenes/smith-machine.jpeg'),
+(14, 'Hack Squat Machine', 'Máquina de Sentadilla Hack', NULL, 'Máquina para sentadilla hack', '/imagenes/hack-sqat.jpeg');
 
--- 🟨 EJERCICIOS, no asociados a ningún video ni usuario en principio
-INSERT INTO ejercicios (id, nombre, tipo, descripcion, video_url, user_id) VALUES
+-- 🟨 EJERCICIOS, no asociados a ningún video en principio. Se asocian a todos los usuarios existentes en la BD.
+INSERT INTO ejercicios (id, nombre, tipo, descripcion, video_url, user_id)
+SELECT 
+    ejercicio_basico.id,
+    ejercicio_basico.nombre,
+    ejercicio_basico.tipo,
+    ejercicio_basico.descripcion,
+    ejercicio_basico.video_url,
+    u.id
+FROM users u
+CROSS JOIN (
+    VALUES 
+        -- Pecho
+        (1, 'Press de Pecho en Máquina', 'FUERZA', 'Ejercicio para pectorales en máquina de press sentado.', NULL),
+        (2, 'Aperturas en Máquina de Pecho', 'FUERZA', 'Ejercicio para pectorales con máquina de apertura.', NULL),
+        (3, 'Jalón al Pecho', 'FUERZA', 'Ejercicio para dorsales en máquina de polea alta.', NULL),
+        (4, 'Remo Sentado en Polea Baja', 'FUERZA', 'Remo para espalda media en polea baja.', NULL),
+        (5, 'Pull Over en Polea', 'FUERZA', 'Ejercicio de dorsales con polea alta.', NULL),
 
--- Pecho
-(1, 'Press de Pecho en Máquina', 'FUERZA', 'Ejercicio para pectorales en máquina de press sentado.', null, null),
-(2, 'Aperturas en Máquina de Pecho', 'FUERZA', 'Ejercicio para pectorales con máquina de apertura.', null, null),
+        -- Brazos
+        (6, 'Curl de Bíceps en Máquina', 'FUERZA', 'Ejercicio para bíceps usando máquina de curl.', NULL),
+        (7, 'Fondos en Máquina Sentado', 'FUERZA', 'Ejercicio para tríceps en máquina de dips sentado.', NULL),
+        (8, 'Extensión de Tríceps en Polea', 'FUERZA', 'Ejercicio para tríceps en polea alta.', NULL),
 
--- Espalda
-(3, 'Jalón al Pecho', 'FUERZA', 'Ejercicio para dorsales en máquina de polea alta.', null, null),
-(4, 'Remo Sentado en Polea Baja', 'FUERZA', 'Remo para espalda media en polea baja.', null, null),
-(5, 'Pull Over en Polea', 'FUERZA', 'Ejercicio de dorsales con polea alta.', null, null),
+        -- Hombros
+        (9, 'Press de Hombros en Máquina', 'FUERZA', 'Ejercicio de empuje vertical para deltoides.', NULL),
+        (10, 'Elevaciones Laterales en Máquina', 'FUERZA', 'Ejercicio de hombros para deltoides laterales.', NULL),
 
--- Brazos
-(6, 'Curl de Bíceps en Máquina', 'FUERZA', 'Ejercicio para bíceps usando máquina de curl.', null, null),
-(7, 'Fondos en Máquina Sentado', 'FUERZA', 'Ejercicio para tríceps en máquina de dips sentado.', null, null),
-(8, 'Extensión de Tríceps en Polea', 'FUERZA', 'Ejercicio para tríceps en polea alta.', null, null),
+        -- Piernas
+        (11, 'Extensión de Piernas', 'FUERZA', 'Ejercicio para cuadríceps en máquina de extensiones.', NULL),
+        (12, 'Curl de Piernas en Máquina', 'FUERZA', 'Ejercicio para isquiotibiales en máquina de curl.', NULL),
+        (13, 'Prensa de Piernas', 'FUERZA', 'Ejercicio compuesto para tren inferior en máquina de prensa.', NULL),
+        (14, 'Sentadilla Hack', 'FUERZA', 'Ejercicio para cuádriceps y glúteos en máquina hack squat.', NULL),
 
--- Hombros
-(9, 'Press de Hombros en Máquina', 'FUERZA', 'Ejercicio de empuje vertical para deltoides.', null, null),
-(10, 'Elevaciones Laterales en Máquina', 'FUERZA', 'Ejercicio de hombros para deltoides laterales.', null, null),
-
--- Piernas
-(11, 'Extensión de Piernas', 'FUERZA', 'Ejercicio para cuadríceps en máquina de extensiones.', null, null),
-(12, 'Curl de Piernas en Máquina', 'FUERZA', 'Ejercicio para isquiotibiales en máquina de curl.', null, null),
-(13, 'Prensa de Piernas', 'FUERZA', 'Ejercicio compuesto para tren inferior en máquina de prensa.', null, null),
-(14, 'Sentadilla Hack', 'FUERZA', 'Ejercicio para cuádriceps y glúteos en máquina hack squat.', null, null),
-
--- Multifuncionales / Compuestos
-(15, 'Dominadas en Estación Multifuncional', 'FUERZA', 'Ejercicio de tracción vertical en estación de dominadas.', null, null),
-(16, 'Fondos en Estación Multifuncional', 'FUERZA', 'Ejercicio para tríceps y pectorales en estación multifuncional.', null, null),
-(17, 'Press de Pecho en Smith Machine', 'FUERZA', 'Press de banca guiado en multipower Smith.', null, null),
-(18, 'Sentadilla en Smith Machine', 'FUERZA', 'Sentadilla guiada en multipower Smith.', null, null);
+        -- Multifuncionales / Compuestos
+        (15, 'Dominadas en Estación Multifuncional', 'FUERZA', 'Ejercicio de tracción vertical en estación de dominadas.', NULL),
+        (16, 'Fondos en Estación Multifuncional', 'FUERZA', 'Ejercicio para tríceps y pectorales en estación multifuncional.', NULL),
+        (17, 'Press de Pecho en Smith Machine', 'FUERZA', 'Press de banca guiado en multipower Smith.', NULL),
+        (18, 'Sentadilla en Smith Machine', 'FUERZA', 'Sentadilla guiada en multipower Smith.', NULL)
+) AS ejercicio_basico(id, nombre, tipo, descripcion, video_url);
 
 -- 🟧 TABLA MÁQUINA-MÚSCULOS
 
@@ -266,13 +269,22 @@ INSERT INTO ejercicio_musculos (ejercicio_id, musculo_id) VALUES
 (18, 42); -- Sentadilla Smith -> Estabilizadores del core (secundario)
 
 -- ⚫ SESIONES
-INSERT INTO sessions (id, name, description, user_id) VALUES
-(1, 'Sesion Pecho', 'Rutina de pecho con máquinas básicas', 1),
-(2, 'Sesion Espalda', 'Rutina de espalda y dorsales', 1),
-(3, 'Sesion Piernas', 'Rutina de piernas con enfoque en fuerza', 1),
-(4, 'Sesion Brazos', 'Rutina de biceps y triceps', 1),
-(5, 'Sesion Hombros', 'Rutina de hombros y deltoides', 1),
-(6, 'Sesion Vacía', 'Rutina vacia', 2);
+INSERT INTO sessions (id, name, description, user_id)
+SELECT
+    sesion_basico.id,
+    sesion_basico.nombre,
+    sesion_basico.descripcion
+    users.id
+FROM users
+CROSS JOIN
+    VALUES(
+        (1, 'Sesion Pecho', 'Rutina de pecho con máquinas básicas'),
+        (2, 'Sesion Espalda', 'Rutina de espalda y dorsales'),
+        (3, 'Sesion Piernas', 'Rutina de piernas con enfoque en fuerza'),
+        (4, 'Sesion Brazos', 'Rutina de biceps y triceps'),
+        (5, 'Sesion Hombros', 'Rutina de hombros y deltoides'),
+        (6, 'Sesion Vacía', 'Rutina vacia')
+) AS sesion_basico(id, nombre, descripcion);
 
 -- 🟩 TABLA SESSION-EXERCISE
 
@@ -303,7 +315,16 @@ INSERT INTO session_exercises(id, session_id, exercise_id, sets, reps) VALUES
 
 -- 🟦 RUTINAS SEMANALES (sin rutinas diarias)
 
-INSERT INTO weekly_routines (name, start_date, end_date, user_id) VALUES
-('Semana X', '2023-10-09', '2023-10-15', 1),
-('Semana Y', '2023-10-16', '2023-10-21', 1),
-('Semana Z', '2023-10-23', '2023-10-29', 1);
+INSERT INTO weekly_routines (name, start_date, end_date, user_id)
+SELECT
+    rutinas_semanales_basico.nombre,
+    rutinas_semanales_basico.inicio,
+    rutinas_semanales_basico.fin,
+    users.id
+FROM users
+CROSS JOIN
+    VALUES(
+        ('Semana X', '2023-10-09', '2023-10-15', 1),
+        ('Semana Y', '2023-10-16', '2023-10-21', 1),
+        ('Semana Z', '2023-10-23', '2023-10-29', 1)
+) AS rutinas_semanales_basico(nombre, inicio, fin);

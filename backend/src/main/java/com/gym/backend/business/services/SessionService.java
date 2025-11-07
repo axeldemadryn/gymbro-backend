@@ -61,6 +61,10 @@ public class SessionService {
         return repository.findByNameAndUserId(name, userId).orElse(null);
     }
 
+    public Session findByName(String name) {
+        return repository.findByName(name).orElse(null);
+    }
+
     public List<Session> findAll() {
         List<Session> result = new ArrayList<>();
         repository.findAll().forEach(aSession -> result.add(aSession));
@@ -127,7 +131,7 @@ public class SessionService {
         // opcionalmente, EjercicioDTO
         return maquinas.stream().map(m -> {
             MaquinaDTO dto = new MaquinaDTO();
-            dto.setNombre(m.getNombre());
+            dto.setNombre(m.getNombreTraducido());
             dto.setTipoEquipo(m.getTipoEquipo() != null ? m.getTipoEquipo().name() : null);
             dto.setDescripcion(m.getDescripcion());
             dto.setImagen(m.getImagenUrl());
