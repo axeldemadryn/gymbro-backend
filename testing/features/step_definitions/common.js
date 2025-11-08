@@ -6,21 +6,22 @@ const URL = 'http://backend:8080/api/'; // URL base del backend
 
 let lastResponse = null;
 
+let hoy, lunes, domingo; // días de la semana
+
+/*********************** Token de usuario con sus getters y setters **************************/
 let userToken = null; // Token del usuario para todos los steps
 
-// Pegar acá abajo (sobre <mi-token>) el token creado localmente
-const miToken =
-    '<mi-token>'
-;
+function getUserToken(){
+    return userToken;
+}
 
-// Datos de usuario de testings
-const testUser = {
-    nombre: 'Usuario Test',
-    email: 'testuser@example.com',
-    password: '123456'
-};
+function setUserToken(newToken){
+    userToken = newToken;
+}
 
-function doRequest(method, path, body = null, token = miToken) {
+/******************************* Funciones de request ************************/
+
+function doRequest(method, path, body = null, token = userToken) {
     try {
         const opts = body ? {
             body: JSON.stringify(body),
@@ -41,27 +42,28 @@ function doRequest(method, path, body = null, token = miToken) {
 }
 
 // Consultas GET, PUT y DELETE
-function get(path, token = miToken) { return doRequest('GET', path, null, token); }
-function put(path, body, token = miToken) { return doRequest('PUT', path, body, token); }
-function deleteReq(path, token = miToken) { return doRequest('DELETE', path, null, token); }
+function get(path, token = userToken) { return doRequest('GET', path, null, token); }
+function put(path, body, token = userToken) { return doRequest('PUT', path, body, token); }
+function deleteReq(path, token = userToken) { return doRequest('DELETE', path, null, token); }
+
+/** Clase para mapear los datos que ya estaban en el backend antes del test, o se fueron cargando
+ * durante el mismo. Soporta agregado de datos y eliminación
+*/
 
 class MapaDatosBackend {
 
     constructor() {
         // Map para almacenar colecciones de datos del backend: se pueden agregar nuevos tipos aquí posteriormente.
         this.colecciones = new Map([
-            ['users', []]
-            // ['users', []],
-            // ['weekly-routines', []],
-            // ['routine-days', []]
+            ['users', []],
+            ['weekly-routines', []],
+            ['routine-days', []]
         ]);
-        // this.prioridad = ['users', 'routine-days', 'weekly-routines'];
-        this.prioridad = ['users'];
+        this.prioridad = ['users', 'routine-days', 'weekly-routines'];
         this.rutasPost = {
-            'users': 'users/register'
-            // 'users': 'users/register',
-            // 'routine-days': 'routine-days',
-            // 'weekly-routines': 'weekly-routines'
+            'users': 'users/register',
+            'routine-days': 'routine-days',
+            'weekly-routines': 'weekly-routines'
         };
     }
 
@@ -89,57 +91,45 @@ function post(path, body, token = null) {
 /************************************BeforeAll para manejar user*******************************************/
 
 BeforeAll(function () {
-    // /****Asignación de usuario ***/ (Descomentar para cuando se refactoricen los otros tests)
-    
-    // let tokenToVerify = null;
+    /*** Seteo del día de semana de hoy y las fechas del lunes y domingo de esta semana ***/
 
-    // // 1. Intentar registrar el usuario. Si ya existe, capturar el error.
-    // try {
-    //     const registerRes = post('users/register', testUser);
-    //     tokenToVerify = registerRes?.token; // Token si el registro es nuevo
-    // } catch (e) {
-    //     console.log('Usuario de prueba ya registrado. Intentando reenviar verificación...');
-        
-    //     // 2. Si el registro falló, forzar el reenvío para obtener un token fresco.
-    //     try {
-    //         const resendRes = post('users/resend-verification', { email: t.slice().reverse()estUser.email });
-    //         tokenToVerify = resendRes?.token;
-    //     } catch (resendError) {
-    //         console.log('No se pudo reenviar la verificación. Asumiendo que el usuario está ACTIVO o que la cuenta ya fue verificada.');
-    //     }
-    // }
+    const diaHoy = new Date(); // Fecha actual según UTC, o GMT-3 (según el formato de horario en el backend o docker-compose.yml)
 
-    // // 3. Verificar la cuenta si tenemos un token.
-    // if (tokenToVerify) {
-    //     try {
-    //         get(`users/verify?token=${tokenToVerify}`);
-    //         console.log('Cuenta verificada.');
-    //     } catch (e) {
-    //         console.warn('Error durante la verificación, pero continuamos (posiblemente ya estaba activo):', e.message);
-    //     }
-    // } else {
-    //     console.log('Token de verificación no disponible, asumiendo usuario activo.');
-    // }
+    const diaSemana = diaHoy.getDay(); // Obtener día de la semana (0 = domingo, 1 = lunes, ..., 6 = sábado)
 
-    // // 4. Login del usuario
-    // const loginRes = post('users/login', {
-    //     email: testUser.email,
-    //     password: testUser.password
-    // });
+    // Asignar el nombre del día de hoy (en mayúsculas, igual que en el backend)
+    const nombresDias = ["DOMINGO", "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"];
+    hoy = nombresDias[diaSemana];
 
-    // if (!loginRes || !loginRes.token) {
-    //     throw new Error('No se pudo loguear al usuario de prueba. La cuenta puede estar inactiva o con credenciales incorrectas.');
-    // }
+    // Variables lunes y domingo, que luego se calcularán para obtener los días lunes y domingo de la semana actual
+    const diaLunes = new Date(diaHoy);
+    const diaDomingo = new Date(diaHoy);
 
-    // userToken = loginRes.token;
-    // this.userToken = userToken; // disponible para todos los steps
+    // Ajustar para obtener lunes (si hoy es domingo, retroceder 6 días)
+    const offsetLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
+    diaLunes.setDate(diaHoy.getDate() + offsetLunes);
+
+    // Ajustar para obtener domingo
+    const offsetDomingo = diaSemana === 0 ? 0 : 7 - diaSemana;
+    diaDomingo.setDate(diaHoy.getDate() + offsetDomingo);
+
+    // Función para guardar en formato YYYY-MM-DD para enviar al backend
+    const formatoISO = d => {
+        const anio = d.getFullYear(); // año
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+        const dia = String(d.getDate()).padStart(2, '0');
+        return `${anio}-${mes}-${dia}`;
+    };
+
+    // Se setean los días lunes y domingo de semana en el formato adecuado
+    lunes = formatoISO(diaLunes);
+    domingo = formatoISO(diaDomingo);
 
     /*** Obtención y eliminación del backend de datos previamente almacenados ***/
 
     // Función para cargar datos en datosAntesTest
     for (const tipo of datosAntesTest.prioridad) {
         const datos = get(tipo);
-        console.log(datos);
         datosAntesTest.colecciones.set(tipo, Array.isArray(datos) ? datos : []);
     }
 
@@ -157,66 +147,65 @@ BeforeAll(function () {
     } catch (e) {
         console.warn('BeforeAll: error eliminando datos previos al testing:', e.message);
     }
-    console.log(datosAntesTest.colecciones);
+    //console.log(datosAntesTest.colecciones);
 });
 
-/*******************************************Asserts*******************************************************/
+/******************************************* Assert *******************************************************/
 Then('se debería obtener el mensaje {string}', function (expected) {
     if (!lastResponse) throw new Error('No hay respuesta disponible del backend.');
     
     let found = false;
-    let actualMessage = JSON.stringify(lastResponse); // Mensaje por defecto para la aserción
+    let actualMessage = 'Respuesta no coincidente';
+    let responseToCheck = lastResponse;
     
-    // Check 1: Buscar en el mensaje principal (Funciona para "OK", y mensajes 409/500 no validados)
-    if (lastResponse.message && lastResponse.message.includes(expected)) {
+    // --- LÓGICA DE LIMPIEZA DE MENSAJE DE ERROR ---
+    // Si la respuesta es una excepción de sync-request (cadena sucia), extraemos el JSON limpio.
+    if (typeof lastResponse.message === 'string' && lastResponse.message.startsWith('Server responded to')) {
+        const rawMessage = lastResponse.message;
+        // Regex para extraer el objeto JSON que empieza con '{' y termina con '}'
+        const jsonMatch = rawMessage.match(/\{.*\}$/s); 
+        
+        if (jsonMatch) {
+            try {
+                // 1. Reemplazamos el objeto a chequear con el JSON limpio extraído
+                responseToCheck = JSON.parse(jsonMatch[0]); 
+            } catch (e) {
+                // Si falla el parseo del JSON incrustado, mantenemos el mensaje original para que el assert falle si es necesario.
+            }
+        }
+    }
+    // --- FIN LÓGICA DE LIMPIEZA ---
+
+    // Check 1: Buscar en el mensaje principal (incluye "OK" y errores de servicio 409)
+    if (responseToCheck.message && responseToCheck.message.includes(expected)) {
         found = true;
+        actualMessage = responseToCheck.message; 
     }
     
-    // Check 2: Buscar en los campos de datos (Necesario para errores de validación 400)
-    // El backend pone los errores de campo como {"email": "mensaje"} dentro de 'data'.
-    if (lastResponse.data && typeof lastResponse.data === 'object') {
-        for (const key in lastResponse.data) {
-            if (typeof lastResponse.data[key] === 'string' && lastResponse.data[key].includes(expected)) {
+    // Check 2: Buscar en los campos de datos (Errores de validación 400)
+    if (responseToCheck.data && typeof responseToCheck.data === 'object') {
+        for (const key in responseToCheck.data) {
+            if (typeof responseToCheck.data[key] === 'string' && responseToCheck.data[key].includes(expected)) {
                 found = true;
-                actualMessage = lastResponse.data[key]; // Capturar el mensaje específico de la data
+                actualMessage = responseToCheck.data[key]; // El mensaje de error específico (ej. "El nombre no puede estar vacío")
                 break;
             }
         }
+    }
+
+    // Fallback: Si no se encontró (test fallido), usamos el mensaje limpio o el mensaje completo del backend.
+    if (!found) {
+        // Para el mensaje de fallo del assert, mostramos la versión más limpia posible
+        actualMessage = responseToCheck.message || JSON.stringify(responseToCheck);
     }
     
     assert(
         found,
         `Se esperaba "${expected}", pero se obtuvo: ${actualMessage}`
     );
-});
-
-Then('se obtiene un error con mensaje {string}', function (expected) {
-    if (!lastResponse) throw new Error('No hay respuesta disponible del backend.');
     
-    let found = false;
-    let actualMessage = JSON.stringify(lastResponse);
-
-    // Búsqueda en el mensaje principal (error o message)
-    if ((lastResponse.error && lastResponse.error.includes(expected)) ||
-        (lastResponse.message && lastResponse.message.includes(expected))) {
-        found = true;
-    }
-
-    // Búsqueda en los campos de datos (si es un error 400)
-    if (lastResponse.data && typeof lastResponse.data === 'object') {
-        for (const key in lastResponse.data) {
-            if (typeof lastResponse.data[key] === 'string' && lastResponse.data[key].includes(expected)) {
-                found = true;
-                actualMessage = lastResponse.data[key];
-                break;
-            }
-        }
-    }
-
-    assert(
-        found,
-        `Se esperaba error "${expected}", pero se obtuvo: ${actualMessage}`
-    );
+    // El log ahora mostrará la cadena limpia almacenada en actualMessage
+    console.log(`Se obtuvo el mensaje: ${actualMessage}\n\n`); 
 });
 
 /***********AfterAll: eliminar todas las weekly-routines y routine-days usadas para el testing****************/
@@ -232,20 +221,20 @@ AfterAll(() => {
         console.warn('AfterAll: error eliminando datos de testing:', e.message);
     }
 
-    console.log('Limpieza completada.');
+    //console.log('Limpieza completada.');
 
     for (const tipo of datosAntesTest.prioridad) {
         if(Array.isArray(datosAntesTest.colecciones.get(tipo))){
             for (const elemento of datosAntesTest.colecciones.get(tipo)) {
                 let x = post(datosAntesTest.rutasPost[tipo], elemento);
-                console.log(x);
+                //console.log(x);
             }
         }
     }
 
-    console.log('Recarga de datos previos completada.');
+    //console.log('Recarga de datos previos completada.');
 });
 
 /*******************************************************************************************************/
 
-module.exports = { get, post, put, deleteReq };
+module.exports = { get, post, put, deleteReq, getUserToken, setUserToken, hoy, lunes, domingo };
