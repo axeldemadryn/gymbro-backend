@@ -335,8 +335,8 @@ INNER JOIN ejercicios ON ejercicios.nombre = sesion_ejercicio_basico.nombre_ejer
 INSERT INTO weekly_routines (name, start_date, end_date, user_id)
 SELECT
     rutinas_semanales_basico.nombre,
-    rutinas_semanales_basico.inicio,
-    rutinas_semanales_basico.fin,
+    rutinas_semanales_basico.inicio::date,
+    rutinas_semanales_basico.fin::date,
     users.id
 FROM users
 CROSS JOIN (
