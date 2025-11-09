@@ -57,8 +57,20 @@ public class EjercicioService {
         ejercicioRepository.deleteById(id);
     }
 
-    public List<Ejercicio> buscarPorNombre(String nombre) {
-        return ejercicioRepository.findByNombreContainingIgnoreCase(nombre);
+    public boolean existeEjercicioGlobalPorNombre(String nombre) {
+        return ejercicioRepository.existsByNombreAndUserIsNull(nombre); // ejercicio global
+    }
+
+    public Ejercicio buscarPorNombreYUserOGlobal(String nombre, Long userId) {
+        return ejercicioRepository.findByNombreAndUserIdOrGlobal(nombre, userId).orElse(null);
+    }
+
+    public List<Ejercicio> buscarPorNombre(String nombre, Long userId) {
+        return ejercicioRepository.findByNombreContainingIgnoreCaseAndUserIsNullOrUserId(nombre, userId);
+    }
+
+    public List<Ejercicio> obtenerGlobalesYDelUsuario(Long userId) {
+        return ejercicioRepository.findByUserIsNullOrUserId(userId);
     }
 
 }

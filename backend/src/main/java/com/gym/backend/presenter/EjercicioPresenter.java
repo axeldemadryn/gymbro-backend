@@ -58,7 +58,14 @@ public class EjercicioPresenter {
         if (ejercicio.getNombre() == null || ejercicio.getNombre().isEmpty())
             return Response.dbError("El nombre del ejercicio no puede estar vacío.");
 
+        // Asignamos usuario
         ejercicio.setUser(user);
+
+        // 🔹 Verificar que no exista otro ejercicio global con ese nombre
+        boolean existeGlobal = ejercicioService.existeEjercicioGlobalPorNombre(ejercicio.getNombre());
+        if (existeGlobal) {
+            return Response.dbError("Ya existe un ejercicio global con ese nombre.");
+        }
 
         try {
             Ejercicio guardado = ejercicioService.guardar(ejercicio);
@@ -82,6 +89,11 @@ public class EjercicioPresenter {
         // No permitir editar ejercicios globales o de otro usuario
         if (existente.getUser() == null || !existente.getUser().getId().equals(user.getId()))
             return Response.dbError("No puede editar un ejercicio que no le pertenece.");
+
+        // 🔹 Verificar que no intente renombrar con un nombre de un ejercicio global
+        boolean existeGlobal = ejercicioService.existeEjercicioGlobalPorNombre(ejercicioActualizado.getNombre());
+        if (existeGlobal)
+            return Response.dbError("Ya existe un ejercicio global con ese nombre.");
 
         existente.setNombre(ejercicioActualizado.getNombre());
         existente.setDescripcion(ejercicioActualizado.getDescripcion());
@@ -115,12 +127,16 @@ public class EjercicioPresenter {
         return Response.ok("Ejercicio personalizado eliminado correctamente.");
     }
 
-    // 🔹 GET: todos los ejercicios (globales + personalizados)
+    // 🔹 GET: todos los ejercicios (globales + personalizados, solo del usuario)
     @GetMapping
     public ResponseEntity<Object> listarEjercicios() {
-        List<Ejercicio> ejercicios = ejercicioService.obtenerTodos();
+        User user = userService.getAuthenticatedUser();
+        Long userId = (user != null) ? user.getId() : null;
+
+        List<Ejercicio> ejercicios = ejercicioService.obtenerGlobalesYDelUsuario(userId);
         if (ejercicios.isEmpty())
             return Response.notFound("No hay ejercicios registrados");
+
         return Response.ok(ejercicios);
     }
 
@@ -132,23 +148,35 @@ public class EjercicioPresenter {
                 .orElseGet(() -> Response.notFound("Ejercicio no encontrado"));
     }
 
-    // 🔹 GET: ejercicio por ID
     @GetMapping("/nombre/{nombre}")
     public ResponseEntity<Object> obtenerPorNombre(@PathVariable String nombre) {
         try {
-            Ejercicio ejercicio = ejercicioService.obtenerPorNombre(nombre);
+            User user = userService.getAuthenticatedUser();
+            Long userId = (user != null) ? user.getId() : null;
+
+            Ejercicio ejercicio = ejercicioService.buscarPorNombreYUserOGlobal(nombre, userId);
+
+            if (ejercicio == null)
+                return Response.notFound("No se encontraron ejercicios con el nombre: " + nombre);
+
             return Response.ok(ejercicio);
         } catch (Exception e) {
-            return Response.error(e, "Algo impidió el retorno del ejercicio. Se trata de:\n" + e.getMessage());
+            return Response.error(e, "Algo impidió el retorno de los ejercicios. Detalle: " + e.getMessage());
         }
     }
 
-    // 🔹 GET: buscar ejercicios por nombre
+    // 🔹 GET: buscar o filtar (contiene o no la palabra) ejercicios por nombre
+    // (solo globales + del usuario
+    // autenticado)
     @GetMapping("/buscar")
     public ResponseEntity<Object> buscarPorNombre(@RequestParam String nombre) {
-        List<Ejercicio> resultados = ejercicioService.buscarPorNombre(nombre);
+        User user = userService.getAuthenticatedUser();
+        Long userId = (user != null) ? user.getId() : null;
+
+        List<Ejercicio> resultados = ejercicioService.buscarPorNombre(nombre, userId);
         if (resultados.isEmpty())
-            return Response.notFound("No se encontraron ejercicios con ese nombre");
+            return Response.notFound("No se encontraron ejercicios con ese nombre.");
+
         return Response.ok(resultados);
     }
 
