@@ -28,20 +28,20 @@ INSERT INTO musculos(nombre) VALUES
 
 -- 🟦 MÁQUINAS con URLs de imágenes asociadas.
 INSERT INTO maquinas (nombre, nombre_traducido, tipo_equipo, descripcion, imagen_url) VALUES
-('Chest Press Machine', 'Máquina Chest Press', 'MAQUINA_PECHO', 'Máquina para press de pecho sentado', '/imagenes/chest-press-machine.jpg'),
-('Lat Pull Down', 'Máquina de Jalón', 'POLEAS', 'Máquina para jalones dorsales', '/imagenes/lat-pull-down.jpg'),
+('Chest Press Machine', 'Máquina de Press de Pecho', 'MAQUINA_PECHO', 'Máquina para press de pecho sentado', '/imagenes/chest-press-machine.jpg'),
+('Lat Pull Down', 'Máquina de Polea al Pecho', 'POLEAS', 'Máquina para jalones dorsales', '/imagenes/lat-pull-down.jpg'),
 ('Seated Cable Rows', 'Remo en Polea Sentado', 'POLEAS', 'Remo sentado con polea baja', '/imagenes/seated-cable-row.jpg'),
-('Arm Curl Machine', 'Máquina de Curl de Brazos', 'MAQUINA_HOMBRO', 'Máquina para curl de brazos', '/imagenes/arm-curl.jpeg'),
+('Arm Curl Machine', 'Máquina de Bíceps', 'MAQUINA_HOMBRO', 'Máquina para curl de brazos', '/imagenes/arm-curl.jpeg'),
 ('Chest Fly Machine', 'Máquina de Aperturas de Pecho', 'MAQUINA_PECHO', 'Máquina de apertura de pecho', '/imagenes/chest-fly.jpeg'),
-('Chinning Dipping', 'Estación de Dominadas y Fondos', 'MULTIFUNCIONAL', 'Estación para dominadas y fondos', '/imagenes/chinning-dipping.jpeg'),
+('Chinning Dipping', 'Máquina de Dominadas y Fondos', 'MULTIFUNCIONAL', 'Estación para dominadas y fondos', '/imagenes/chinning-dipping.jpeg'),
 ('Lateral Raises Machine', 'Máquina de Elevaciones Laterales', 'MAQUINA_HOMBRO', 'Máquina para elevaciones laterales de hombros', '/imagenes/lateral-raises.jpeg'),
-('Leg Extension', 'Máquina de Extensión de Piernas', NULL, 'Máquina de extensión de cuadríceps', '/imagenes/leg-extension.jpeg'),
+('Leg Extension', 'Máquina de Extensiones de Piernas', NULL, 'Máquina de extensión de cuadríceps', '/imagenes/leg-extension.jpeg'),
 ('Leg Press', 'Prensa de Piernas', NULL, 'Prensa de piernas', '/imagenes/leg-press.jpeg'),
 ('Leg Curl Machine', 'Máquina de Curl de Piernas', NULL, 'Máquina para curl de piernas', '/imagenes/leg-curl.jpeg'),
-('Seated Dip Machine', 'Máquina de Fondos Sentado', NULL, 'Máquina para fondos de tríceps sentado', '/imagenes/seated-dip.jpg'),
+('Seated Dip Machine', 'Máquina de Tríceps (Fondos) Sentado', NULL, 'Máquina para fondos de tríceps sentado', '/imagenes/seated-dip.jpg'),
 ('Shoulder Press Machine', 'Máquina de Press de Hombros', 'MAQUINA_HOMBRO', 'Máquina para press de hombros', '/imagenes/shoulder-press.jpeg'),
 ('Smith Machine', 'Máquina Smith', 'MULTIFUNCIONAL', 'Máquina multipower con barra guiada', '/imagenes/smith-machine.jpeg'),
-('Hack Squat Machine', 'Máquina de Sentadilla Hack', NULL, 'Máquina para sentadilla hack', '/imagenes/hack-sqat.jpeg');
+('Hack Squat Machine', 'Máquina de Sentadillas Hack', NULL, 'Máquina para sentadilla hack', '/imagenes/hack-sqat.jpeg');
 
 -- 🟨 EJERCICIOS GLOBALES (no están asociados a ningún video en principio).
 INSERT INTO ejercicios (nombre, tipo, descripcion, video_url, user_id) VALUES
