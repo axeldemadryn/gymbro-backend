@@ -1,7 +1,9 @@
 package com.gym.backend.business.services;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gym.backend.business.repositories.EjercicioRepository;
 import com.gym.backend.model.Ejercicio;
+import com.gym.backend.model.Musculo;
 import com.gym.backend.model.TipoEjercicio;
 
 @Service
@@ -17,13 +20,20 @@ public class EjercicioService {
     @Autowired
     private EjercicioRepository ejercicioRepository;
 
-    // Guardar un ejercicio con validación de nombre único
     @Transactional
     public Ejercicio guardar(Ejercicio ejercicio) {
-        if (ejercicioRepository.existsByNombreIgnoreCase(ejercicio.getNombre())) {
-            throw new IllegalArgumentException(
-                    "Ya existe un ejercicio con el mismo nombre: " + ejercicio.getNombre());
+        if (ejercicio.getMusculos() == null || ejercicio.getMusculos().isEmpty()) {
+            throw new IllegalArgumentException("El ejercicio debe tener al menos un músculo asociado.");
         }
+
+        // Evitar músculos duplicados
+        Set<Musculo> musculosUnicos = new HashSet<>();
+        for (Musculo m : ejercicio.getMusculos()) {
+            if (!musculosUnicos.add(m)) {
+                throw new IllegalArgumentException("El ejercicio contiene músculos repetidos.");
+            }
+        }
+
         return ejercicioRepository.save(ejercicio);
     }
 

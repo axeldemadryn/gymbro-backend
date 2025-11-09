@@ -72,6 +72,8 @@ public class EjercicioPresenter {
             return Response.ok(guardado);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe un ejercicio con ese nombre para este usuario.");
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
         }
     }
 
@@ -105,6 +107,8 @@ public class EjercicioPresenter {
             return Response.ok(actualizado);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe otro ejercicio con ese nombre para este usuario.");
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
         }
     }
 
