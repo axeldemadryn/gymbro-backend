@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gym.backend.business.repositories.EjercicioRepository;
+import com.gym.backend.business.repositories.MusculoRepository;
 import com.gym.backend.model.Ejercicio;
 import com.gym.backend.model.Musculo;
 import com.gym.backend.model.TipoEjercicio;
@@ -20,6 +21,9 @@ public class EjercicioService {
     @Autowired
     private EjercicioRepository ejercicioRepository;
 
+    @Autowired
+    private MusculoRepository musculoRepository;
+
     @Transactional
     public Ejercicio guardar(Ejercicio ejercicio) {
         if (ejercicio.getMusculos() == null || ejercicio.getMusculos().isEmpty()) {
@@ -29,7 +33,9 @@ public class EjercicioService {
         // Evitar músculos duplicados
         Set<Musculo> musculosUnicos = new HashSet<>();
         for (Musculo m : ejercicio.getMusculos()) {
-            if (!musculosUnicos.add(m)) {
+            Musculo musculoDB = musculoRepository.findById(m.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("No se encontró el músculo con ID: " + m.getId()));
+            if (!musculosUnicos.add(musculoDB)) {
                 throw new IllegalArgumentException("El ejercicio contiene músculos repetidos.");
             }
         }
