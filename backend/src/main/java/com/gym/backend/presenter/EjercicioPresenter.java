@@ -97,11 +97,6 @@ public class EjercicioPresenter {
         if (existeGlobal)
             return Response.dbError("Ya existe un ejercicio global con ese nombre.");
 
-        existente.setNombre(ejercicioActualizado.getNombre());
-        existente.setDescripcion(ejercicioActualizado.getDescripcion());
-        existente.setTipo(ejercicioActualizado.getTipo());
-        existente.setVideoUrl(ejercicioActualizado.getVideoUrl());
-
         try {
             Ejercicio actualizado = ejercicioService.guardar(existente);
             return Response.ok(actualizado);
@@ -187,9 +182,16 @@ public class EjercicioPresenter {
     // 🔹 GET: filtrar por tipo
     @GetMapping("/tipo/{tipo}")
     public ResponseEntity<Object> buscarPorTipo(@PathVariable TipoEjercicio tipo) {
-        List<Ejercicio> resultados = ejercicioService.buscarPorTipo(tipo);
+        User user = userService.getAuthenticatedUser();
+        Long userId = (user != null) ? user.getId() : null;
+
+        // 🔹 Buscar solo ejercicios globales + del usuario autenticado
+        List<Ejercicio> resultados = ejercicioService.buscarPorTipoYUserOGlobal(tipo, userId);
+
         if (resultados.isEmpty())
             return Response.notFound("No se encontraron ejercicios de tipo " + tipo);
+
         return Response.ok(resultados);
     }
+
 }

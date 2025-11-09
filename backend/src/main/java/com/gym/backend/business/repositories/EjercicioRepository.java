@@ -45,13 +45,14 @@ public interface EjercicioRepository extends CrudRepository<Ejercicio, Long> {
        @Query("SELECT e FROM Ejercicio e WHERE e.nombre = ?1")
        Optional<Ejercicio> findByNombre(String nombre);
 
-       boolean existsByNombreAndUserId(String nombre, Long userId);
-
        boolean existsByNombreAndUserIsNull(String nombre);
 
        @Query("SELECT e FROM Ejercicio e WHERE e.nombre = :nombre AND (e.user IS NULL OR e.user.id = :userId)")
        Optional<Ejercicio> findByNombreAndUserIdOrGlobal(@Param("nombre") String nombre, @Param("userId") Long userId);
 
        List<Ejercicio> findByUserIsNullOrUserId(Long userId);
+
+       @Query("SELECT e FROM Ejercicio e WHERE e.tipo = :tipo AND (e.user.id = :userId OR e.user IS NULL)")
+       List<Ejercicio> findByTipoAndUserOrGlobal(@Param("tipo") TipoEjercicio tipo, @Param("userId") Long userId);
 
 }
