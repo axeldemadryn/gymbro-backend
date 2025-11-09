@@ -35,5 +35,23 @@ public interface EjercicioRepository extends CrudRepository<Ejercicio, Long> {
                      "LEFT JOIN FETCH e.musculos ")
        List<Ejercicio> findAllConDetalles();
 
-       List<Ejercicio> findByNombreContainingIgnoreCase(String nombre);
+       @Query("SELECT e FROM Ejercicio e " +
+                     "WHERE LOWER(e.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')) " +
+                     "AND (e.user IS NULL OR e.user.id = :userId)")
+       List<Ejercicio> findByNombreContainingIgnoreCaseAndUserIsNullOrUserId(
+                     @Param("nombre") String nombre,
+                     @Param("userId") Long userId);
+
+       @Query("SELECT e FROM Ejercicio e WHERE e.nombre = ?1")
+       Optional<Ejercicio> findByNombre(String nombre);
+
+       boolean existsByNombreAndUserId(String nombre, Long userId);
+
+       boolean existsByNombreAndUserIsNull(String nombre);
+
+       @Query("SELECT e FROM Ejercicio e WHERE e.nombre = :nombre AND (e.user IS NULL OR e.user.id = :userId)")
+       Optional<Ejercicio> findByNombreAndUserIdOrGlobal(@Param("nombre") String nombre, @Param("userId") Long userId);
+
+       List<Ejercicio> findByUserIsNullOrUserId(Long userId);
+
 }

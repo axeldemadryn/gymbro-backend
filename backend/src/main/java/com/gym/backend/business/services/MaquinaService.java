@@ -51,7 +51,7 @@ public class MaquinaService {
             return Mono.empty();
 
         MaquinaDTO dto = new MaquinaDTO();
-        dto.setNombre(maquina.getNombre());
+        dto.setNombre(maquina.getNombreTraducido()); // Nombre traducido en español.
         dto.setTipoEquipo(maquina.getTipoEquipo() != null ? maquina.getTipoEquipo().name() : null);
         dto.setDescripcion(maquina.getDescripcion());
         dto.setImagen(maquina.getImagenUrl());

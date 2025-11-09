@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -30,8 +31,12 @@ public class Maquina {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull(message = "El nombre de la máquina no puede ser nulo.")
     @Column(unique = true, nullable = false)
     private String nombre;
+
+    @Column(unique = true)
+    private String nombreTraducido;
 
     @Enumerated(EnumType.STRING)
     private TipoEquipo tipoEquipo;

@@ -70,7 +70,7 @@ public class OpenAiService {
          * - añade un mensaje con prompt para que responda únicamente con el nombre de
          * la máquina
          */
-        private Mono<OpenAiResponse> reconocer(String base64Image) throws IOException {
+        public Mono<OpenAiResponse> reconocer(String base64Image) throws IOException {
                 // Leemos la lista desde resources/maquinas.txt
                 ClassPathResource resource = new ClassPathResource("maquinas.txt");
                 List<String> maquinas = new BufferedReader(new InputStreamReader(resource.getInputStream()))

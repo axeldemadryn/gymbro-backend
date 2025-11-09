@@ -101,6 +101,12 @@ public class UserPresenter {
         return Response.ok(userService.listarUsuarios());
     }
 
+    // Obtener usuario por e-mail (solo temporal para pruebas)
+    @GetMapping("/by-email/{email}")
+    public ResponseEntity<Object> encontrarPorEmail(@PathVariable String email) {
+        return Response.ok(userService.findByEmail(email));
+    }
+
     // ✏️ Actualizar datos del usuario
     @PutMapping("/{id}")
     public ResponseEntity<Object> actualizar(@PathVariable Long id, @RequestBody User user) {
