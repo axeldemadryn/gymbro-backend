@@ -85,7 +85,7 @@ public class SessionPresenter {
             return Response.notFound("No se encontró la sesión con ID " + id + ".");
 
         if (!existente.getUser().getId().equals(user.getId()))
-            return Response.dbError("No puede modificar una sesión que no le pertenece.");
+            return Response.dbError("No puede acceder a una sesión que no le pertenece.");
 
         try {
             return Response.ok(recomendacionService.obtenerRecomendacionesPorSesion(id));
