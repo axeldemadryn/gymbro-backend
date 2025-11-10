@@ -89,4 +89,8 @@ public class EjercicioService {
         return ejercicioRepository.findByUserIsNullOrUserId(userId);
     }
 
+    public List<Ejercicio> buscarPorTipoYUserOGlobal(TipoEjercicio tipo, Long userId) {
+        return ejercicioRepository.findByTipoAndUserOrGlobal(tipo, userId);
+    }
+
 }

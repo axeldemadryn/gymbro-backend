@@ -200,7 +200,7 @@ public class ReconocimientoPresenter {
         // 8. Generar recomendación (solo si tiene rutina de hoy)
         System.out.println("\n🎯 GENERANDO RECOMENDACIÓN...");
         Optional<RecomendacionDTO> recomendacionOpt = recomendacionService.calcularSiCorresponde(user.getId(),
-                maquinaDTO);
+                maquinaDTO, nombre);
 
         // 9. Devolver respuesta final
         if (recomendacionOpt.isPresent()) {

@@ -62,17 +62,14 @@ public class SessionPresenter {
 
     // 🔹 GET: obtener una sesión específica por nombre
     @GetMapping("/name/{name}")
-    public ResponseEntity<Object> encontrarByName(@PathVariable String name) {
+    public ResponseEntity<Object> encontrarPorNombre(@PathVariable String name) {
         User user = userService.getAuthenticatedUser();
         if (user == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
 
-        Session session = sessionService.findByName(name);
+        Session session = sessionService.findByNameAndUserId(name, user.getId());
         if (session == null)
-            return Response.notFound("No se encontró la sesión con nombre " + name + ".");
-
-        if (!session.getUser().getId().equals(user.getId()))
-            return Response.dbError("No puede acceder a una sesión que no le pertenece.");
+            return Response.notFound("No se encontró la sesión con nombre " + name + " asociada a este usuario.");
 
         return Response.ok(session);
     }
@@ -88,7 +85,7 @@ public class SessionPresenter {
             return Response.notFound("No se encontró la sesión con ID " + id + ".");
 
         if (!existente.getUser().getId().equals(user.getId()))
-            return Response.dbError("No puede modificar una sesión que no le pertenece.");
+            return Response.dbError("No puede acceder a una sesión que no le pertenece.");
 
         try {
             return Response.ok(recomendacionService.obtenerRecomendacionesPorSesion(id));

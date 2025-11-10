@@ -56,7 +56,7 @@ public class RecomendacionService {
      * si trabaja los músculos del día actual de mi rutina, para saber si debo
      * usarla o no.
      */
-    public Optional<RecomendacionDTO> calcularSiCorresponde(Long userId, MaquinaDTO maquinaDTO) {
+    public Optional<RecomendacionDTO> calcularSiCorresponde(Long userId, MaquinaDTO maquinaDTO, String nombreOriginal) {
         LocalDate hoy = LocalDate.now(zoneId);
 
         // 1️⃣ Obtener todos los RoutineDay del usuario
@@ -81,15 +81,23 @@ public class RecomendacionService {
 
         Session sesion = routineDayHoy.getSession();
 
+        // ✅ CAMBIO: Buscar la máquina ANTES del loop usando el nombre original
+        Maquina maquina = maquinaService.findByNombre(nombreOriginal);
+
+        if (maquina == null) {
+            System.err.println("❌ Máquina no encontrada: " + nombreOriginal);
+            return Optional.empty();
+        }
+
         double mejorPorcentaje = 0.0;
 
         // 3️⃣ Evaluar cada SessionExercise por separado
         // Comparamos los músculos del ejercicio con los músculos que trabaja la máquina
         for (var se : sesion.getSessionExercises()) {
-            // Contar cuántos músculos del ejercicio coinciden con los de la máquina
+            // ✅ CAMBIO: Usar maquina.getId() en lugar de buscar de nuevo
             long matches = sessionExerciseRepository.contarCoincidenciasMusculosPorSessionExercise(
                     se.getId(),
-                    maquinaService.findByNombre(maquinaDTO.getNombre()).getId());
+                    maquina.getId()); // ✅ Usar la máquina encontrada arriba
 
             long totalMusculosEjercicio = se.getExercise().getMusculos().size();
 
