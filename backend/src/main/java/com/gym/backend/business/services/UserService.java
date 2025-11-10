@@ -169,11 +169,14 @@ public class UserService {
     }
 
     private void enviarCorreoRecuperacion(String email, String token) {
-        String link = "http://localhost:8080/api/users/reset-password?token=" + token;
+        String baseUrl = environment.getProperty("app.base.url", "http://localhost:8080");
+        String link = baseUrl + "/api/users/reset-password?token=" + token;
 
-        String cuerpo = "Hola!\n\nPara restablecer tu contraseña, haz clic en el siguiente enlace:\n"
-                + link + "\n\nEste enlace caduca en 15 minutos.";
-        emailService.enviarCorreo(email, "Recuperación de contraseña", cuerpo);
+        String cuerpo = "Hola!\n\n" +
+                "Para restablecer tu contraseña, haz clic en el siguiente enlace:\n" +
+                link + "\n\nEste enlace caduca en 15 minutos.";
+
+        emailService.enviarCorreo(email, "Recuperación de contraseña - GymBro", cuerpo);
     }
 
     @Transactional
