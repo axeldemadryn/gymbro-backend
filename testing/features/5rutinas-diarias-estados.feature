@@ -1,6 +1,6 @@
 # language: es
 
-Característica: estados de sesiones
+Característica: Gestión de rutinas diarias y de estados de sesiones
 
    # Escenario 1: Validar requisitos de creación de rutina diaria
   Esquema del escenario: Errores al crear RoutineDays
@@ -10,8 +10,8 @@ Característica: estados de sesiones
 
   Ejemplos:
     | Día       | Sesión                               | fechaDesde | fechaHasta | Mensaje esperado                                                            |
-    | DOMINGO   | Sesion Pecho de Enrique para el test | 2023-10-16 | 2023-10-21 | El día seleccionado no cae dentro del rango de fechas de la rutina semanal. |
-    | LUNES     | Sesion Vacía de Enrique para el test | 2023-10-23 | 2023-10-29 | La sesión debe tener al menos un ejercicio.                                 |
+    | DOMINGO   | Sesión Pecho de Enrique para el test | 2023-10-16 | 2023-10-21 | El día seleccionado no cae dentro del rango de fechas de la rutina semanal. |
+    | LUNES     | Sesión Vacía de Enrique para el test | 2023-10-23 | 2023-10-29 | La sesión debe tener al menos un ejercicio.                                 |
   
   # Escenario 2: Crear días de rutina para rutinas semanales existentes y validar estados iniciales
   Esquema del escenario: Crear rutinas diarias correctamente y validar estados
@@ -22,16 +22,16 @@ Característica: estados de sesiones
 
   Ejemplos:
     | Día       | Sesión                                 | fechaDesde | fechaHasta | estado        |
-    | LUNES     | Sesion Pecho de Enrique para el test   | 2023-10-30 | 2023-11-05 | NO_COMPLETADA |
-    | MARTES    | Sesion Espalda de Enrique para el test | 2023-10-30 | 2023-11-05 | NO_COMPLETADA |
-    | MIERCOLES | Sesion Piernas de Enrique para el test | 2023-10-30 | 2023-11-05 | NO_COMPLETADA |
-    | JUEVES    | Sesion Brazos de Enrique para el test  | 2023-10-30 | 2023-11-05 | NO_COMPLETADA |
-    | VIERNES   | Sesion Hombros de Enrique para el test | 2023-10-30 | 2023-11-05 | NO_COMPLETADA |
-    | JUEVES    | Sesion Brazos de Enrique para el test  | 9999-02-01 | 9999-02-06 | PENDIENTE     |
+    | LUNES     | Sesión Pecho de Enrique para el test   | 2023-10-30 | 2023-11-05 | NO_COMPLETADA |
+    | MARTES    | Sesión Espalda de Enrique para el test | 2023-10-30 | 2023-11-05 | NO_COMPLETADA |
+    | MIERCOLES | Sesión Piernas de Enrique para el test | 2023-10-30 | 2023-11-05 | NO_COMPLETADA |
+    | JUEVES    | Sesión Brazos de Enrique para el test  | 2023-10-30 | 2023-11-05 | NO_COMPLETADA |
+    | VIERNES   | Sesión Hombros de Enrique para el test | 2023-10-30 | 2023-11-05 | NO_COMPLETADA |
+    | JUEVES    | Sesión Brazos de Enrique para el test  | 9999-02-01 | 9999-02-06 | PENDIENTE     |
 
   # Escenario 3: Crear rutina diaria para hoy y validar su estado
   Esquema del escenario: Crear y validar estado de rutina para el día de hoy
-      Dado que se quiere crear una rutina diaria para el día de hoy asociada a la sesión ya existente "Sesion Espalda de Enrique para el test"
+      Dado que se quiere crear una rutina diaria para el día de hoy asociada a la sesión ya existente "Sesión Espalda de Enrique para el test"
       Cuando se guarda la rutina diaria
       Entonces se debería obtener el mensaje "OK"
       Y el estado de la rutina debería ser "PENDIENTE"

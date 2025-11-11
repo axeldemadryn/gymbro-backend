@@ -1,5 +1,5 @@
 const { Given, When } = require('@cucumber/cucumber');
-const { post, postConAgregacion, lunes, domingo } = require('./common');
+const { post, postConAgregacion, getLunes, getDomingo } = require('./common');
 
 // Crear rutina semanal en general
 Given('que se intenta crear la rutina semanal {string} con descripción {string} y fechas desde {string} hasta {string}', function (name, description, startDate, endDate) {
@@ -28,6 +28,8 @@ When('se guarda la rutina semanal', async function () {
 
 // Crear rutina semanal para esta semana
 Given('que se intenta crear una rutina semanal para esta semana', function(){
+    const lunes = getLunes();
+    const domingo = getDomingo();
     console.log(`Ahora crearemos una rutina semanal de nombre Rutina de esta semana' con descripción Rutina creada para esta semana para almacenar la rutina diaria del día de hoy, que irá desde ${lunes} hasta ${domingo}, es decir, esta misma semana (si no aparece nada en la descripción es porque ésta es opcional).`);
     // Crea la rutina semanal
     this.weeklyRoutine = {
