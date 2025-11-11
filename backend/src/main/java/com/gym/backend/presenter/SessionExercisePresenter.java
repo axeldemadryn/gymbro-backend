@@ -104,7 +104,11 @@ public class SessionExercisePresenter {
             return Response.ok(created);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Este ejercicio ya está asignado a la sesión.");
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
         } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (RuntimeException e) {
             return Response.dbError(e.getMessage());
         }
     }
@@ -143,7 +147,11 @@ public class SessionExercisePresenter {
             return Response.ok(updated);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Este ejercicio ya está asignado a la sesión.");
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
         } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (RuntimeException e) {
             return Response.dbError(e.getMessage());
         }
     }
@@ -162,7 +170,15 @@ public class SessionExercisePresenter {
         if (!se.getSession().getUser().getId().equals(user.getId()))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes permiso para eliminar este recurso.");
 
-        service.delete(id);
-        return Response.ok("La SessionExercise con ID " + id + " fue eliminada correctamente.");
+        try {
+            service.delete(id);
+            return Response.ok("La SessionExercise con ID " + id + " fue eliminada correctamente.");
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (RuntimeException e) {
+            return Response.dbError(e.getMessage());
+        }
     }
 }

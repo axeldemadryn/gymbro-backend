@@ -114,6 +114,12 @@ public class SessionPresenter {
             return Response.ok(created);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe una sesión con el mismo nombre para este usuario.");
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (RuntimeException e) {
+            return Response.dbError(e.getMessage());
         }
     }
 
@@ -142,6 +148,12 @@ public class SessionPresenter {
             return Response.ok(updated);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe otra sesión con ese nombre para el mismo usuario.");
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (RuntimeException e) {
+            return Response.dbError(e.getMessage());
         }
     }
 
@@ -159,8 +171,16 @@ public class SessionPresenter {
         if (!session.getUser().getId().equals(user.getId()))
             return Response.dbError("No puede eliminar una sesión que no le pertenece.");
 
-        sessionService.delete(id);
-        return Response.ok("La sesión con ID " + id + " fue eliminada correctamente.");
+        try {
+            sessionService.delete(id);
+            return Response.ok("La sesión con ID " + id + " fue eliminada correctamente.");
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (RuntimeException e) {
+            return Response.dbError(e.getMessage());
+        }
     }
 
     @PostMapping("/clone")
@@ -178,6 +198,10 @@ public class SessionPresenter {
             Session clonada = sessionService.clone(original, user);
             return Response.ok(clonada);
         } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (RuntimeException e) {
             return Response.dbError(e.getMessage());
         } catch (Exception e) {
             return Response.dbError("Error al clonar la sesión: " + e.getMessage());

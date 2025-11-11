@@ -139,10 +139,6 @@ public class WeeklyRoutineService {
 
     @Transactional
     public WeeklyRoutine clone(WeeklyRoutine weeklyRoutine, LocalDate startDate) {
-        List<RoutineDay> diasAsociados = routineDayRepository.findByWeeklyRoutine(weeklyRoutine);
-        if (diasAsociados.isEmpty()) {
-            throw new IllegalArgumentException("No se puede clonar una rutina semanal sin días asociados.");
-        }
 
         WeeklyRoutine clonada = new WeeklyRoutine();
 
@@ -156,6 +152,8 @@ public class WeeklyRoutineService {
         clonada.setUser(weeklyRoutine.getUser()); // mismo usuario
 
         clonada = save(clonada);
+
+        List<RoutineDay> diasAsociados = routineDayRepository.findByWeeklyRoutine(weeklyRoutine);
 
         // Evitar clonar la misma sesión más de una vez
         Map<Long, Session> sesionesClonadas = new HashMap<>();
