@@ -98,7 +98,7 @@ public class EjercicioPresenter {
             return Response.dbError("Ya existe un ejercicio global con ese nombre.");
 
         try {
-            Ejercicio actualizado = ejercicioService.guardar(existente);
+            Ejercicio actualizado = ejercicioService.guardar(ejercicioActualizado);
             return Response.ok(actualizado);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe otro ejercicio con ese nombre para este usuario.");
