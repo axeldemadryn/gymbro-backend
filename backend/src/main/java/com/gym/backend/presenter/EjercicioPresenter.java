@@ -77,12 +77,16 @@ public class EjercicioPresenter {
         }
     }
 
-    // 🔹 PUT: editar ejercicio personalizado
-    @PutMapping("/{id}")
+    // ✅ OPCIÓN 1: ID en el BODY (igual que Session)
+    @PutMapping // ← SIN /{id}
     public ResponseEntity<Object> editarEjercicio(@RequestBody Ejercicio ejercicioActualizado) {
         User user = userService.getAuthenticatedUser();
         if (user == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
+
+        // ✅ Validar que el ID venga en el body
+        if (ejercicioActualizado.getId() == null || ejercicioActualizado.getId() <= 0)
+            return Response.dbError("El ejercicio tiene un ID no válido.");
 
         Ejercicio existente = ejercicioService.obtenerPorId(ejercicioActualizado.getId()).orElse(null);
         if (existente == null)
@@ -92,10 +96,21 @@ public class EjercicioPresenter {
         if (existente.getUser() == null || !existente.getUser().getId().equals(user.getId()))
             return Response.dbError("No puede editar un ejercicio que no le pertenece.");
 
-        // 🔹 Verificar que no intente renombrar con un nombre de un ejercicio global
+        // Verificar que no intente renombrar con un nombre de un ejercicio global
         boolean existeGlobal = ejercicioService.existeEjercicioGlobalPorNombre(ejercicioActualizado.getNombre());
-        if (existeGlobal)
+        if (existeGlobal && !existente.getNombre().equals(ejercicioActualizado.getNombre()))
             return Response.dbError("Ya existe un ejercicio global con ese nombre.");
+
+        // ✅ Actualizar campos
+        existente.setNombre(ejercicioActualizado.getNombre());
+        existente.setDescripcion(ejercicioActualizado.getDescripcion());
+        existente.setTipo(ejercicioActualizado.getTipo());
+        existente.setVideoUrl(ejercicioActualizado.getVideoUrl());
+
+        // Actualizar músculos si vienen
+        if (ejercicioActualizado.getMusculos() != null && !ejercicioActualizado.getMusculos().isEmpty()) {
+            existente.setMusculos(ejercicioActualizado.getMusculos());
+        }
 
         try {
             Ejercicio actualizado = ejercicioService.guardar(existente);
