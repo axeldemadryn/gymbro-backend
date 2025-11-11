@@ -2,7 +2,7 @@ const { Given, When } = require('@cucumber/cucumber');
 const { postConAgregacion } = require('./common');
 
 Given('que se tiene el músculo con nombre {string}', function(nombre){
-    console.log(`Agregamos al músculo con nombre ${nombre}`);
+    console.log(`\n\nAgregamos al músculo con nombre ${nombre}`);
     this.musculo = {nombre};
 });
 

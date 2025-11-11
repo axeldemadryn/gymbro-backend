@@ -77,7 +77,11 @@ public class SessionService {
         // 🔹 Si la sesión ya existe (actualización)
         if (aSession.getId() != null) {
 
-            // Verificamos si está asociada a rutinas diarias
+            // 🧩 Buscar la sesión existente en BD
+            Session existente = repository.findById(aSession.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("No se encontró la sesión a actualizar."));
+
+            // 🔎 Verificar si está asociada a rutinas diarias
             List<RoutineDay> diasAsociados = routineDayRepository.findBySessionId(aSession.getId());
 
             if (!diasAsociados.isEmpty()) {
@@ -101,15 +105,16 @@ public class SessionService {
                             "No se puede modificar esta sesión, porque está asociada a una rutina diaria que ya pasó o se completó.");
                 }
             }
+
+            // ✅ Actualizamos solo los campos editables
+            existente.setName(aSession.getName());
+            existente.setDescription(aSession.getDescription());
+
+            // ⚠️ No tocamos los ejercicios ni el usuario, para no perder relaciones
+            return repository.save(existente);
         }
 
-        // 🔹 Mantener la relación bidireccional (sesión ↔ ejercicios)
-        if (aSession.getSessionExercises() != null) {
-            for (SessionExercise se : aSession.getSessionExercises()) {
-                se.setSession(aSession);
-            }
-        }
-
+        // 🔹 Si es una nueva sesión (creación)
         return repository.save(aSession);
     }
 

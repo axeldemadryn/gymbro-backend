@@ -3,7 +3,7 @@ const { post, postConAgregacion, getLunes, getDomingo } = require('./common');
 
 // Crear rutina semanal en general
 Given('que se intenta crear la rutina semanal {string} con descripción {string} y fechas desde {string} hasta {string}', function (name, description, startDate, endDate) {
-    console.log(`Ahora crearemos una rutina semanal de nombre ${name} con descripción ${description} que irá desde ${startDate} hasta ${endDate} (si no aparece nada en la descripción es porque ésta es opcional).`);
+    console.log(`\n\nAhora crearemos una rutina semanal de nombre ${name} con descripción ${description} que irá desde ${startDate} hasta ${endDate} (si no aparece nada en la descripción es porque ésta es opcional).`);
     this.weeklyRoutine = { name, description, startDate, endDate };
 });
 
@@ -30,7 +30,7 @@ When('se guarda la rutina semanal', async function () {
 Given('que se intenta crear una rutina semanal para esta semana', function(){
     const lunes = getLunes();
     const domingo = getDomingo();
-    console.log(`Ahora crearemos una rutina semanal de nombre Rutina de esta semana' con descripción Rutina creada para esta semana para almacenar la rutina diaria del día de hoy, que irá desde ${lunes} hasta ${domingo}, es decir, esta misma semana (si no aparece nada en la descripción es porque ésta es opcional).`);
+    console.log(`\n\nAhora crearemos una rutina semanal de nombre Rutina de esta semana' con descripción Rutina creada para esta semana para almacenar la rutina diaria del día de hoy, que irá desde ${lunes} hasta ${domingo}, es decir, esta misma semana (si no aparece nada en la descripción es porque ésta es opcional).`);
     // Crea la rutina semanal
     this.weeklyRoutine = {
         name: 'Rutina de esta semana de Enrique para el test',

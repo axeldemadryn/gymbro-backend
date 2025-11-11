@@ -7,7 +7,7 @@ var tokenRegistro;
 
 /********* Registro de usuarios y verificación de cuenta ***********/
 Given('que se tiene el usuario con nombre {string}, e-mail {string} y contraseña {string}', function(nombre, email, password){
-    console.log(`Cargamos usuario con nombre: ${nombre}, e-mail: ${email} y contraseña: ${password}.`);
+    console.log(`\n\nCargamos usuario con nombre: ${nombre}, e-mail: ${email} y contraseña: ${password}.`);
     this.usuario = {nombre, email, password};
 });
 
@@ -26,7 +26,7 @@ When('se quiere guardar al usuario correctamente', async function(){
 
 /********* Verificación de cuenta ***********/
 Given('que la cuenta de Enrique López ya fue registrada', function(){
-    console.log(`Verificaremos la cuenta del usuario Enrique López.`);
+    console.log(`\n\nVerificaremos la cuenta del usuario Enrique López.`);
 });
 
 When('se verifica su cuenta', async function(){
@@ -42,7 +42,7 @@ Then('el HTML debería incluir las respuestas {string} y {string}', function(res
 
 /********* Login de usuario ***********/
 Given('que la cuenta con e-mail {string} y contraseña {string} ya fue verificada', function(email, password){
-    console.log(`Loguearemos al usuario con e-mail ${email} y contraseña ${password} (y nombre Enrique López).`);
+    console.log(`\n\nLoguearemos al usuario con e-mail ${email} y contraseña ${password} (y nombre Enrique López).`);
     this.cuerpoLogin = {email, password}
 });
 

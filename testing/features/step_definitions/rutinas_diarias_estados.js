@@ -4,7 +4,7 @@ const { post, postConAgregacion, get, put, getHoy, getLunes, getDomingo } = requ
 
 // Crear rutina diaria
 Given('que se intenta crear la rutina diaria para el día {string} con la sesión {string} para la rutina diaria con fechas desde {string} hasta {string}', async function (day, sessionName, startDate, endDate) {
-    console.log(`Crearemos una rutina diaria para la rutina semanal del ${startDate} al ${endDate}, en el día ${day}, asociada a la sesión ${sessionName} perteneciente a Enrique López.`);
+    console.log(`\n\nCrearemos una rutina diaria para la rutina semanal del ${startDate} al ${endDate}, en el día ${day}, asociada a la sesión ${sessionName} perteneciente a Enrique López.`);
     const session = await get(`sessions/name/${sessionName}`);
     const routine = await get(`weekly-routines/by-dates?startDate=${startDate}&endDate=${endDate}`);
     this.routineDay = {day, routine, session};
@@ -42,7 +42,7 @@ Given('que se quiere crear una rutina diaria para el día de hoy asociada a la s
     const lunes = getLunes();
     const domingo = getDomingo();
     const hoy = getHoy();
-    console.log(`Crearemos una rutina diaria para la rutina semanal del ${lunes} al ${domingo} (esta semana), en el día de hoy ${hoy}, asociada a la sesión ${nombreSesion} perteneciente a Enrique López.`);
+    console.log(`\n\nCrearemos una rutina diaria para la rutina semanal del ${lunes} al ${domingo} (esta semana), en el día de hoy ${hoy}, asociada a la sesión ${nombreSesion} perteneciente a Enrique López.`);
     const sesion = await get(`sessions/name/${nombreSesion}`); // Obtiene la sesión
     const rutinaActual = await get(`weekly-routines/by-dates?startDate=${lunes}&endDate=${domingo}`); // Obtiene la rutina de esta semana
 
@@ -59,7 +59,7 @@ Given('que se quiere crear una rutina diaria para el día de hoy asociada a la s
 
 // Búsqueda de rutina diaria en general
 Given('que se tiene la rutina diaria para {string} con la rutina semanal que dura desde {string} hasta {string}', async function(diaSemana, inicioRutinaSemanal, finRutinaSemanal){
-    console.log(`Intentamos cambiar de estado a COMPLETADA a la rutina diaria del día ${diaSemana} de Enrique López, perteneciente a la rutina semanal del ${inicioRutinaSemanal} al ${finRutinaSemanal}.`);
+    console.log(`\n\nIntentamos cambiar de estado a COMPLETADA a la rutina diaria del día ${diaSemana} de Enrique López, perteneciente a la rutina semanal del ${inicioRutinaSemanal} al ${finRutinaSemanal}.`);
     this.routineDay = await get(`routine-days/by-day-and-weekly-routine-dates?day=${diaSemana}&startDate=${inicioRutinaSemanal}&endDate=${finRutinaSemanal}`);
 });
 
@@ -74,6 +74,6 @@ Given('que ya existe una rutina para el día de hoy', async function(){
     const hoy = getHoy();
     const lunes = getLunes();
     const domingo = getDomingo();
-    console.log(`Intentamos cambiar de estado a COMPLETADA a la rutina diaria del día de hoy ${hoy} de Enrique López, perteneciente a la rutina semanal del ${lunes} al ${domingo}.`);
+    console.log(`\n\nIntentamos cambiar de estado a COMPLETADA a la rutina diaria del día de hoy ${hoy} de Enrique López, perteneciente a la rutina semanal del ${lunes} al ${domingo}.`);
     this.routineDay = await get(`routine-days/by-day-and-weekly-routine-dates?day=${hoy}&startDate=${lunes}&endDate=${domingo}`);
 });

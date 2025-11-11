@@ -179,7 +179,7 @@ Then('se debería obtener el mensaje {string}', function (expected) {
     );
     
     // El log ahora mostrará la cadena limpia almacenada en actualMessage
-    console.log(`Se obtuvo el mensaje: ${actualMessage}\n\n`); 
+    console.log(`Se obtuvo el mensaje: ${actualMessage}.`); 
 });
 
 /***********AfterAll: eliminar todas las weekly-routines y routine-days usadas para el testing****************/
@@ -196,7 +196,7 @@ AfterAll(async () => {
         console.warn('AfterAll: error eliminando datos de testing:', e.message);
     }
 
-    console.log('Limpieza completada.');
+    console.log('\n\nLimpieza completada.');
 });
 
 /*******************************************************************************************************/
