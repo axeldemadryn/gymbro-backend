@@ -73,7 +73,7 @@ public class WeeklyRoutineService {
                     .orElseThrow(() -> new IllegalArgumentException("No se encontró la rutina semanal."));
 
             // 🔹Si la rutina semanal ya finalizó, no se puede modificar nada
-            if (LocalDate.now(zoneId).isAfter(existente.getEndDate())) {
+            if (existente.getEndDate() != null && LocalDate.now(zoneId).isAfter(existente.getEndDate())) {
                 throw new IllegalArgumentException("No se puede modificar una rutina semanal que ya ha finalizado.");
             }
 
@@ -139,6 +139,11 @@ public class WeeklyRoutineService {
 
     @Transactional
     public WeeklyRoutine clone(WeeklyRoutine weeklyRoutine, LocalDate startDate) {
+
+        if (weeklyRoutine.getStartDate() == null || weeklyRoutine.getEndDate() == null) {
+            throw new IllegalArgumentException(
+                    "La rutina semanal original debe tener fechas definidas para ser clonada.");
+        }
 
         WeeklyRoutine clonada = new WeeklyRoutine();
 
