@@ -87,7 +87,6 @@ BeforeAll(function () {
     /*** Seteo del día de semana de hoy y las fechas del lunes y domingo de esta semana ***/
 
     const diaHoy = new Date(); // Fecha actual según UTC, o GMT-3 (según el formato de horario en el backend o docker-compose.yml)
-    console.log(diaHoy.toString());
 
     const diaSemana = diaHoy.getDay(); // Obtener día de la semana (0 = domingo, 1 = lunes, ..., 6 = sábado)
 
@@ -118,10 +117,6 @@ BeforeAll(function () {
     // Se setean los días lunes y domingo de semana en el formato adecuado
     lunes = formatoISO(diaLunes);
     domingo = formatoISO(diaDomingo);
-
-    console.log(hoy);
-    console.log(lunes);
-    console.log(domingo);
 });
 
 // Getters para exponer los valores actuales después de que se ejecute BeforeAll
