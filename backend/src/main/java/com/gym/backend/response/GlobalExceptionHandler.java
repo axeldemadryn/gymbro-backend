@@ -1,6 +1,8 @@
 package com.gym.backend.response;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -30,10 +32,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleValidationErrors(MethodArgumentNotValidException ex) {
         // Construir mapa con errores por campo y reutilizar Response.response
         Map<String, String> fieldErrors = new HashMap<>();
+        List<String> errors = new ArrayList<>();
         for (FieldError fe : ex.getBindingResult().getFieldErrors()) {
             fieldErrors.put(fe.getField(), fe.getDefaultMessage());
+            errors.add(fe.getDefaultMessage());
         }
-        return Response.response(HttpStatus.BAD_REQUEST, "Validation failed", fieldErrors);
+        return Response.response(HttpStatus.BAD_REQUEST, errors.get(0), fieldErrors);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -77,7 +81,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Object> handleMalformedJson(HttpMessageNotReadableException ex) {
-        return Response.response(HttpStatus.BAD_REQUEST, "Request body is malformed or invalid JSON", ex);
+        String msg = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
+        return Response.response(HttpStatus.BAD_REQUEST, "Request body is malformed or invalid JSON" + msg, null);
     }
 
     @ExceptionHandler(Exception.class)

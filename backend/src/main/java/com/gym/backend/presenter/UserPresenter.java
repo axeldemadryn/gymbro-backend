@@ -133,6 +133,19 @@ public class UserPresenter {
         }
     }
 
+    // 🚫 Eliminar usuario
+    @DeleteMapping("/delete-id/{id}")
+    public ResponseEntity<Object> eliminar(@PathVariable Long id) {
+        try {
+            userService.eliminarUsuario(id);
+            return Response.ok("Usuario eliminado correctamente.");
+        } catch (IllegalArgumentException e) {
+            return Response.error(e, e.getMessage());
+        } catch (Exception e) {
+            return Response.dbError("Error al eliminar el usuario: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<Object> logout(@RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {

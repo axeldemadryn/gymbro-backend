@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.core.env.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -202,6 +202,11 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
         user.setActivo(false); // suponiendo que tenés un campo 'activo'
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void eliminarUsuario(Long id){
+        userRepository.deleteById(id);
     }
 
     public User findByEmail(String email) {
