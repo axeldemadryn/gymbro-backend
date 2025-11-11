@@ -8,8 +8,8 @@ let lastResponse = null;
 
 let hoy, lunes, domingo; // días de la semana
 
-/*********************** Token de usuario con sus getters y setters **************************/
-let userToken = null; // Token del usuario para todos los steps
+/***************** Token de usuario para todos los steps, con sus getters y setters ****************/
+let userToken = null;
 
 function getUserToken(){
     return userToken;
@@ -19,10 +19,35 @@ function setUserToken(newToken){
     userToken = newToken;
 }
 
+let usuarioId = 0;
+
+function asignarIdUsuario(id){
+    usuarioId = id;
+}
+
+/** Literal que almacena objetos cargados en el backend durante el test, para su futura eliminación
+ * Aunque no se crea, a pesar de ser constante, los arreglos son variables (la referencia a datosTest
+ * es constante, pero se puede agregar o quitar elementos a los arreglos de datosTest).
+*/
+const datosTest = {
+    'musculos': [],
+    'sessions': [],
+    'ejercicios': [],
+    'sessions-exercises': [],
+    'weekly-routines': [],
+    'routine-days': []
+};
+
+// Función para esperar una cantidad de milisegundos, dando tiempo a la operación anterior para validarse
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 /******************************* Funciones de request ************************/
 
-function doRequest(method, path, body = null, token = userToken) {
+async function doRequest(method, path, body = null, token = userToken) {
     try {
+        await sleep(200); // Espera 200ms para asegurar que la operación se haya completado
         const opts = body ? {
             body: JSON.stringify(body),
             headers: {
@@ -34,61 +59,29 @@ function doRequest(method, path, body = null, token = userToken) {
         const res = request(method, encodeURI(URL + path), opts);
         const txt = res.getBody('utf8') || '';
         lastResponse = txt ? JSON.parse(txt) : null;
+        await sleep(200);
         return lastResponse ? lastResponse.data : null;
     } catch (err) {
         lastResponse = { status: err.status, message: err.message || 'Error desconocido', data: err.data };
+        await sleep(200);
         return err.data;
     }
 }
 
-// Consultas GET, PUT y DELETE
 function get(path, token = userToken) { return doRequest('GET', path, null, token); }
 function put(path, body, token = userToken) { return doRequest('PUT', path, body, token); }
 function deleteReq(path, token = userToken) { return doRequest('DELETE', path, null, token); }
-
-/** Clase para mapear los datos que ya estaban en el backend antes del test, o se fueron cargando
- * durante el mismo. Soporta agregado de datos y eliminación
+function post(path, body = null, token = userToken) { return doRequest('POST', path, body, token); } // Post común y corriente
+/** postConAgregación hace un POST, agrega el resultado del POST a uno de los arreglos de datosTest, y
+ * devuelve el valor del POST.
 */
-
-class MapaDatosBackend {
-
-    constructor() {
-        // Map para almacenar colecciones de datos del backend: se pueden agregar nuevos tipos aquí posteriormente.
-        this.colecciones = new Map([
-            ['users', []],
-            ['weekly-routines', []],
-            ['routine-days', []]
-        ]);
-        this.prioridad = ['users', 'routine-days', 'weekly-routines'];
-        this.rutasPost = {
-            'users': 'users/register',
-            'routine-days': 'routine-days',
-            'weekly-routines': 'weekly-routines'
-        };
-    }
-
-    // Agrega un elemento a la colección correspondiente
-    agregarElemento(tipo, elemento) {
-        if (!this.colecciones.has(tipo))
-            throw new Error(`No existe la colección: ${tipo}`);
-        this.colecciones.get(tipo).push(elemento);
-    }
+function postConAgregacion(pathUrl, pathDatos, body, token = userToken){
+    const data = doRequest('POST', pathUrl, body, token);
+    datosTest[pathDatos].push(data);
+    return data;
 }
 
-let datosAntesTest = new MapaDatosBackend();
-let datosDespuesTest = new MapaDatosBackend();
-
-// Consulta POST e inserción de datos
-function post(path, body, token = null) {
-    const data = doRequest('POST', path, body, token); // Hace el post del body y lo recupera luego
-    const clave_almacenamiento = path.startsWith('/') // Elimina barra inicial si existe y luego toma el primer segmento
-        ? path.substring(1).split("/")[0] // substring(1) elimina el primer elemento (la barra inicial, si aplica)
-        : path.split("/")[0];
-    datosDespuesTest.agregarElemento(clave_almacenamiento, data); // Inserta el body entre los almacenados
-    return data; // Retorna el body
-}
-
-/************************************BeforeAll para manejar user*******************************************/
+/*************************** BeforeAll para inicializar fechas y día de semana de hoy ******************************/
 
 BeforeAll(function () {
     /*** Seteo del día de semana de hoy y las fechas del lunes y domingo de esta semana ***/
@@ -124,30 +117,6 @@ BeforeAll(function () {
     // Se setean los días lunes y domingo de semana en el formato adecuado
     lunes = formatoISO(diaLunes);
     domingo = formatoISO(diaDomingo);
-
-    /*** Obtención y eliminación del backend de datos previamente almacenados ***/
-
-    // Función para cargar datos en datosAntesTest
-    for (const tipo of datosAntesTest.prioridad) {
-        const datos = get(tipo);
-        datosAntesTest.colecciones.set(tipo, Array.isArray(datos) ? datos : []);
-    }
-
-    try {
-        for (const tipo of datosAntesTest.prioridad) {
-            if(Array.isArray(datosAntesTest.colecciones.get(tipo))){
-                for (const elemento of datosAntesTest.colecciones.get(tipo).slice().reverse()) {
-                    if (elemento?.id) deleteReq(`${tipo}/${elemento.id}`);
-                }
-            } else {
-                console.warn(`Error La colección de tipo ${tipo} no está registrada como un arreglo. Al parecer, se imprime como:\n`);
-                console.warn(datosAntesTest.colecciones.get(tipo));
-            }
-        }
-    } catch (e) {
-        console.warn('BeforeAll: error eliminando datos previos al testing:', e.message);
-    }
-    //console.log(datosAntesTest.colecciones);
 });
 
 /******************************************* Assert *******************************************************/
@@ -177,7 +146,7 @@ Then('se debería obtener el mensaje {string}', function (expected) {
     // --- FIN LÓGICA DE LIMPIEZA ---
 
     // Check 1: Buscar en el mensaje principal (incluye "OK" y errores de servicio 409)
-    if (responseToCheck.message && responseToCheck.message.includes(expected)) {
+    if (responseToCheck.message?.includes(expected)) {
         found = true;
         actualMessage = responseToCheck.message; 
     }
@@ -209,32 +178,22 @@ Then('se debería obtener el mensaje {string}', function (expected) {
 });
 
 /***********AfterAll: eliminar todas las weekly-routines y routine-days usadas para el testing****************/
-AfterAll(() => {
+AfterAll(async () => {
     // Primero eliminar los routineDays, porque dependen de weeklyRoutines
     try {
-        for (const tipo of datosDespuesTest.prioridad) {
-            for (const elemento of datosDespuesTest.colecciones.get(tipo).slice().reverse()) {
-                if (elemento?.id) deleteReq(`${tipo}/${elemento.id}`);
+        for (const tipo of ['routine-days', 'weekly-routines', 'sessions-exercises', 'ejercicios', 'sessions', 'musculos']) {
+            for (const elemento of datosTest[tipo]) {
+                if (elemento?.id) await deleteReq(`${tipo}/${elemento.id}`);
             }
         }
+        await deleteReq(`users/delete-id/${usuarioId}`);
     } catch (e) {
         console.warn('AfterAll: error eliminando datos de testing:', e.message);
     }
 
-    //console.log('Limpieza completada.');
-
-    for (const tipo of datosAntesTest.prioridad) {
-        if(Array.isArray(datosAntesTest.colecciones.get(tipo))){
-            for (const elemento of datosAntesTest.colecciones.get(tipo)) {
-                let x = post(datosAntesTest.rutasPost[tipo], elemento);
-                //console.log(x);
-            }
-        }
-    }
-
-    //console.log('Recarga de datos previos completada.');
+    console.log('Limpieza completada.');
 });
 
 /*******************************************************************************************************/
 
-module.exports = { get, post, put, deleteReq, getUserToken, setUserToken, hoy, lunes, domingo };
+module.exports = { get, put, post, postConAgregacion, deleteReq, getUserToken, setUserToken, asignarIdUsuario, hoy, lunes, domingo };
