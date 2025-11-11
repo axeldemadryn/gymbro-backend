@@ -80,7 +80,11 @@ public class WeeklyRoutinePresenter {
             return Response.ok(created);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe una rutina semanal con ese nombre.");
-        } catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (RuntimeException e) {
             return Response.dbError(e.getMessage());
         }
     }
@@ -109,7 +113,11 @@ public class WeeklyRoutinePresenter {
             return Response.ok(updated);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe una rutina semanal con ese nombre.");
-        } catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (RuntimeException e) {
             return Response.dbError(e.getMessage());
         }
     }
@@ -128,9 +136,17 @@ public class WeeklyRoutinePresenter {
         if (!routine.getUser().getId().equals(user.getId()))
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("No tiene permiso para eliminar esta rutina.");
+        try {
+            routineService.delete(id);
+            return Response.ok("Rutina semanal eliminada correctamente.");
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (RuntimeException e) {
+            return Response.dbError(e.getMessage());
+        }
 
-        routineService.delete(id);
-        return Response.ok("Rutina semanal eliminada correctamente.");
     }
 
     // Buscar rutina entre fechas (solo del usuario autenticado)
@@ -177,7 +193,11 @@ public class WeeklyRoutinePresenter {
             return Response.ok(routineService.clone(existente, startDate));
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe una rutina semanal con ese nombre.");
-        } catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (RuntimeException e) {
             return Response.dbError(e.getMessage());
         }
     }

@@ -141,6 +141,12 @@ public class RoutineDayPresenter {
                     : Response.dbError("No se pudo actualizar el día de rutina con ID " + routineDay.getId() + ".");
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe un día de rutina con esa combinación de rutina y día (y/o sesión).");
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (RuntimeException e) {
+            return Response.dbError(e.getMessage());
         }
     }
 
@@ -168,6 +174,12 @@ public class RoutineDayPresenter {
                     : Response.dbError("No se pudo actualizar el día de rutina con ID " + routineDay.getId() + ".");
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe un día de rutina con esa combinación de rutina y día (y/o sesión).");
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (RuntimeException e) {
+            return Response.dbError(e.getMessage());
         }
     }
 
@@ -213,6 +225,12 @@ public class RoutineDayPresenter {
             return Response.ok(created);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe un día de rutina con esa combinación de rutina y día (y/o sesión).");
+        } catch (IllegalArgumentException e) {
+            return Response.dbError(e.getMessage());
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        } catch (RuntimeException e) {
+            return Response.dbError(e.getMessage());
         }
     }
 
