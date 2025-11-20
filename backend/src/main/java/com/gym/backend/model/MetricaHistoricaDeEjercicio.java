@@ -21,28 +21,28 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "metricas_historicas_de_ejercicio", uniqueConstraints = @UniqueConstraint(columnNames = { "usuario_id", "ejercicio_id", "fecha" }))
+@Table(name = "metricas_historicas_de_ejercicio", uniqueConstraints = @UniqueConstraint(columnNames = { "usuario_id",
+        "ejercicio_id", "fecha" }))
 public class MetricaHistoricaDeEjercicio {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "usuario_id")
-    @NotNull(message = "La métrica debe estar asociada a un usuario.")
+    @JoinColumn(name = "usuario_id", nullable = false)
     private User usuario;
 
     @ManyToOne
-    @JoinColumn(name = "ejercicio_id")
-    @NotNull(message = "La métrica debe estar asociada a un ejercicio.")
+    @JoinColumn(name = "ejercicio_id", nullable = false)
     private Ejercicio ejercicio;
 
-    @NotNull(message = "La fecha de la métrica no puede ser nula.")
+    @NotNull
     private LocalDate fecha;
 
-    private double pesoUsado;
-
+    private double pesoUsado; // 0 si es peso corporal
     private int repsHechas;
-
     private int seriesHechas;
+
+    private double volumen; // calculado: pesoUsado * reps * series
 }

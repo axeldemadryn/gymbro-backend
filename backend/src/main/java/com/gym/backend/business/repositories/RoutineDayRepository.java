@@ -23,6 +23,10 @@ public interface RoutineDayRepository extends CrudRepository<RoutineDay, Long> {
 
     long countByRoutineId(Long routineid);
 
+    long countByRoutineIdAndStatus(Long weeklyRoutineId, SessionStatus status);
+
+    List<RoutineDay> findByRoutineId(Long weeklyRoutineId);
+
     // Buscar solo los RoutineDay con un estado específico
     List<RoutineDay> findByStatus(SessionStatus status);
 
