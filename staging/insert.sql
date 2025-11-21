@@ -1,3 +1,8 @@
+INSERT INTO planes(type, active) VALUES
+    ('GRATUITO', true),
+    ('PREMIUM', true);
+
+
 -- 🟩 MÚSCULOS
 INSERT INTO musculos(nombre) VALUES
 -- pecho
@@ -44,37 +49,44 @@ INSERT INTO maquinas (nombre, nombre_traducido, tipo_equipo, descripcion, imagen
 ('Hack Squat Machine', 'Máquina de Sentadillas Hack', NULL, 'Máquina para sentadilla hack', '/imagenes/hack-sqat.jpeg');
 
 -- 🟨 EJERCICIOS GLOBALES (no están asociados a ningún video en principio).
-INSERT INTO ejercicios (nombre, tipo, descripcion, video_url, user_id) VALUES
+INSERT INTO ejercicios (nombre, tipo, descripcion, video_url, user_id)
+SELECT nombre, tipo, descripcion, video_url, NULL
+FROM (
+    VALUES
+        -- Pecho
+        ('Press de Pecho en Máquina', 'FUERZA', 'Ejercicio para pectorales en máquina de press sentado.', NULL),
+        ('Aperturas en Máquina de Pecho', 'FUERZA', 'Ejercicio para pectorales con máquina de apertura.', NULL),
 
--- Pecho
-('Press de Pecho en Máquina', 'FUERZA', 'Ejercicio para pectorales en máquina de press sentado.', NULL, NULL),
-('Aperturas en Máquina de Pecho', 'FUERZA', 'Ejercicio para pectorales con máquina de apertura.', NULL, NULL),
+        -- Espalda
+        ('Jalón al Pecho', 'FUERZA', 'Ejercicio para dorsales en máquina de polea alta.', NULL),
+        ('Remo Sentado en Polea Baja', 'FUERZA', 'Remo para espalda media en polea baja.', NULL),
+        ('Pull Over en Polea', 'FUERZA', 'Ejercicio de dorsales con polea alta.', NULL),
 
--- Espalda
-('Jalón al Pecho', 'FUERZA', 'Ejercicio para dorsales en máquina de polea alta.', NULL, NULL),
-('Remo Sentado en Polea Baja', 'FUERZA', 'Remo para espalda media en polea baja.', NULL, NULL),
-('Pull Over en Polea', 'FUERZA', 'Ejercicio de dorsales con polea alta.', NULL, NULL),
+        -- Brazos
+        ('Curl de Bíceps en Máquina', 'FUERZA', 'Ejercicio para bíceps usando máquina de curl.', NULL),
+        ('Fondos en Máquina Sentado', 'FUERZA', 'Ejercicio para tríceps en máquina de dips sentado.', NULL),
+        ('Extensión de Tríceps en Polea', 'FUERZA', 'Ejercicio para tríceps en polea alta.', NULL),
 
--- Brazos
-('Curl de Bíceps en Máquina', 'FUERZA', 'Ejercicio para bíceps usando máquina de curl.', NULL, NULL),
-('Fondos en Máquina Sentado', 'FUERZA', 'Ejercicio para tríceps en máquina de dips sentado.', NULL, NULL),
-('Extensión de Tríceps en Polea', 'FUERZA', 'Ejercicio para tríceps en polea alta.', NULL, NULL),
+        -- Hombros
+        ('Press de Hombros en Máquina', 'FUERZA', 'Ejercicio de empuje vertical para deltoides.', NULL),
+        ('Elevaciones Laterales en Máquina', 'FUERZA', 'Ejercicio de hombros para deltoides laterales.', NULL),
 
--- Hombros
-('Press de Hombros en Máquina', 'FUERZA', 'Ejercicio de empuje vertical para deltoides.', NULL, NULL),
-('Elevaciones Laterales en Máquina', 'FUERZA', 'Ejercicio de hombros para deltoides laterales.', NULL, NULL),
+        -- Piernas
+        ('Extensión de Piernas', 'FUERZA', 'Ejercicio para cuadríceps en máquina de extensiones.', NULL),
+        ('Curl de Piernas en Máquina', 'FUERZA', 'Ejercicio para isquiotibiales en máquina de curl.', NULL),
+        ('Prensa de Piernas', 'FUERZA', 'Ejercicio compuesto para tren inferior en máquina de prensa.', NULL),
+        ('Sentadilla Hack', 'FUERZA', 'Ejercicio para cuádriceps y glúteos en máquina hack squat.', NULL),
 
--- Piernas
-('Extensión de Piernas', 'FUERZA', 'Ejercicio para cuadríceps en máquina de extensiones.', NULL, NULL),
-('Curl de Piernas en Máquina', 'FUERZA', 'Ejercicio para isquiotibiales en máquina de curl.', NULL, NULL),
-('Prensa de Piernas', 'FUERZA', 'Ejercicio compuesto para tren inferior en máquina de prensa.', NULL, NULL),
-('Sentadilla Hack', 'FUERZA', 'Ejercicio para cuádriceps y glúteos en máquina hack squat.', NULL, NULL),
-
--- Multifuncionales / Compuestos
-('Dominadas en Estación Multifuncional', 'FUERZA', 'Ejercicio de tracción vertical en estación de dominadas.', NULL, NULL),
-('Fondos en Estación Multifuncional', 'FUERZA', 'Ejercicio para tríceps y pectorales en estación multifuncional.', NULL, NULL),
-('Press de Pecho en Smith Machine', 'FUERZA', 'Press de banca guiado en multipower Smith.', NULL, NULL),
-('Sentadilla en Smith Machine', 'FUERZA', 'Sentadilla guiada en multipower Smith.', NULL, NULL);
+        -- Multifuncionales / Compuestos
+        ('Dominadas en Estación Multifuncional', 'FUERZA', 'Ejercicio de tracción vertical en estación de dominadas.', NULL),
+        ('Fondos en Estación Multifuncional', 'FUERZA', 'Ejercicio para tríceps y pectorales en estación multifuncional.', NULL),
+        ('Press de Pecho en Smith Machine', 'FUERZA', 'Press de banca guiado en multipower Smith.', NULL),
+        ('Sentadilla en Smith Machine', 'FUERZA', 'Sentadilla guiada en multipower Smith.', NULL)
+) AS e(nombre, tipo, descripcion, video_url)
+WHERE NOT EXISTS (
+    SELECT 1 FROM ejercicios ex
+    WHERE ex.nombre = e.nombre AND ex.user_id IS NULL
+);
 
 -- 🟧 TABLA MÁQUINA-MÚSCULOS
 INSERT INTO maquina_musculos (maquina_id, musculo_id)

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.gym.backend.business.services.UserPlanService;
 import com.gym.backend.business.services.UserService;
 import com.gym.backend.model.User;
 import com.gym.backend.security.JwtUtil;
@@ -24,6 +25,9 @@ public class UserViewController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserPlanService userPlanService;
 
     // 🔹 Verificación de cuenta (enlace del mail)
     @GetMapping("/verify")
@@ -44,6 +48,9 @@ public class UserViewController {
 
             user.setActivo(true);
             userService.save(user);
+
+            // ASIGNAR PLAN FREE
+            userPlanService.asignarPlanFree(user);
 
             return "verify-success";
 
