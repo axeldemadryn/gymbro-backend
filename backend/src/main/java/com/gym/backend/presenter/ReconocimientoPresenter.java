@@ -134,8 +134,7 @@ public class ReconocimientoPresenter {
             System.out.println("📌 Uso registrado antes del reconocimiento");
         } catch (RuntimeException e) {
             System.err.println("❌ No se pudo registrar el uso: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .body(e.getMessage());
+            return Response.error(null, e.getMessage());
         }
 
         // 3. Información del archivo recibido
