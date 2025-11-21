@@ -53,6 +53,7 @@ public class UserPlanService {
     /**
      * Obtiene el plan activo del usuario, teniendo en cuenta vencimiento.
      */
+    @Transactional
     public UserPlan getActivePlan(Long userId) {
 
         UserPlan plan = userPlanRepository.findByUserIdAndCanceledFalse(userId)
