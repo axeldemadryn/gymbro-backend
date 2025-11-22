@@ -103,7 +103,8 @@ public class UserPlanService {
      * 2. Si el usuario YA TIENE un plan activo:
      * - Si es el MISMO plan (PREMIUM):
      * · Se extiende la fecha de finalización según la situación actual:
-     * - Si endDate > hoy → se extiende desde endDate.
+     * - Si endDate > hoy → se extiende desde el día siguiente a endDate (para no
+     * perder el último día).
      * - Si endDate == hoy → se extiende desde mañana (para no perder el día).
      * - Si endDate < hoy → se extiende desde hoy (plan vencido).
      * · NO se cancela ni se crea un nuevo registro.
