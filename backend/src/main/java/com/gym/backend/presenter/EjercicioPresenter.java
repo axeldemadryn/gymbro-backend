@@ -77,7 +77,7 @@ public class EjercicioPresenter {
         }
     }
 
-    // ✅ OPCIÓN 1: ID en el BODY (igual que Session)
+    // 🔹 PUT: editar ejercicio personalizado
     @PutMapping // ← SIN /{id}
     public ResponseEntity<Object> editarEjercicio(@RequestBody Ejercicio ejercicioActualizado) {
         User user = userService.getAuthenticatedUser();
