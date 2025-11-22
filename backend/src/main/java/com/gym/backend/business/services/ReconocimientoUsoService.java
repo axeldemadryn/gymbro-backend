@@ -49,7 +49,7 @@ public class ReconocimientoUsoService {
         }
 
         // --- VALIDAR LIMITE TOTAL ---
-        int usadosTotales = repo.sumarUsosTotales(userId);
+        long usadosTotales = repo.sumarUsosTotales(userId);
         if (usadosTotales >= tipo.getMaxReconocimientos()) {
             throw new RuntimeException("Limite total de reconocimientos alcanzado para tu plan.");
         }

@@ -13,6 +13,6 @@ public interface ReconocimientoUsoRepository extends CrudRepository<Reconocimien
     Optional<ReconocimientoUso> findByUserIdAndFecha(Long userId, LocalDate fecha);
 
     @Query("SELECT COALESCE(SUM(r.cantidadUsos), 0) FROM ReconocimientoUso r WHERE r.user.id = :userId")
-    Integer sumarUsosTotales(Long userId);
+    long sumarUsosTotales(Long userId);
 
 }
