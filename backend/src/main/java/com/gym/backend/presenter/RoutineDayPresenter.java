@@ -136,7 +136,7 @@ public class RoutineDayPresenter {
         }
 
         try {
-            RoutineDay updated = service.save(routineDay);
+            RoutineDay updated = service.update(routineDay);
             return (updated != null) ? Response.ok(updated)
                     : Response.dbError("No se pudo actualizar el día de rutina con ID " + routineDay.getId() + ".");
         } catch (DataIntegrityViolationException e) {
@@ -221,7 +221,7 @@ public class RoutineDayPresenter {
         day.setSession(session);
 
         try {
-            RoutineDay created = service.save(day);
+            RoutineDay created = service.create(day);
             return Response.ok(created);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe un día de rutina con esa combinación de rutina y día (y/o sesión).");

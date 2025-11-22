@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Base64;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +29,7 @@ import com.gym.backend.business.services.MaquinaService;
 import com.gym.backend.business.services.OpenAiService;
 import com.gym.backend.business.services.RecomendacionService;
 import com.gym.backend.business.services.ReconocimientoService;
+import com.gym.backend.business.services.ReconocimientoUsoService;
 import com.gym.backend.business.services.RoboflowService;
 import com.gym.backend.business.services.UserService;
 import com.gym.backend.dto.MaquinaDTO;
@@ -61,6 +61,8 @@ public class ReconocimientoPresenter {
     private UserService userService;
     @Autowired
     private RecomendacionService recomendacionService;
+    @Autowired
+    private ReconocimientoUsoService reconocimientoUsoService;
 
     private final ZoneId zoneId;
 
@@ -120,19 +122,27 @@ public class ReconocimientoPresenter {
         User user = userService.getAuthenticatedUser();
         if (user == null) {
             System.err.println("❌ Usuario no autenticado");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Usuario no autenticado");
+            return Response.unauthorized("Usuario no autenticado");
         }
         System.out.println("✅ Usuario autenticado: ID=" + user.getId() + ", Email=" + user.getEmail());
 
-        // 2. Información del archivo recibido
+        // 2. Validar y registrar el uso ANTES del reconocimiento
+        try {
+            reconocimientoUsoService.registrarUso(user.getId());
+            System.out.println("📌 Uso registrado antes del reconocimiento");
+        } catch (RuntimeException e) {
+            System.err.println("❌ No se pudo registrar el uso: " + e.getMessage());
+            return Response.tooManyRequests(e.getMessage());
+        }
+
+        // 3. Información del archivo recibido
         System.out.println("\n📸 INFORMACIÓN DEL ARCHIVO:");
         System.out.println("   Nombre: " + file.getOriginalFilename());
         System.out.println("   Tamaño: " + file.getSize() + " bytes");
         System.out.println("   Tipo: " + file.getContentType());
         System.out.println("   ¿Está vacío? " + file.isEmpty());
 
-        // 3. Guardar la imagen del usuario
+        // 4. Guardar la imagen del usuario
         System.out.println("\n💾 GUARDANDO IMAGEN...");
         System.out.println("   Ruta configurada: " + imagenesUsuariosPath);
 
@@ -145,11 +155,14 @@ public class ReconocimientoPresenter {
             System.err.println("❌ ERROR AL GUARDAR IMAGEN:");
             System.err.println("   Mensaje: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al guardar la imagen: " + e.getMessage());
+            return Response.response(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Error al guardar la imagen: " + e.getMessage(),
+                e
+            );
         }
 
-        // 4. Reconocer la máquina a partir de la foto
+        // 5. Reconocer la máquina a partir de la foto
         System.out.println("\n🤖 RECONOCIENDO MÁQUINA...");
         String nombre = reconocimientoService.reconocer(file).block();
         System.out.println("   Resultado: " + nombre);
@@ -161,7 +174,7 @@ public class ReconocimientoPresenter {
         }
         System.out.println("✅ Máquina reconocida: " + nombre);
 
-        // 5. Obtener la info completa de la máquina reconocida
+        // 6. Obtener la info completa de la máquina reconocida
         System.out.println("\n📋 OBTENIENDO INFORMACIÓN DE LA MÁQUINA...");
         MaquinaDTO maquinaDTO = maquinaService.obtenerMaquinaConInfo(nombre).block();
         if (maquinaDTO == null) {
@@ -171,13 +184,13 @@ public class ReconocimientoPresenter {
         }
         System.out.println("✅ Información obtenida: " + maquinaDTO.getNombre());
 
-        // 6. Reemplazar con la foto del usuario
+        // 7. Reemplazar con la foto del usuario
         System.out.println("\n🔄 REEMPLAZANDO IMAGEN...");
         System.out.println("   Imagen original: " + maquinaDTO.getImagen());
         maquinaDTO.setImagen(publicUrl);
         System.out.println("   Nueva imagen: " + maquinaDTO.getImagen());
 
-        // 7. Guardar el reconocimiento en historial
+        // 8. Guardar el reconocimiento en historial
         System.out.println("\n💿 GUARDANDO EN HISTORIAL...");
         HistorialReconocimiento historial = new HistorialReconocimiento();
         historial.setUser(user);
@@ -197,12 +210,12 @@ public class ReconocimientoPresenter {
         historialService.save(historial);
         System.out.println("✅ Historial guardado con ID: " + historial.getId());
 
-        // 8. Generar recomendación (solo si tiene rutina de hoy)
+        // 9. Generar recomendación (solo si tiene rutina de hoy)
         System.out.println("\n🎯 GENERANDO RECOMENDACIÓN...");
         Optional<RecomendacionDTO> recomendacionOpt = recomendacionService.calcularSiCorresponde(user.getId(),
                 maquinaDTO, nombre);
 
-        // 9. Devolver respuesta final
+        // 10. Devolver respuesta final
         if (recomendacionOpt.isPresent()) {
             System.out.println("✅ Recomendación generada");
             System.out.println("════════════════════════════════════════\n");
@@ -303,8 +316,7 @@ public class ReconocimientoPresenter {
                                 pred.getConfidence(),
                                 pred.getX(),
                                 pred.getY()))
-                        .collect(Collectors.toList()));
-
+                        .toList());
         return vm;
     }
 

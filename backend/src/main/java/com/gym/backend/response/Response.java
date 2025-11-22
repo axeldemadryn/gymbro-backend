@@ -38,7 +38,19 @@ public class Response {
         return response(HttpStatus.NOT_ACCEPTABLE, msj, responseObj);
     }
 
+	public static ResponseEntity<Object> error(HttpStatus status, String msj) {
+        return response(status, msj, null);
+    }
+
 	public static ResponseEntity<Object> dbError(String msj) {
 		return response(HttpStatus.CONFLICT, msj, null);
+	}
+
+	public static ResponseEntity<Object> unauthorized(String msj) {
+		return response(HttpStatus.UNAUTHORIZED, msj, null);
+	}
+
+	public static ResponseEntity<Object> tooManyRequests(String msj) {
+		return response(HttpStatus.TOO_MANY_REQUESTS, msj, null);
 	}
 }

@@ -205,7 +205,7 @@ public class UserService {
     }
 
     @Transactional
-    public void eliminarUsuario(Long id){
+    public void eliminarUsuario(Long id) {
         userRepository.deleteById(id);
     }
 
@@ -236,4 +236,5 @@ public class UserService {
             userRepository.save(user);
         }
     }
+    
 }

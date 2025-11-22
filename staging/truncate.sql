@@ -10,5 +10,6 @@ TRUNCATE TABLE
     maquinas,                           -- Tabla de maquinas
     ejercicios,                         -- Tabla de ejercicios
     musculos,                           -- Tabla de musculos, ya que no depende de otras
-    users                               -- Tabla de usuarios, ya que tampoco depende de otras
+    users,                               -- Tabla de usuarios, ya que tampoco depende de otras
+    planes
 RESTART IDENTITY CASCADE;

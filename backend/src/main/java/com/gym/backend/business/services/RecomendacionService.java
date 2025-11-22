@@ -2,9 +2,7 @@ package com.gym.backend.business.services;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,9 +14,11 @@ import com.gym.backend.business.repositories.MaquinaRepository;
 import com.gym.backend.business.repositories.RoutineDayRepository;
 import com.gym.backend.business.repositories.SessionExerciseRepository;
 import com.gym.backend.dto.EjercicioDTO;
+import com.gym.backend.dto.ExerciseRecommendationsDTO;
 import com.gym.backend.dto.MaquinaDTO;
 import com.gym.backend.dto.MusculoDTO;
 import com.gym.backend.dto.RecomendacionDTO;
+import com.gym.backend.model.Ejercicio;
 import com.gym.backend.model.Maquina;
 import com.gym.backend.model.Musculo;
 import com.gym.backend.model.RoutineDay;
@@ -128,122 +128,112 @@ public class RecomendacionService {
     }
 
     /**
-     * Genera una lista de recomendaciones de máquinas para una sesión de
-     * entrenamiento.
-     *
-     * Este método recorre todos los ejercicios asociados a una sesión
-     * (SessionExercise),
-     * identifica los músculos que trabaja cada uno y busca todas las máquinas que
-     * también trabajan al menos uno de esos músculos. Luego calcula el porcentaje
-     * de
-     * coincidencia
-     * entre los músculos del ejercicio y los de cada máquina.
-     *
-     * Por cada máquina encontrada, se calcula su nivel de coincidencia con los
-     * ejercicios
-     * de la sesión y se conserva el valor máximo (en caso de que la máquina
-     * coincida con varios ejercicios).
-     * De esta manera, el resultado final es una lista de máquinas únicas, ordenadas
-     * por su
-     * nivel de coincidencia más alto.
-     *
-     * Por ejemplo, si una sesión tiene 2 ejercicios y una máquina trabaja músculos
-     * comunes con ambos, se mostrará una sola vez con el mayor porcentaje de
-     * coincidencia.
-     *
-     * @param sessionId identificador de la sesión de entrenamiento.
-     * @return una lista de {@link RecomendacionDTO}, cada uno representando una
-     *         máquina
-     *         recomendada con su nivel de coincidencia y un mensaje de
-     *         recomendación.
+     * Genera recomendaciones de máquinas agrupadas por ejercicio dentro de una
+     * sesión.
+     * 
+     * Para cada SessionExercise:
+     * - Obtiene sus músculos
+     * - Busca todas las máquinas que trabajan esos músculos
+     * - Calcula el nivel de coincidencia de cada máquina según los músculos en
+     * común
+     * - Arma un DTO por ejercicio con las máquinas recomendadas (ordenadas por
+     * coincidencia)
+     * 
+     * Si la sesión no tiene ejercicios → devuelve lista vacía.
      */
-    public List<RecomendacionDTO> obtenerRecomendacionesPorSesion(Long sessionId) {
-        // 🔹 Obtener todos los ejercicios asociados a la sesión
+    public List<ExerciseRecommendationsDTO> obtenerRecomendacionesAgrupadasPorSesion(Long sessionId) {
+
         List<SessionExercise> sessionExercises = sessionExerciseRepository.findAllBySessionId(sessionId);
 
-        // 🔹 Mapa para almacenar la coincidencia máxima de cada máquina
-        Map<Maquina, Double> maquinaCoincidencia = new HashMap<>();
+        return sessionExercises.stream()
+                .map(se -> {
 
-        // 🔹 Recorrer cada ejercicio de la sesión
-        for (SessionExercise se : sessionExercises) {
-            Set<Musculo> musculosEjercicio = se.getExercise().getMusculos();
+                    Ejercicio ejercicio = se.getExercise();
+                    Set<Musculo> musculosEjercicio = ejercicio.getMusculos();
 
-            // 🔹 Obtener todas las máquinas que trabajan al menos uno de esos músculos
-            Set<Maquina> maquinas = musculosEjercicio.stream()
-                    .flatMap(mu -> maquinaRepository.findMaquinasByMusculoId(mu.getId()).stream())
-                    .collect(Collectors.toSet());
+                    // 🔹 DTO por ejercicio
+                    ExerciseRecommendationsDTO dto = new ExerciseRecommendationsDTO();
+                    dto.setExerciseId(ejercicio.getId());
+                    dto.setExerciseName(ejercicio.getNombre());
+                    dto.setSets(se.getSets());
+                    dto.setReps(se.getReps());
 
-            // 🔹 Por cada máquina que trabaja al menos 1 ejercicio del SessionExercise, se
-            // calcula la coincidencia usando la query
-            for (Maquina m : maquinas) {
-                long matches = sessionExerciseRepository.contarCoincidenciasMusculosPorSessionExercise(
-                        se.getId(),
-                        m.getId());
+                    // Músculos del ejercicio
+                    dto.setMusculos(
+                            musculosEjercicio.stream()
+                                    .map(m -> new MusculoDTO(m.getNombre()))
+                                    .toList());
 
-                // 🔹 Guarda por cada máquina el mayor porcentaje de coincidencia encontrado
-                // para determinado SessionExercise
-                double porcentaje = (matches * 100.0) / musculosEjercicio.size();
-                maquinaCoincidencia.merge(m, porcentaje, Double::max);
-            }
-        }
+                    // 🔹 Obtener máquinas relacionadas según los músculos del ejercicio
+                    Set<Maquina> maquinas = musculosEjercicio.stream()
+                            .flatMap(mu -> maquinaRepository.findMaquinasByMusculoId(mu.getId()).stream())
+                            .collect(Collectors.toSet());
 
-        // 🔹 Armar DTOs de resultado
-        // 🔹 Nota: la cantidad de recomendaciones finales puede ser menor, igual o
-        // mayor
-        // al número de ejercicios de la sesión, dependiendo de cuántas máquinas
-        // distintas
-        // trabajen los músculos involucrados.
-        return maquinaCoincidencia.entrySet().stream()
-                .map(entry -> {
-                    Maquina m = entry.getKey();
+                    List<RecomendacionDTO> recomendaciones = maquinas.stream()
+                            .map(m -> {
 
-                    // DTO básico de máquina
-                    MaquinaDTO dto = new MaquinaDTO();
-                    dto.setNombre(m.getNombreTraducido());
-                    dto.setTipoEquipo(m.getTipoEquipo() != null ? m.getTipoEquipo().name() : null);
-                    dto.setDescripcion(m.getDescripcion());
-                    dto.setImagen(m.getImagenUrl());
+                                long matches = sessionExerciseRepository.contarCoincidenciasMusculosPorSessionExercise(
+                                        se.getId(),
+                                        m.getId());
 
-                    // Músculos
-                    if (m.getMusculos() != null) {
-                        dto.setMusculos(m.getMusculos().stream()
-                                .map(mu -> new MusculoDTO(mu.getNombre()))
-                                .toList());
-                    }
+                                double porcentaje = musculosEjercicio.isEmpty() ? 0
+                                        : (matches * 100.0) / musculosEjercicio.size();
 
-                    // Ejercicios opcionales
-                    if (m.getEjercicios() != null) {
-                        dto.setEjercicios(m.getEjercicios().stream().map(e -> {
-                            EjercicioDTO ed = new EjercicioDTO();
-                            ed.setNombre(e.getNombre());
-                            ed.setTipo(e.getTipo() != null ? e.getTipo().name() : null);
-                            ed.setDescripcion(e.getDescripcion());
-                            ed.setVideoUrl(e.getVideoUrl());
+                                // DTO de máquina
+                                MaquinaDTO maquinaDTO = new MaquinaDTO();
+                                maquinaDTO.setNombre(m.getNombreTraducido());
+                                maquinaDTO.setTipoEquipo(m.getTipoEquipo() != null ? m.getTipoEquipo().name() : null);
+                                maquinaDTO.setDescripcion(m.getDescripcion());
+                                maquinaDTO.setImagen(m.getImagenUrl());
 
-                            if (e.getMusculos() != null) {
-                                ed.setMusculosPrincipales(e.getMusculos().stream()
-                                        .map(mu -> new MusculoDTO(mu.getNombre()))
-                                        .toList());
-                            }
-                            return ed;
-                        }).toList());
-                    }
+                                if (m.getMusculos() != null && !m.getMusculos().isEmpty()) {
+                                    maquinaDTO.setMusculos(
+                                            m.getMusculos().stream()
+                                                    .map(mu -> new MusculoDTO(mu.getNombre()))
+                                                    .toList());
+                                }
 
-                    // 🔹 Crear recomendación
-                    RecomendacionDTO rec = new RecomendacionDTO();
-                    rec.setMaquina(dto);
-                    rec.setNivelCoincidencia(entry.getValue());
+                                if (m.getEjercicios() != null && !m.getEjercicios().isEmpty()) {
+                                    maquinaDTO.setEjercicios(
+                                            m.getEjercicios().stream()
+                                                    .map(ej -> {
+                                                        EjercicioDTO ejDTO = new EjercicioDTO();
+                                                        ejDTO.setNombre(ej.getNombre());
+                                                        ejDTO.setTipo(
+                                                                ej.getTipo() != null ? ej.getTipo().name() : null);
+                                                        ejDTO.setDescripcion(ej.getDescripcion());
+                                                        ejDTO.setVideoUrl(ej.getVideoUrl());
+                                                        ejDTO.setMusculosPrincipales(
+                                                                ej.getMusculos() == null ? List.of()
+                                                                        : ej.getMusculos().stream()
+                                                                                .map(mu -> new MusculoDTO(
+                                                                                        mu.getNombre()))
+                                                                                .toList());
+                                                        return ejDTO;
+                                                    })
+                                                    .toList());
+                                }
 
-                    double p = entry.getValue();
-                    String mensaje = p <= 30 ? "No recomendable"
-                            : p <= 70 ? "Parcialmente recomendable"
-                                    : "Altamente recomendable";
-                    rec.setMensaje(mensaje);
+                                // Crear recomendación
+                                RecomendacionDTO rec = new RecomendacionDTO();
+                                rec.setMaquina(maquinaDTO);
+                                rec.setNivelCoincidencia(porcentaje);
 
-                    return rec;
+                                String mensaje = porcentaje <= 30 ? "No recomendable"
+                                        : porcentaje <= 70 ? "Parcialmente recomendable"
+                                                : "Altamente recomendable";
+
+                                rec.setMensaje(mensaje);
+
+                                return rec;
+                            })
+                            .sorted((a, b) -> Double.compare(b.getNivelCoincidencia(), a.getNivelCoincidencia()))
+                            .toList();
+
+                    dto.setRecommendedMachines(recomendaciones);
+
+                    return dto;
                 })
-                // 🔹 Ordenar de mayor a menor coincidencia
-                .sorted((a, b) -> Double.compare(b.getNivelCoincidencia(), a.getNivelCoincidencia()))
                 .toList();
     }
 

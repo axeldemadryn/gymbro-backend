@@ -76,7 +76,7 @@ public class WeeklyRoutinePresenter {
         routine.setUser(user);
 
         try {
-            WeeklyRoutine created = routineService.save(routine);
+            WeeklyRoutine created = routineService.crear(routine);
             return Response.ok(created);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe una rutina semanal con ese nombre.");
@@ -109,7 +109,7 @@ public class WeeklyRoutinePresenter {
 
         try {
             routine.setUser(user); // asegurar que sigue siendo del mismo usuario
-            WeeklyRoutine updated = routineService.save(routine);
+            WeeklyRoutine updated = routineService.actualizar(routine);
             return Response.ok(updated);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe una rutina semanal con ese nombre.");
