@@ -14,8 +14,11 @@ import org.springframework.stereotype.Service;
 
 import com.gym.backend.business.repositories.RoutineDayRepository;
 import com.gym.backend.business.repositories.WeeklyRoutineRepository;
+import com.gym.backend.exceptions.LimiteExcedidoException;
 import com.gym.backend.model.RoutineDay;
 import com.gym.backend.model.Session;
+import com.gym.backend.model.User;
+import com.gym.backend.model.UserPlan;
 import com.gym.backend.model.WeeklyRoutine;
 
 import jakarta.transaction.Transactional;
@@ -35,6 +38,12 @@ public class WeeklyRoutineService {
 
     @Autowired
     private SessionService sessionService;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private UserPlanService userPlanService;
 
     private final ZoneId zoneId;
 
@@ -120,8 +129,25 @@ public class WeeklyRoutineService {
         }
     }
 
+    // Verifica si el usuario ha alcanzado el límite de rutinas semanales según su plan
+    private boolean limiteAlcanzado(){
+        User user = userService.getAuthenticatedUser();
+        UserPlan userPlan = userPlanService.getActivePlan(user.getId());
+        return repository.findByUserId(user.getId()).size() >= userPlan.getPlan().getType().getMaxRutinas();
+    }
+
     @Transactional
-    public WeeklyRoutine save(WeeklyRoutine weeklyRoutine) {
+    public WeeklyRoutine crear(WeeklyRoutine weeklyRoutine) {
+        if(limiteAlcanzado()){ // Valida que no se haya alcanzado el límite de rutinas semanales
+            throw new LimiteExcedidoException("El límite de rutinas semanales para tu plan ha sido alcanzado. Ya tenés "
+                + repository.findByUserId(userService.getAuthenticatedUser().getId()).size() + " rutinas.");
+        }
+        validarRutina(weeklyRoutine);
+        return repository.save(weeklyRoutine);
+    }
+
+    @Transactional
+    public WeeklyRoutine actualizar(WeeklyRoutine weeklyRoutine) {
         validarRutina(weeklyRoutine);
         return repository.save(weeklyRoutine);
     }
@@ -140,6 +166,11 @@ public class WeeklyRoutineService {
     @Transactional
     public WeeklyRoutine clone(WeeklyRoutine weeklyRoutine, LocalDate startDate) {
 
+        if(limiteAlcanzado()){ // Valida que no se haya alcanzado el límite de rutinas semanales
+            throw new LimiteExcedidoException("El límite de rutinas semanales para tu plan ha sido alcanzado. Ya tenés "
+                + repository.findByUserId(userService.getAuthenticatedUser().getId()).size() + " rutinas.");
+        }
+
         if (weeklyRoutine.getStartDate() == null || weeklyRoutine.getEndDate() == null) {
             throw new IllegalArgumentException(
                     "La rutina semanal original debe tener fechas definidas para ser clonada.");
@@ -156,7 +187,7 @@ public class WeeklyRoutineService {
         clonada.setEndDate(startDate.plusDays(dias));
         clonada.setUser(weeklyRoutine.getUser()); // mismo usuario
 
-        clonada = save(clonada);
+        clonada = crear(clonada);
 
         List<RoutineDay> diasAsociados = routineDayRepository.findByWeeklyRoutine(weeklyRoutine);
 

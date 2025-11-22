@@ -23,11 +23,11 @@ public enum TipoPlan {
         private int maxReconocimientosDiarios;
         private int maxRutinas;
         private int maxSesionesPorSemana;
-        private Boolean permiteEstadisticas = false;
+        private boolean permiteEstadisticas;
         private double precioEnPesos;
 
         TipoPlan(int maxReconocimientos, int maxReconocimientosDiarios, int maxRutinas, int maxSesionesPorSemana,
-                        Boolean permiteEstadisticas, double precioEnPesos) {
+                        boolean permiteEstadisticas, double precioEnPesos) {
                 this.maxReconocimientos = maxReconocimientos;
                 this.maxReconocimientosDiarios = maxReconocimientosDiarios;
                 this.maxRutinas = maxRutinas;

@@ -1,9 +1,19 @@
 package com.gym.backend.model;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDate;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "user_planes", uniqueConstraints = {
@@ -34,5 +44,5 @@ public class UserPlan {
 
     // false = el plan sigue activo
     // true = el plan está terminado
-    private Boolean canceled = false;
+    private boolean canceled = false;
 }

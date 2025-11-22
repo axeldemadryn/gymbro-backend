@@ -13,7 +13,7 @@ import com.gym.backend.business.services.UserPlanService;
 public class SchedulerConfig {
 
     @Autowired
-    private RoutineDayService service;
+    private RoutineDayService routineDayService;
     @Autowired
     private UserPlanService userPlanService;
 
@@ -21,7 +21,7 @@ public class SchedulerConfig {
     // Rutinas
     @Scheduled(cron = "0 0 0 * * *", zone = "America/Argentina/Buenos_Aires")
     public void actualizarEstadosRutinasDiarias() {
-        service.actualizarEstadosSegunHoy();
+        routineDayService.actualizarEstadosSegunHoy();
     }
 
     // Planes

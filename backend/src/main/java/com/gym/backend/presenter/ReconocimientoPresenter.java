@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Base64;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -123,8 +122,7 @@ public class ReconocimientoPresenter {
         User user = userService.getAuthenticatedUser();
         if (user == null) {
             System.err.println("❌ Usuario no autenticado");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Usuario no autenticado");
+            return Response.unauthorized("Usuario no autenticado");
         }
         System.out.println("✅ Usuario autenticado: ID=" + user.getId() + ", Email=" + user.getEmail());
 
@@ -134,7 +132,7 @@ public class ReconocimientoPresenter {
             System.out.println("📌 Uso registrado antes del reconocimiento");
         } catch (RuntimeException e) {
             System.err.println("❌ No se pudo registrar el uso: " + e.getMessage());
-            return Response.error(null, e.getMessage());
+            return Response.tooManyRequests(e.getMessage());
         }
 
         // 3. Información del archivo recibido
@@ -157,8 +155,11 @@ public class ReconocimientoPresenter {
             System.err.println("❌ ERROR AL GUARDAR IMAGEN:");
             System.err.println("   Mensaje: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al guardar la imagen: " + e.getMessage());
+            return Response.response(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Error al guardar la imagen: " + e.getMessage(),
+                e
+            );
         }
 
         // 5. Reconocer la máquina a partir de la foto
@@ -315,8 +316,7 @@ public class ReconocimientoPresenter {
                                 pred.getConfidence(),
                                 pred.getX(),
                                 pred.getY()))
-                        .collect(Collectors.toList()));
-
+                        .toList());
         return vm;
     }
 
