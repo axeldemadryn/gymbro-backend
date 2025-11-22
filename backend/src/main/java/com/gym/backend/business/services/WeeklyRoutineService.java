@@ -133,7 +133,7 @@ public class WeeklyRoutineService {
     private boolean limiteAlcanzado(){
         User user = userService.getAuthenticatedUser();
         UserPlan userPlan = userPlanService.getActivePlan(user.getId());
-        return repository.findByUserId(user.getId()).size() >= userPlan.getPlan().getType().getMaxRutinas();
+        return repository.findByUserId(user.getId()).size() >= userPlan.getPlan().getType().getMaxRutinasSemanales();
     }
 
     @Transactional
