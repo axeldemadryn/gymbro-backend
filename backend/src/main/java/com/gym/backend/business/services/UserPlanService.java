@@ -141,12 +141,10 @@ public class UserPlanService {
 
                 LocalDate nuevaFecha;
 
-                if (actual.getEndDate().isAfter(today())) {
-                    // endDate > today -> todavía tiene días por delante: extender desde endDate
-                    nuevaFecha = actual.getEndDate().plusMonths(1);
-                } else if (actual.getEndDate().isEqual(today())) {
-                    // endDate == today -> último día: extender desde mañana para no perder ese día
-                    nuevaFecha = today().plusDays(1).plusMonths(1);
+                if (actual.getEndDate().isAfter(today()) || actual.getEndDate().isEqual(today())) {
+                    // endDate >= today -> todavía tiene días por delante: extender desde el día
+                    // siguiente a endDate
+                    nuevaFecha = actual.getEndDate().plusDays(1).plusMonths(1);
                 } else {
                     // endDate < today -> plan vencido -> extender desde hoy
                     nuevaFecha = today().plusMonths(1);
