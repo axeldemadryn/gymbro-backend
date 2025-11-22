@@ -59,4 +59,7 @@ public interface RoutineDayRepository extends CrudRepository<RoutineDay, Long> {
     // Buscar todas las rutinas diarias de una rutina semanal
     @Query("SELECT r FROM RoutineDay r WHERE r.routine = ?1")
     List<RoutineDay> findByWeeklyRoutine(WeeklyRoutine routine);
+
+    @Query("SELECT COUNT(r) FROM RoutineDay r WHERE r.routine = ?1")
+    long contarAsociadasARutinaSemanal(WeeklyRoutine rutina);
 }

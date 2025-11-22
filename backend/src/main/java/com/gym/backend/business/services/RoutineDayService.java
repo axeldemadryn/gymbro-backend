@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 import com.gym.backend.business.repositories.RoutineDayRepository;
 import com.gym.backend.business.repositories.SessionExerciseRepository;
 import com.gym.backend.business.repositories.WeeklyRoutineRepository;
+import com.gym.backend.exceptions.LimiteExcedidoException;
 import com.gym.backend.model.DiaDeSemana;
 import com.gym.backend.model.RoutineDay;
 import com.gym.backend.model.SessionStatus;
+import com.gym.backend.model.UserPlan;
 import com.gym.backend.model.WeeklyRoutine;
 
 import jakarta.transaction.Transactional;
@@ -29,6 +31,13 @@ public class RoutineDayService {
 
     @Autowired
     private SessionExerciseRepository sessionExerciseRepository;
+
+    @Autowired
+
+    private UserService userService;
+
+    @Autowired
+    private UserPlanService userPlanService;
 
     private final ZoneId zoneId;
 
@@ -135,8 +144,7 @@ public class RoutineDayService {
         return logicaObtencionDeTodas();
     }
 
-    @Transactional
-    public RoutineDay save(RoutineDay routineDay) {
+    private void acomodarRutina(RoutineDay routineDay) {
         routineDay.setStatus(SessionStatus.PENDIENTE); // Pasa el estado a pendiente
         if (routineDay.getRoutine().getName() == null) {
             routineDay.setRoutine(
@@ -144,8 +152,26 @@ public class RoutineDayService {
                             .orElseThrow(() -> new RuntimeException(
                                     "Se intentó conseguir la rutina a partir del ID, pero no se pudo.")));
         }
-        evaluarRutina(routineDay);
+    }
 
+    @Transactional
+    public RoutineDay create(RoutineDay routineDay) {
+        acomodarRutina(routineDay);
+        evaluarRutina(routineDay);
+        return repository.save(routineDay);
+    }
+
+    @Transactional
+    public RoutineDay update(RoutineDay routineDay){
+        acomodarRutina(routineDay);
+
+        UserPlan userPlan = userPlanService.getActivePlan(userService.getAuthenticatedUser().getId());
+        if(repository.contarAsociadasARutinaSemanal(routineDay.getRoutine()) >= userPlan.getPlan().getType().getMaxSesionesPorSemana()){
+            throw new LimiteExcedidoException("Se alcanzó el límite de " + userPlan.getPlan().getType().getMaxSesionesPorSemana()
+                + " sesiones en esta semana. No se puede crear más en esta semana.");
+        }
+
+        evaluarRutina(routineDay);
         return repository.save(routineDay);
     }
 

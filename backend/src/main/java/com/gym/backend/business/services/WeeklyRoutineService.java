@@ -210,7 +210,7 @@ public class WeeklyRoutineService {
             nuevo.setSession(sesionClonada);
 
             // No seteamos status manualmente, lo hará routineDayService.save()
-            routineDayService.save(nuevo);
+            routineDayService.update(nuevo);
         }
 
         return clonada;
