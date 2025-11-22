@@ -88,7 +88,7 @@ public class SessionPresenter {
             return Response.dbError("No puede acceder a una sesión que no le pertenece.");
 
         try {
-            return Response.ok(recomendacionService.obtenerRecomendacionesPorSesion(id));
+            return Response.ok(recomendacionService.obtenerRecomendacionesAgrupadasPorSesion(id));
         } catch (Exception e) {
             return Response.error(e, e.getMessage());
         }

@@ -2,6 +2,7 @@ package com.gym.backend.business.services;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -93,12 +94,29 @@ public class UserPlanService {
     }
 
     /**
-     * Activa un nuevo plan para el usuario.
+     * Activa o extiende un plan PREMIUM para un usuario.
      *
-     * - Cancela automáticamente el plan activo anterior (si lo hubiera).
-     * - No permite regresar al plan GRATUITO.
-     * - Si es PREMIUM, crea un período de 1 mes desde la fecha actual.
-     * - Registra un nuevo UserPlan sin modificar los históricos anteriores.
+     * Reglas principales:
+     *
+     * 1. No permite activar nuevamente el plan GRATUITO.
+     *
+     * 2. Si el usuario YA TIENE un plan activo:
+     * - Si es el MISMO plan (PREMIUM):
+     * · Se extiende la fecha de finalización según la situación actual:
+     * - Si endDate > hoy → se extiende desde endDate.
+     * - Si endDate == hoy → se extiende desde mañana (para no perder el día).
+     * - Si endDate < hoy → se extiende desde hoy (plan vencido).
+     * · NO se cancela ni se crea un nuevo registro.
+     *
+     * - Si el plan es diferente:
+     * · El plan anterior se cancela (canceled = true, endDate = hoy).
+     * · Se fuerza una sincronización para que se aplique el update
+     * antes de crear el nuevo plan (evitando violaciones de la constraint
+     * UNIQUE(user_id, canceled)).
+     * · Se crea un nuevo UserPlan.
+     *
+     * 3. Si el usuario NO tiene plan activo:
+     * · Se crea un nuevo UserPlan desde hoy hasta hoy + 1 mes.
      */
     @Transactional
     public UserPlan activatePlan(Long userId, TipoPlan tipoPlan) {
@@ -113,15 +131,41 @@ public class UserPlanService {
         Plan plan = planRepository.findByType(tipoPlan)
                 .orElseThrow(() -> new RuntimeException("Plan no encontrado: " + tipoPlan));
 
-        userPlanRepository.findByUserIdAndCanceledFalse(userId).ifPresent(actual -> {
+        Optional<UserPlan> actualOpt = userPlanRepository.findByUserIdAndCanceledFalse(userId);
+
+        if (actualOpt.isPresent()) {
+            UserPlan actual = actualOpt.get();
+
+            // Si es el mismo plan (PREMIUM), extender en vez de cancelar
+            if (actual.getPlan().getType() == tipoPlan) {
+
+                LocalDate nuevaFecha;
+
+                if (actual.getEndDate().isAfter(today())) {
+                    // endDate > today -> todavía tiene días por delante: extender desde endDate
+                    nuevaFecha = actual.getEndDate().plusMonths(1);
+                } else if (actual.getEndDate().isEqual(today())) {
+                    // endDate == today -> último día: extender desde mañana para no perder ese día
+                    nuevaFecha = today().plusDays(1).plusMonths(1);
+                } else {
+                    // endDate < today -> plan vencido -> extender desde hoy
+                    nuevaFecha = today().plusMonths(1);
+                }
+
+                actual.setEndDate(nuevaFecha);
+                return userPlanRepository.save(actual);
+            }
+
+            // Si cambia de plan, entonces sí cancelar
             actual.setCanceled(true);
             actual.setEndDate(today());
             userPlanRepository.save(actual);
-        });
 
-        // Forzar sincronización con un SELECT
-        userPlanRepository.findByUserIdAndCanceledFalse(userId);
+            // Forzar sincronización ANTES de crear el nuevo plan
+            userPlanRepository.findByUserIdAndCanceledFalse(userId);
+        }
 
+        // Crear un nuevo plan
         UserPlan nuevo = new UserPlan();
         nuevo.setUser(user);
         nuevo.setPlan(plan);
@@ -130,24 +174,6 @@ public class UserPlanService {
         nuevo.setCanceled(false);
 
         return userPlanRepository.save(nuevo);
-    }
-
-    /**
-     * Extiende un plan PREMIUM activo agregando un mes adicional.
-     * No crea un nuevo registro, solo actualiza la fecha de finalización del plan
-     * actual.
-     */
-    @Transactional
-    public UserPlan renovarPremium(Long userId) {
-
-        UserPlan activo = getActivePlan(userId);
-
-        if (activo.getPlan().getType() != TipoPlan.PREMIUM) {
-            throw new RuntimeException("El usuario no tiene un plan PREMIUM activo.");
-        }
-
-        activo.setEndDate(activo.getEndDate().plusMonths(1));
-        return userPlanRepository.save(activo);
     }
 
 }

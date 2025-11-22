@@ -77,7 +77,6 @@ public class MaquinaService {
         } 
         
         if (maquina.getMusculos() != null && !maquina.getMusculos().isEmpty()) {
-            // Si no tiene ejercicios, mostramos los músculos que trabaja
             dto.setMusculos(
                     maquina.getMusculos().stream()
                             .map(m -> new MusculoDTO(m.getNombre()))
