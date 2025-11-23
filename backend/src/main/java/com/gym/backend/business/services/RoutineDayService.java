@@ -124,6 +124,11 @@ public class RoutineDayService {
         repository.saveAll(routineDays);
     }
 
+    public List<RoutineDay> obtenerPorRutinaSemanal(Long weeklyRoutineId) {
+        actualizarEstadosSegunHoy();
+        return repository.findByRoutineId(weeklyRoutineId);
+    }
+
     public RoutineDay findById(long id) {
         actualizarEstadosSegunHoy();
         return repository.findById(id).orElse(null);
