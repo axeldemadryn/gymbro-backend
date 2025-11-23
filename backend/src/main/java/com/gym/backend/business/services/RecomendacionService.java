@@ -51,6 +51,26 @@ public class RecomendacionService {
                 this.zoneId = zoneId; // Spring inyecta el bean
         }
 
+        /**
+         * Genera recomendaciones personalizadas para la máquina seleccionada en el día
+         * actual.
+         *
+         * Flujo del método:
+         * 1. Obtiene el RoutineDay correspondiente al día de hoy para el usuario.
+         * 2. Verifica que exista una sesión asignada para ese día; si no existe,
+         * retorna vacío.
+         * 3. Busca la máquina por su nombre original; si no se encuentra, retorna
+         * vacío.
+         * 4. Para cada ejercicio de la sesión:
+         * - Calcula cuántos músculos del ejercicio coinciden con los músculos
+         * trabajados por la máquina.
+         * - Calcula un porcentaje de coincidencia.
+         * - Si el porcentaje es mayor a 0, crea un DTO con el detalle del ejercicio y
+         * el nivel de recomendación.
+         * 5. Ordena las recomendaciones por mayor coincidencia.
+         * 6. Si ningún ejercicio coincide, agrega una recomendación genérica indicando
+         * que la máquina no es recomendable para ese día.
+         */
         public Optional<RecomendacionPorDiaDTO> calcularRecomendacionesParaHoy(
                         Long userId,
                         MaquinaDTO maquinaDTO,
@@ -147,7 +167,7 @@ public class RecomendacionService {
                 return dto;
         }
 
-        // NO se usa este método
+        // NO se usa este método (versión anterior)
         public Optional<RecomendacionPorDiaDTO> calcularRecomendacionesParaHoyVersion1(
                         Long userId,
                         MaquinaDTO maquinaDTO,
