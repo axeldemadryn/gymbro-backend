@@ -8,7 +8,7 @@ public enum TipoPlan {
                         2,
                         1,
                         4,
-                        7,
+                        4,
                         true,
                         0.0),
         PREMIUM(

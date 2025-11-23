@@ -157,20 +157,22 @@ public class RoutineDayService {
     @Transactional
     public RoutineDay create(RoutineDay routineDay) {
         acomodarRutina(routineDay);
+
+        UserPlan userPlan = userPlanService.getActivePlan(userService.getAuthenticatedUser().getId());
+        if (repository.contarAsociadasARutinaSemanal(routineDay.getRoutine()) >= userPlan.getPlan().getType()
+                .getMaxSesionesPorSemana()) {
+            throw new LimiteExcedidoException(
+                    "Se alcanzó el límite de " + userPlan.getPlan().getType().getMaxSesionesPorSemana()
+                            + " sesiones en esta semana. No se puede crear más en esta semana.");
+        }
+
         evaluarRutina(routineDay);
         return repository.save(routineDay);
     }
 
     @Transactional
-    public RoutineDay update(RoutineDay routineDay){
+    public RoutineDay update(RoutineDay routineDay) {
         acomodarRutina(routineDay);
-
-        UserPlan userPlan = userPlanService.getActivePlan(userService.getAuthenticatedUser().getId());
-        if(repository.contarAsociadasARutinaSemanal(routineDay.getRoutine()) >= userPlan.getPlan().getType().getMaxSesionesPorSemana()){
-            throw new LimiteExcedidoException("Se alcanzó el límite de " + userPlan.getPlan().getType().getMaxSesionesPorSemana()
-                + " sesiones en esta semana. No se puede crear más en esta semana.");
-        }
-
         evaluarRutina(routineDay);
         return repository.save(routineDay);
     }
