@@ -8,16 +8,16 @@ public enum TipoPlan {
                         2,
                         1,
                         4,
-                        7,
+                        4,
                         true,
                         0.0),
         PREMIUM(
                         Integer.MAX_VALUE,
-                        Integer.MAX_VALUE,
+                        10,
                         Integer.MAX_VALUE,
                         7,
                         true,
-                        3000.0);
+                        2000.0);
 
         private int maxReconocimientos;
         private int maxReconocimientosDiarios;
@@ -26,7 +26,8 @@ public enum TipoPlan {
         private boolean permiteEstadisticas;
         private double precioEnPesos;
 
-        TipoPlan(int maxReconocimientos, int maxReconocimientosDiarios, int maxRutinasSemanales, int maxSesionesPorSemana,
+        TipoPlan(int maxReconocimientos, int maxReconocimientosDiarios, int maxRutinasSemanales,
+                        int maxSesionesPorSemana,
                         boolean permiteEstadisticas, double precioEnPesos) {
                 this.maxReconocimientos = maxReconocimientos;
                 this.maxReconocimientosDiarios = maxReconocimientosDiarios;

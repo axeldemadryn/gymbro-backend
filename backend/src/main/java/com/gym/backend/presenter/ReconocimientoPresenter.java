@@ -34,7 +34,7 @@ import com.gym.backend.business.services.RoboflowService;
 import com.gym.backend.business.services.UserService;
 import com.gym.backend.dto.MaquinaDTO;
 import com.gym.backend.dto.OpenAiResponse;
-import com.gym.backend.dto.RecomendacionDTO;
+import com.gym.backend.dto.RecomendacionPorDiaDTO;
 import com.gym.backend.dto.ReconocimientoViewModel;
 import com.gym.backend.dto.RoboflowResponse;
 import com.gym.backend.model.HistorialReconocimiento;
@@ -156,10 +156,9 @@ public class ReconocimientoPresenter {
             System.err.println("   Mensaje: " + e.getMessage());
             e.printStackTrace();
             return Response.response(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Error al guardar la imagen: " + e.getMessage(),
-                e
-            );
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al guardar la imagen: " + e.getMessage(),
+                    e);
         }
 
         // 5. Reconocer la máquina a partir de la foto
@@ -212,7 +211,8 @@ public class ReconocimientoPresenter {
 
         // 9. Generar recomendación (solo si tiene rutina de hoy)
         System.out.println("\n🎯 GENERANDO RECOMENDACIÓN...");
-        Optional<RecomendacionDTO> recomendacionOpt = recomendacionService.calcularSiCorresponde(user.getId(),
+        Optional<RecomendacionPorDiaDTO> recomendacionOpt = recomendacionService.calcularRecomendacionesParaHoy(
+                user.getId(),
                 maquinaDTO, nombre);
 
         // 10. Devolver respuesta final
