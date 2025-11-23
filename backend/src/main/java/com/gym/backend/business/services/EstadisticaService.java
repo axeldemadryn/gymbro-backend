@@ -15,19 +15,18 @@ import com.gym.backend.model.Session;
 import com.gym.backend.model.SessionExercise;
 import com.gym.backend.model.SessionStatus;
 import com.gym.backend.model.WeeklyRoutine;
-import com.gym.backend.business.repositories.RoutineDayRepository;
 
 @Service
 public class EstadisticaService {
 
     @Autowired
-    private RoutineDayRepository routineDayRepository;
+    private RoutineDayService routineDayService;
 
     public EstadisticaSemanalDTO calcular(WeeklyRoutine routine) {
 
         EstadisticaSemanalDTO dto = new EstadisticaSemanalDTO();
 
-        List<RoutineDay> dias = routineDayRepository.findByRoutineId(routine.getId());
+        List<RoutineDay> dias = routineDayService.obtenerPorRutinaSemanal(routine.getId());
 
         int totalDiasConSesion = dias.size();
         dto.setTotalDiasConSesiones(totalDiasConSesion);
@@ -37,7 +36,12 @@ public class EstadisticaService {
                 .count();
 
         dto.setSesionesCompletadas(completadas);
-        dto.setSesionesPendientes(totalDiasConSesion - completadas);
+
+        int pendientes = (int) dias.stream()
+                .filter(d -> d.getStatus() == SessionStatus.PENDIENTE)
+                .count();
+
+        dto.setSesionesPendientes(pendientes);
 
         // Ejercicios planificados y completados
         int ejerciciosPlanificados = 0;
@@ -87,4 +91,5 @@ public class EstadisticaService {
 
         return dto;
     }
+
 }
