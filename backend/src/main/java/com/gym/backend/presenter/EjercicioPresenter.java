@@ -113,7 +113,7 @@ public class EjercicioPresenter {
         }
 
         try {
-            Ejercicio actualizado = ejercicioService.guardar(ejercicioActualizado);
+            Ejercicio actualizado = ejercicioService.guardar(existente);
             return Response.ok(actualizado);
         } catch (DataIntegrityViolationException e) {
             return Response.dbError("Ya existe otro ejercicio con ese nombre para este usuario.");
@@ -137,8 +137,12 @@ public class EjercicioPresenter {
         if (ejercicio.getUser() == null || !ejercicio.getUser().getId().equals(user.getId()))
             return Response.dbError("No puede eliminar un ejercicio global o que no le pertenece.");
 
-        ejercicioService.eliminar(id);
-        return Response.ok("Ejercicio personalizado eliminado correctamente.");
+        try {
+            ejercicioService.eliminar(id);
+            return Response.ok("Ejercicio personalizado eliminado correctamente.");
+        } catch (IllegalStateException e) {
+            return Response.dbError(e.getMessage());
+        }
     }
 
     // 🔹 GET: todos los ejercicios (globales + personalizados, solo del usuario)
