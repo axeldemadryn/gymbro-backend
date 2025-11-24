@@ -32,4 +32,13 @@ public class Plan {
     @Column(nullable = false)
     private boolean active = true; // Si el plan está habilitado para uso
 
+    public Plan(TipoPlan type){
+        this.type = type;
+    }
+
+    public Plan(TipoPlan type, boolean active){
+        this.type = type;
+        this.active = active;
+    }
+
 }

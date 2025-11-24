@@ -19,10 +19,10 @@ public enum TipoPlan {
                         true,
                         2000.0);
 
-        private int maxReconocimientos;
-        private int maxReconocimientosDiarios;
-        private int maxRutinasSemanales;
-        private int maxSesionesPorSemana;
+        private int maxReconocimientos; // Máximo de usos del sistema de reconocimiento de máquinas por imágenes
+        private int maxReconocimientosDiarios; // Máximo de usos, en un día, del sistema de reconocimiento de máquinas por imágenes
+        private int maxRutinasSemanales; // Máximo de rutinas semanales asociadas a un usuario
+        private int maxSesionesPorSemana; // Máximo de rutinas diarias por semana
         private boolean permiteEstadisticas;
         private double precioEnPesos;
 
