@@ -1,36 +1,3 @@
-INSERT INTO planes(type, active) VALUES
-    ('GRATUITO', true),
-    ('PREMIUM', true);
-
-
--- 🟩 MÚSCULOS
-INSERT INTO musculos(nombre) VALUES
--- pecho
-('Pectoral mayor'), ('Pectoral menor'),
-
--- espalda
-('Dorsal ancho'), ('Romboides'), ('Trapecio superior'), ('Trapecio medio'), ('Trapecio inferior'),
-('Erectores espinales (torácico)'), ('Erectores espinales (lumbar)'), ('Redondo mayor'), ('Redondo menor'),
-('Infraespinoso'), ('Supraespinoso'),
-
--- hombros
-('Deltoides anterior'), ('Deltoides lateral'), ('Deltoides posterior'), ('Serrato anterior'),
-
--- brazos
-('Bíceps braquial'), ('Braquial anterior'), ('Tríceps braquial'), ('Ancóneo'), ('Antebrazo (flexores y extensores)'),
-
--- piernas (tren inferior)
-('Cuádriceps (recto femoral)'), ('Cuádriceps (vasto medial)'), ('Cuádriceps (vasto lateral)'), ('Cuádriceps (vasto intermedio)'),
-('Isquiotibiales (bíceps femoral)'), ('Isquiotibiales (semitendinoso)'), ('Isquiotibiales (semimembranoso)'), ('Glúteo mayor'),
-('Glúteo medio'), ('Glúteo menor'), ('Aductores (grupo)'), ('Abductores (grupo)'), ('Sartorio'), ('Tensor de la fascia lata'),
-('Gemelos (gastrocnemios)'), ('Sóleo'),
-
--- core/abdomen
-('Recto abdominal'), ('Oblicuo externo'), ('Oblicuo interno'), ('Transverso del abdomen'),
-
--- multifuncionales/compuestos
-('Músculos de tracción (general)'), ('Músculos de empuje (general)'), ('Estabilizadores del core'), ('Músculos posturales');
-
 -- 🟦 MÁQUINAS con URLs de imágenes asociadas.
 INSERT INTO maquinas (nombre, nombre_traducido, tipo_equipo, descripcion, imagen_url) VALUES
 ('Chest Press Machine', 'Máquina de Press de Pecho', 'MAQUINA_PECHO', 'Máquina para press de pecho sentado', '/imagenes/chest-press-machine.jpg'),
@@ -46,16 +13,23 @@ INSERT INTO maquinas (nombre, nombre_traducido, tipo_equipo, descripcion, imagen
 ('Seated Dip Machine', 'Máquina de Tríceps (Fondos) Sentado', NULL, 'Máquina para fondos de tríceps sentado', '/imagenes/seated-dip.jpg'),
 ('Shoulder Press Machine', 'Máquina de Press de Hombros', 'MAQUINA_HOMBRO', 'Máquina para press de hombros', '/imagenes/shoulder-press.jpeg'),
 ('Smith Machine', 'Máquina Smith', 'MULTIFUNCIONAL', 'Máquina multipower con barra guiada', '/imagenes/smith-machine.jpeg'),
-('Hack Squat Machine', 'Máquina de Sentadillas Hack', NULL, 'Máquina para sentadilla hack', '/imagenes/hack-sqat.jpeg');
+('Hack Squat Machine', 'Máquina de Sentadillas Hack', NULL, 'Máquina para sentadilla hack', '/imagenes/hack-sqat.jpeg')
+ON CONFLICT DO NOTHING;
 
 -- 🟨 EJERCICIOS GLOBALES (no están asociados a ningún video en principio).
 INSERT INTO ejercicios (nombre, tipo, descripcion, video_url, user_id)
-SELECT nombre, tipo, descripcion, video_url, NULL
+SELECT
+    ejercicios_basicos.nombre,
+    ejercicios_basicos.tipo,
+    ejercicios_basicos.descripcion,
+    ejercicios_basicos.video_url,
+    NULL
 FROM (
     VALUES
         -- Pecho
         ('Press de Pecho en Máquina', 'FUERZA', 'Ejercicio para pectorales en máquina de press sentado.', NULL),
         ('Aperturas en Máquina de Pecho', 'FUERZA', 'Ejercicio para pectorales con máquina de apertura.', NULL),
+        ('Fondos en Máquina de Pecho', 'FUERZA', 'Ejercicio para pectorales con máquina de fondos.', NULL),
 
         -- Espalda
         ('Jalón al Pecho', 'FUERZA', 'Ejercicio para dorsales en máquina de polea alta.', NULL),
@@ -82,11 +56,11 @@ FROM (
         ('Fondos en Estación Multifuncional', 'FUERZA', 'Ejercicio para tríceps y pectorales en estación multifuncional.', NULL),
         ('Press de Pecho en Smith Machine', 'FUERZA', 'Press de banca guiado en multipower Smith.', NULL),
         ('Sentadilla en Smith Machine', 'FUERZA', 'Sentadilla guiada en multipower Smith.', NULL)
-) AS e(nombre, tipo, descripcion, video_url)
+) AS ejercicios_basicos(nombre, tipo, descripcion, video_url)
 WHERE NOT EXISTS (
-    SELECT 1 FROM ejercicios ex
-    WHERE ex.nombre = e.nombre AND ex.user_id IS NULL
-);
+    SELECT 1 FROM ejercicios
+    WHERE ejercicios.nombre = ejercicios_basicos.nombre AND ejercicios.user_id IS NULL
+) ON CONFLICT DO NOTHING;
 
 -- 🟧 TABLA MÁQUINA-MÚSCULOS
 INSERT INTO maquina_musculos (maquina_id, musculo_id)
@@ -172,7 +146,7 @@ WHERE (maquinas.nombre, musculos.nombre) IN (
     ('Smith Machine', 'Glúteo mayor'),
     ('Smith Machine', 'Deltoides anterior'),
     ('Smith Machine', 'Tríceps braquial')
-);
+) ON CONFLICT DO NOTHING;
 
 -- 🟥 TABLA EJERCICIO-MÁQUINAS
 INSERT INTO ejercicio_maquinas (ejercicio_id, maquina_id)
@@ -206,7 +180,7 @@ WHERE (ejercicios.nombre, maquinas.nombre) IN (
     ('Fondos en Estación Multifuncional', 'Chinning Dipping'),
     ('Press de Pecho en Smith Machine', 'Smith Machine'),
     ('Sentadilla en Smith Machine', 'Smith Machine')
-);
+) ON CONFLICT DO NOTHING;
 
 -- 🟪 TABLA EJERCICIO-MÚSCULOS
 INSERT INTO ejercicio_musculos (ejercicio_id, musculo_id)
@@ -286,7 +260,7 @@ WHERE (ejercicios.nombre, musculos.nombre) IN (
     ('Sentadilla en Smith Machine', 'Cuádriceps (vasto intermedio)'),
     ('Sentadilla en Smith Machine', 'Glúteo mayor'),
     ('Sentadilla en Smith Machine', 'Estabilizadores del core')
-);
+) ON CONFLICT DO NOTHING;
 
 -- ⚫ SESIONES (para todos los usuarios)
 INSERT INTO sessions (name, description, user_id)
@@ -304,7 +278,8 @@ CROSS JOIN (
         ('Sesion Hombros', 'Rutina de hombros y deltoides'),
         ('Sesion Full Body', 'Rutina de cuerpo completo'),
         ('Sesion Vacía', 'Rutina vacia')
-) AS sesion_basico(nombre, descripcion);
+) AS sesion_basico(nombre, descripcion)
+ON CONFLICT DO NOTHING;
 
 -- 🟩 TABLA SESSION-EXERCISE
 INSERT INTO session_exercises(session_id, exercise_id, sets, reps)
@@ -341,20 +316,5 @@ FROM (
         ('Sesion Full Body', 'Extensión de Tríceps en Polea', 2, 12)
 ) AS sesion_ejercicio_basico(nombre_sesion, nombre_ejercicio, series, repeticiones)
 INNER JOIN sessions ON sessions.name = sesion_ejercicio_basico.nombre_sesion
-INNER JOIN ejercicios ON ejercicios.nombre = sesion_ejercicio_basico.nombre_ejercicio;
-
--- 🟦 RUTINAS SEMANALES (para todos los usuarios)
-INSERT INTO weekly_routines (name, start_date, end_date, user_id)
-SELECT
-    rutinas_semanales_basico.nombre,
-    rutinas_semanales_basico.inicio::date,
-    rutinas_semanales_basico.fin::date,
-    users.id
-FROM users
-CROSS JOIN (
-    VALUES
-        ('Semana Iniciación', '2024-01-01', '2024-01-07'),
-        ('Semana Fuerza', '2024-01-08', '2024-01-14'),
-        ('Semana Hipertrofia', '2024-01-15', '2024-01-21'),
-        ('Semana Descarga', '2024-01-22', '2024-01-28')
-) AS rutinas_semanales_basico(nombre, inicio, fin);
+INNER JOIN ejercicios ON ejercicios.nombre = sesion_ejercicio_basico.nombre_ejercicio
+ON CONFLICT DO NOTHING;

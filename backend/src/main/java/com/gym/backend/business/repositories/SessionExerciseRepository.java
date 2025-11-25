@@ -43,4 +43,6 @@ public interface SessionExerciseRepository extends CrudRepository<SessionExercis
       """)
   List<String> obtenerMusculosCoincidentes(Long sessionExerciseId, Long maquinaId);
 
+  boolean existsByExerciseId(Long id);
+
 }

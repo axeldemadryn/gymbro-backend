@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gym.backend.business.repositories.EjercicioRepository;
 import com.gym.backend.business.repositories.MusculoRepository;
+import com.gym.backend.business.repositories.SessionExerciseRepository;
 import com.gym.backend.model.Ejercicio;
 import com.gym.backend.model.Musculo;
 import com.gym.backend.model.TipoEjercicio;
@@ -23,6 +24,9 @@ public class EjercicioService {
 
     @Autowired
     private MusculoRepository musculoRepository;
+
+    @Autowired
+    private SessionExerciseRepository sessionExerciseRepository;
 
     @Transactional
     public Ejercicio guardar(Ejercicio ejercicio) {
@@ -70,6 +74,12 @@ public class EjercicioService {
     // Borrar un ejercicio por ID
     @Transactional
     public void eliminar(Long id) {
+        boolean estaEnUso = sessionExerciseRepository.existsByExerciseId(id);
+
+        if (estaEnUso) {
+            throw new IllegalStateException(
+                    "No se puede eliminar este ejercicio porque está siendo usado en una sesión.");
+        }
         ejercicioRepository.deleteById(id);
     }
 
